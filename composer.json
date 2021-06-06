@@ -1,6 +1,6 @@
 {
-    "name": "bravedave/mvp",
-    "description": "Minimum Viable Product",
+    "name": "bravedave/cms-job",
+    "description": "JOB's module for CMS",
     "minimum-stability": "dev",
     "license": "MIT",
     "authors": [
@@ -9,17 +9,43 @@
             "email": "david@brayworth.com.au"
         }
     ],
-    "repositories": [
-        { "type": "git", "url": "https://github.com/bravedave/dvc" }
-    ],
+    "repositories": {
+        "cms-console": {
+            "type": "git",
+            "url": "https://github.com/bravedave/cms-console"
+        },
+        "dvc": {
+            "type": "git",
+            "url": "https://github.com/bravedave/dvc"
+        }
+    },
     "require": {
+        "bravedave/cms-console": "*",
+        "bravedave/dvc": "*",
+        "bravedave/green": "dev-master"
+    },
+    "require-dev": {
+        "ext-apcu": "*",
+        "matthiasmullie/scrapbook": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "cms\\job\\": "src/job/"
+        }
     },
     "autoload-dev": {
         "psr-4": {
-            "": "src/app/"
-
+            "": "src/dev/app/"
         }
-
+    },
+    "scripts": {
+        "post-update-cmd": [
+            "cms\\console\\utility::upgrade",
+            "cms\\console\\utility::upgrade_dev",
+            "cms\\job\\utility::upgrade"
+        ],
+        "import-contacts": "cms\\console\\utility::import_contacts",
+        "import-contractors": "cms\\job\\utility::contractors_import",
+        "reset-contractors": "cms\\job\\utility::contractors_reset"
     }
-
 }
