@@ -126,10 +126,15 @@ class controller extends \Controller {
 
     ];
 
+    // 'searchFocus' => false,
     $this->render([
       'title' => $this->title = config::label_categories,
       'primary' => 'categories',
-      'secondary' => 'index'
+      'secondary' => 'index',
+      'data' => (object)[
+        'pageUrl' => strings::url(sprintf('%s/categories', $this->route))
+
+      ],
 
     ]);
 
@@ -181,7 +186,7 @@ class controller extends \Controller {
       'secondary' => 'index',
       'data' => (object)[
         'searchFocus' => false,
-        'pageUrl' => strings::url($this->route)
+        'pageUrl' => strings::url( sprintf( '%s/contractors', $this->route))
 
       ],
 
