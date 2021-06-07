@@ -138,19 +138,34 @@ $categories = $this->data->categories;  ?>
               if ($this->data->primary_contact) {
 
                 $primary_contact = $this->data->primary_contact;
-                $primary_contact_name = $dto->trading_name == $primary_contact->name ? $primary_contact->salute : $primary_contact->name;
+                $primary_contact_name = $dto->trading_name;
+                if ($dto->trading_name == $primary_contact->name) {
+                  if ( $primary_contact->salute) {
+                    $primary_contact_name = $primary_contact->salute;
+
+                  }
+
+                }
               ?>
 
-                <div class="form-row mb-2">
-                  <div class="col-md">
-                    <div class="form-control">
-                      <?= $primary_contact_name ?>
+                <div class="form-row">
+                  <div class="col-md mb-2">
+                    <div class="input-group">
+                      <div class="form-control">
+                        <?= $primary_contact_name ?>
+
+                      </div>
+
+                      <div class="input-group-append">
+                        <a href="<?= strings::url('person/view/' . $primary_contact->id) ?>" target="_blank" class="input-group-text" title="Go to contact"><i class="bi bi-box-arrow-up-right"></i></a>
+
+                      </div>
 
                     </div>
 
                   </div>
 
-                  <div class="col-md">
+                  <div class="col-md mb-2">
                     <div class="input-group">
 
                       <div class="input-group-prepend">
