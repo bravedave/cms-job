@@ -10,7 +10,10 @@
 
 namespace cms\job;
 
+use FilesystemIterator;
+use MatthiasMullie;
 use Json;
+use Response;
 use strings;
 
 use green\{people\dao\people as dao_people};
@@ -85,10 +88,34 @@ class controller extends \Controller {
       }
 
     }
+    elseif ('set-primary-contact' == $action) {
+      if ( $id = (int)$this->getPost('id')) {
+        $dao = new dao\job_contractors;
+        $dao->UpdateByID([
+          'primary_contact' => (int)$this->getPost('people_id')
+        ], $id);
+
+        Json::ack($action);
+
+      } else { Json::nak($action); }
+
+    }
     else {
       parent::postHandler();
 
     }
+
+  }
+
+  protected function render($params) {
+    $params = \array_merge([
+      'scripts' => [],
+
+    ], $params);
+
+    $params['scripts'][] = sprintf('<script type="text/javascript" src="%s"></script>', strings::url($this->route . '/js'));
+
+    parent::render($params);
 
   }
 
@@ -108,7 +135,7 @@ class controller extends \Controller {
 
   }
 
-  public function category_edit( $id) {
+  public function category_edit( $id = 0) {
     if ( $id = (int)$id) {
       $dao = new dao\job_categories;
       if ( $dto = $dao->getByID( $id)) {
@@ -117,6 +144,7 @@ class controller extends \Controller {
 
         ];
 
+        $this->title = config::label_category_edit;
         $this->load( 'category-edit');
 
       }
@@ -127,7 +155,13 @@ class controller extends \Controller {
 
     }
     else {
-      $this->load( 'invalid');
+      $this->data = (object)[
+        'dto' => new dao\dto\job_categories
+
+      ];
+
+      $this->title = config::label_category_add;
+      $this->load('category-edit');
 
     }
 
@@ -155,7 +189,7 @@ class controller extends \Controller {
 
   }
 
-  public function contractor_edit($id) {
+  public function contractor_edit($id = 0) {
     if ($id = (int)$id) {
       $dao = new dao\job_contractors();
       if ($dto = $dao->getByID($id)) {
@@ -186,7 +220,49 @@ class controller extends \Controller {
 
     }
     else {
-      $this->load('invalid');
+      $this->title = config::label_contractor_add;
+
+      $this->data = (object)[
+        'dto' => new dao\dto\job_contractors,
+        'primary_contact' => false,
+        'categories' => dao\job_categories::getCategorySet()
+
+      ];
+
+      $this->load('contractor-edit');
+
+    }
+
+  }
+
+  public function js( string $lib = '') {
+    if ( 'job' == $lib) {
+      $s = [];
+      $r = [];
+
+      $s[] = '@{{route}}@';
+      $r[] = $this->route;
+
+      $js = [];
+      $files = new FilesystemIterator(__DIR__ . '/js/');
+      foreach ($files as $file) $js[] = file_get_contents($file->getRealPath());
+
+      $js = implode("\n", $js);
+      $js = preg_replace($s, $r, $js);
+
+      Response::javascript_headers();
+      if ( false) {
+      // if ($this->Request->ClientIsLocal()) {
+        print $js;
+      } else {
+        $minifier = new MatthiasMullie\Minify\JS;
+        $minifier->add($js);
+        print $minifier->minify();
+      }
+
+    }
+    else {
+      parent::js( $lib);
 
     }
 

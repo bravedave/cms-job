@@ -15,9 +15,14 @@ class config extends \config {
 	const cms_job_db_version = 0.2;
 
   const label = 'JOB';
+  const label_contractor_add = 'New Contractor';
   const label_contractor_edit = 'Edit Contractor';
+  const label_contractor = 'Contractor';
   const label_contractors = 'Contractors';
   const label_categories = 'Categories';
+  const label_category = 'Category';
+  const label_category_add = 'New Category';
+  const label_category_edit = 'Edit Category';
   const label_matrix = 'JOB Matrix';
 
   static protected $_CMS_JOB_VERSION = 0;

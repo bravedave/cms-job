@@ -42,10 +42,10 @@ $categories = $this->data->categories;  ?>
       <?php while ($dto = $this->data->res->dto()) { ?>
         <tr data-id="<?= $dto->id ?>">
           <td line-number class="small"></td>
-          <td><?= $dto->trading_name ?></td>
+          <td data-role="trading_name"><?= $dto->trading_name ?></td>
 
-          <td><?= trim($dto->trading_name) == trim($dto->name) ? $dto->salute : $dto->name ?></td>
-          <td class="text-nowrap">
+          <td data-role="primary_contact"><?= trim($dto->trading_name) == trim($dto->name) ? $dto->salute : $dto->name ?></td>
+          <td class="text-nowrap" data-role="phone">
             <?php
             if ($dto->mobile && strings::isPhone($dto->mobile)) {
               print strings::asMobilePhone($dto->mobile);
@@ -83,7 +83,7 @@ $categories = $this->data->categories;  ?>
 
 </div>
 <script>
-  ( _ => $(document).ready( () => {
+  (_ => $(document).ready(() => {
     $('#<?= $tblID ?>')
       .on('update-line-numbers', function(e) {
         $('> tbody > tr:not(.d-none) >td[line-number]', this).each((i, e) => {
@@ -98,8 +98,56 @@ $categories = $this->data->categories;  ?>
           let _data = _me.data();
 
           _.get.modal(_.url('<?= $this->route ?>/contractor_edit/' + _data.id))
+            .then(d => d.on('edit-primary-contact', e => {
+              e.stopPropagation();
+              _me.trigger('edit-primary-contact');
+
+            }))
             .then(d => d.on('success', () => window.location.reload()))
-            .then(d => d.on('send-sms', () => _.ask.warning({'title': 'not implemented','text': 'Feature not implented'})));
+            .then(d => d.on('send-sms', () => _.ask.warning({
+              'title': 'not implemented',
+              'text': 'Feature not implented'
+            })));
+
+        })
+        .on('edit-primary-contact', function(e) {
+          let _me = $(this);
+          let _data = _me.data();
+
+          _.get.modal(_.url('people/getPerson'))
+            .then(m => m.on('success', (e, person) => {
+              _.post({
+                url: _.url('<?= $this->route ?>'),
+                data: {
+                  action: 'set-primary-contact',
+                  id: _data.id,
+                  people_id: person.id
+
+                },
+
+              }).then(d => {
+                if ('ack' == d.response) {
+                  $('td[data-role="primary_contact"]', _me).html(person.name)
+                  if (String(person.mobile).IsMobilePhone()) {
+                    $('td[data-role="phone"]', _me).html(String(person.mobile).AsMobilePhone())
+
+                  } else if (String(person.mobile).IsPhone()) {
+                    $('td[data-role="phone"]', _me).html(String(person.mobile).AsLocalPhone())
+
+                  } else {
+                    $('td[data-role="phone"]', _me).html('&nbsp;')
+
+                  }
+
+                } else {
+                  _.growl(d);
+
+                }
+
+              });
+
+            }))
+            .then(m => m.on('hidden.bs.modal', (e) => _me.trigger('edit')));
 
         })
         .addClass('pointer')
@@ -146,5 +194,5 @@ $categories = $this->data->categories;  ?>
 
     $('#<?= $tblID ?>').trigger('update-line-numbers');
 
-  }))( _brayworth_);
+  }))(_brayworth_);
 </script>

@@ -13,6 +13,7 @@ namespace cms\job;
 use strings;
 use theme;
 
+$_btnEditPrimaryContact = false;
 $dto = $this->data->dto;
 $categories = $this->data->categories;  ?>
 
@@ -32,7 +33,7 @@ $categories = $this->data->categories;  ?>
 
         <div class="modal-body">
           <div class="form-row mb-2">
-            <label class="col-3 text-truncate col-form-label" for="<?= $_uid = strings::rand() ?>">
+            <label class="col-md-3 text-truncate col-form-label" for="<?= $_uid = strings::rand() ?>">
               T/As
             </label>
 
@@ -56,7 +57,7 @@ $categories = $this->data->categories;  ?>
           </div>
 
           <div class="form-row mb-2">
-            <label class="col-3 text-truncate col-form-label" for="<?= $_uid = strings::rand() ?>">
+            <label class="col-md-3 text-truncate col-form-label" for="<?= $_uid = strings::rand() ?>">
               ABN
             </label>
 
@@ -88,7 +89,7 @@ $categories = $this->data->categories;  ?>
 
           <!-- Services -->
           <div class="form-row mb-2">
-            <div class="col-3 text-truncate">
+            <div class="col-md-3 text-truncate">
               Services
             </div>
 
@@ -112,11 +113,7 @@ $categories = $this->data->categories;  ?>
 
                   );
                 }
-              } else {
-                print '&nbsp;';
-              }
-
-              ?>
+              } ?>
 
               <button type="button" class="btn btn-outline-secondary btn-sm mt-2" id="<?= $_btnAddService = strings::rand() ?>" data-categories="<?= htmlspecialchars(json_encode($categories)) ?>">add service</button>
 
@@ -126,25 +123,26 @@ $categories = $this->data->categories;  ?>
 
           <!-- Primary Contact -->
           <div class="form-row">
-            <div class="col-3 text-truncate col-form-label d-flex">
+            <div class="col-md-3 text-truncate col-form-label d-flex">
               Primary Contact
-              <button type="button" class="btn btn-light btn-sm ml-auto mb-auto rounded-circle" title="change primary contact" id="<?= $_btnAddPrimaryContact = strings::rand() ?>"><i class="bi bi-pencil"></i></button>
+              <?php if ($this->data->primary_contact) { ?>
+                <button type="button" class="btn btn-light btn-sm ml-auto mb-auto rounded-circle" title="change primary contact" id="<?= $_btnEditPrimaryContact = strings::rand() ?>"><i class="bi bi-pencil"></i></button>
+              <?php } ?>
 
             </div>
 
             <div class="col">
               <input type="hidden" name="primary_contact" value="<?= $dto->primary_contact ?>">
 
-
               <?php
               if ($this->data->primary_contact) {
 
                 $primary_contact = $this->data->primary_contact;
                 $primary_contact_name = $dto->trading_name == $primary_contact->name ? $primary_contact->salute : $primary_contact->name;
-                ?>
+              ?>
 
                 <div class="form-row mb-2">
-                  <div class="col">
+                  <div class="col-md">
                     <div class="form-control">
                       <?= $primary_contact_name ?>
 
@@ -152,7 +150,7 @@ $categories = $this->data->categories;  ?>
 
                   </div>
 
-                  <div class="col">
+                  <div class="col-md">
                     <div class="input-group">
 
                       <div class="input-group-prepend">
@@ -198,8 +196,8 @@ $categories = $this->data->categories;  ?>
                                 e.preventDefault();
 
                                 $('#<?= $_modal ?>').trigger('send-sms', {
-                                  'name' : <?= json_encode( $primary_contact_name) ?>,
-                                  'mobile' : <?= json_encode( strings::cleanPhoneString($primary_contact->mobile)) ?>
+                                  'name': <?= json_encode($primary_contact_name) ?>,
+                                  'mobile': <?= json_encode(strings::cleanPhoneString($primary_contact->mobile)) ?>
 
                                 });
                                 $('#<?= $_modal ?>').modal('hide');
@@ -266,11 +264,68 @@ $categories = $this->data->categories;  ?>
                 <?php }  ?>
 
               <?php
-              } else {
-                print '&nbsp;';
-              }
+              } else {  ?>
+                <div class="form-row mb-2">
+                  <div class="col-md">
+                    <input type="search" name="primary_contact_name" class="form-control" id="<?= $_uid = strings::rand() ?>">
+                    <script>
+                      (_ => {
+                        $('#<?= $_modal ?>').on('shown.bs.modal', e => {
+                          $('#<?= $_uid ?>').autofill({
+                            autoFocus: true,
+                            source: (request, response) => {
+                              _.post({
+                                url: _.url('people'),
+                                data: {
+                                  action: 'search',
+                                  term: request.term
 
-              ?>
+                                },
+
+                              }).then(d => {
+                                if ('ack' == d.response) {
+                                  response(d.data);
+
+                                }
+
+                              });
+
+                            },
+                            select: (e, ui) => {
+                              var o = ui.item;
+                              if (o.id > 0) {
+                                $('input[name="primary_contact"]', '#<?= $_form ?>').val(o.id);
+
+                              }
+
+                            }
+
+                          });
+
+                        });
+
+                      })(_brayworth_);
+                    </script>
+
+                  </div>
+
+                  <div class="col-md">
+                    <div class="input-group">
+
+                      <div class="input-group-prepend">
+                        <div class="input-group-text">role</div>
+                      </div>
+
+                      <input class="form-control" type="text" name="primary_contact_role" value="<?= $dto->primary_contact_role ?>">
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              <?php
+              } ?>
 
             </div>
 
@@ -291,7 +346,7 @@ $categories = $this->data->categories;  ?>
   </div>
 
   <script>
-    (_ => $(document).ready(() => {
+    (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
       $('#<?= $_form ?> input[data-role="service"]').each((i, chk) => {
         $(chk).on('change', function(e) {
           let _me = $(this);
@@ -398,6 +453,21 @@ $categories = $this->data->categories;  ?>
           return false;
 
         });
+
+      <?php if ($_btnEditPrimaryContact) {  ?>
+        $('input[type="checkbox"], input[type="text"]', '#<?= $_form ?>')
+          .on('change', e => $('#<?= $_btnEditPrimaryContact ?>').addClass('d-none'));
+
+        $('#<?= $_btnEditPrimaryContact ?>').on('click', function(e) {
+          e.stopPropagation();
+          e.preventDefault();
+
+          $('#<?= $_modal ?>').trigger('edit-primary-contact');
+          $('#<?= $_modal ?>').modal('hide');
+
+        });
+
+      <?php }  ?>
 
     }))(_brayworth_);
   </script>

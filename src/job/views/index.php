@@ -14,14 +14,16 @@ use strings;  ?>
 
 <ul class="nav flex-column">
   <li class="nav-item h6">
-    <a href="<?= strings::url( sprintf( '%s', $this->route)) ?>">
-      <?= config::label ?></li>
+    <a href="<?= strings::url(sprintf('%s', $this->route)) ?>">
+      <?= config::label ?>
     </a>
 
   </li>
 
+  </li>
+
   <li class="nav-item d-none">
-    <a class="nav-link" href="<?= strings::url( sprintf( '%s/matrix', $this->route)) ?>">
+    <a class="nav-link" href="<?= strings::url(sprintf('%s/matrix', $this->route)) ?>">
       <?= config::label_matrix ?>
 
     </a>
@@ -29,7 +31,7 @@ use strings;  ?>
   </li>
 
   <li class="nav-item">
-    <a class="nav-link" href="<?= strings::url( sprintf( '%s/contractors', $this->route)) ?>">
+    <a class="nav-link" href="<?= strings::url(sprintf('%s/contractors', $this->route)) ?>">
       <?= config::label_contractors ?>
 
     </a>
@@ -37,12 +39,79 @@ use strings;  ?>
   </li>
 
   <li class="nav-item">
-    <a class="nav-link" href="<?= strings::url( sprintf( '%s/categories', $this->route)) ?>">
+    <a class="nav-link pl-4" href="#" id="<?= $_uid = strings::rand() ?>">
+      <i class="bi bi-person-plus"></i> New <?= config::label_contractor ?>
+
+    </a>
+
+  </li>
+  <script>
+    (_ => {
+      let active = false;
+
+      $('#<?= $_uid ?>').on('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        if (active) return;
+        active = true;
+
+        _.get.modal(_.url('<?= $this->route ?>/contractor_edit'))
+          .then(m => m.on('success', e => _.nav('<?= $this->route ?>/contractors')))
+          .then(m => active = false);
+
+      });
+
+    })(_brayworth_);
+  </script>
+
+  <li class="nav-item">
+    <a class="nav-link" href="<?= strings::url(sprintf('%s/categories', $this->route)) ?>">
       <?= config::label_categories ?>
 
     </a>
 
   </li>
 
-</ul>
+  <li class="nav-item">
+    <a class="nav-link pl-4" href="#" id="<?= $_uid = strings::rand() ?>">
+      <i class="bi bi-plus"></i> New <?= config::label_category ?>
 
+    </a>
+
+  </li>
+
+  <script>
+    (_ => {
+      let active = false;
+
+      $('#<?= $_uid ?>').on('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        if (active) return;
+        active = true;
+
+        _.get.modal(_.url('<?= $this->route ?>/category_edit'))
+          .then(m => m.on('success', e => _.nav('<?= $this->route ?>/categories')))
+          .then(m => active = false);
+
+      });
+
+    })(_brayworth_);
+  </script>
+
+  <li class="nav-item h6 pt-3 pl-3">
+    Reference Documents
+
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link pl-4" href="https://docs.google.com/document/d/13wwmQi9ZfyRIunOVLZl1ZKDJz-waNDm_65csP68Z_4o/">
+      <i class="bi bi-file-richtext text-primary"></i> Contractors
+
+    </a>
+
+  </li>
+
+</ul>
