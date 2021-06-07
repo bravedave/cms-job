@@ -142,7 +142,7 @@ use strings;  ?>
 
   </li>
 
-  <li class="nav-item">
+  <li class="nav-item small">
     <a class="nav-link pl-4" href="https://docs.google.com/document/d/1-M7o0YA7NGwqjCZHxHA1pf54DmJUERoclznsqC37Ue0/" target="_blank">
       <i class="bi bi-file-richtext text-primary"></i> JOB - Workorder Management
 
@@ -150,9 +150,17 @@ use strings;  ?>
 
   </li>
 
-  <li class="nav-item">
+  <li class="nav-item small">
     <a class="nav-link pl-4" href="https://docs.google.com/document/d/13wwmQi9ZfyRIunOVLZl1ZKDJz-waNDm_65csP68Z_4o/" target="_blank">
       <i class="bi bi-file-richtext text-primary"></i> Contractors
+
+    </a>
+
+  </li>
+
+  <li class="nav-item small">
+    <a class="nav-link pl-4" href="https://docs.google.com/document/d/1lpiaBuKzN7BkupqLU3a7w99g2rJ6SCZmIecb0V_RwlE/" target="_blank">
+      <i class="bi bi-file-richtext text-primary"></i> CMSS Maintenance - Job process
 
     </a>
 
