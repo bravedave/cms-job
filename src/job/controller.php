@@ -88,6 +88,30 @@ class controller extends \Controller {
       }
 
     }
+    elseif ('item-save' == $action) {
+
+      if ($description = $this->getPost('description')) {
+        $a = [
+          'description' => $description,
+          'job_categories_id' => $this->getPost('job_categories_id')
+
+        ];
+
+        $dao = new dao\job_items;
+        if ($id = (int)$this->getPost('id')) {
+          $dao->UpdateByID($a, $id);
+          Json::ack($action);
+
+        }
+        else {
+          $dao->Insert($a);
+          Json::ack($action);
+
+        }
+
+      } else { Json::nak($action); }
+
+    }
     elseif ('set-primary-contact' == $action) {
       if ( $id = (int)$this->getPost('id')) {
         $dao = new dao\job_contractors;
@@ -236,6 +260,62 @@ class controller extends \Controller {
 
       $this->load('contractor-edit');
 
+    }
+
+  }
+
+  public function items() {
+    $dao = new dao\job_items;
+    $this->data = (object)[
+      'res' => $dao->getAll(),
+      'categories' => dao\job_categories::getCategorySet()
+
+    ];
+
+    $this->render([
+      'title' => $this->title = config::label_items,
+      'primary' => 'items',
+      'secondary' => 'index',
+      'data' => (object)[
+        'searchFocus' => false,
+        'pageUrl' => strings::url( sprintf( '%s/items', $this->route))
+
+      ],
+
+    ]);
+
+  }
+
+  public function item_edit($id = 0) {
+    if ($id = (int)$id) {
+      $dao = new dao\job_items;
+      if ($dto = $dao->getByID($id)) {
+        $this->data = (object)[
+          'dto' => $dto,
+          'categories' => dao\job_categories::getCategorySet()
+
+        ];
+
+        $this->title = config::label_item_edit;
+        $this->load('item-edit');
+
+      }
+      else {
+        $this->load('not-found');
+
+      }
+
+    }
+    else {
+      $this->title = config::label_item_add;
+
+      $this->data = (object)[
+        'dto' => new dao\dto\job_items,
+        'categories' => dao\job_categories::getCategorySet()
+
+      ];
+
+      $this->load('item-edit');
     }
 
   }

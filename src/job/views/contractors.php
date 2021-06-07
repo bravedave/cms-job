@@ -58,7 +58,8 @@ $categories = $this->data->categories;  ?>
             } ?>
           </td>
 
-          <td><?php
+          <td>
+            <?php
               if ($dto->services) {
                 $services = explode(',', $dto->services);
                 foreach ($services as $service) {
@@ -67,16 +68,17 @@ $categories = $this->data->categories;  ?>
                   } else {
                     printf('<div>%s</div>', $service);
                   }
-                  # code...
                 }
               } else {
                 print '&nbsp;';
               }
-              ?></td>
+            ?>
+          </td>
 
         </tr>
 
       <?php } ?>
+
     </tbody>
 
   </table>

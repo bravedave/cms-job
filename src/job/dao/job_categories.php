@@ -20,6 +20,10 @@ class job_categories extends _dao {
   protected $_db_name = 'job_categories';
   protected $template = __NAMESPACE__ . '\dto\job_categories';
 
+  public function getAll($fields = '*', $order = 'ORDER BY `category`') {
+    return parent::getAll($fields, $order);
+  }
+
   public function getByCategory( string $category, bool $autoAdd = false) : ?dto\job_categories {
     $sql = sprintf(
       'SELECT

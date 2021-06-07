@@ -101,13 +101,57 @@ use strings;  ?>
     })(_brayworth_);
   </script>
 
+  <li class="nav-item">
+    <a class="nav-link" href="<?= strings::url(sprintf('%s/items', $this->route)) ?>">
+      <?= config::label_items ?>
+
+    </a>
+
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link pl-4" href="#" id="<?= $_uid = strings::rand() ?>">
+      <i class="bi bi-plus"></i> New <?= config::label_item ?>
+
+    </a>
+
+  </li>
+
+  <script>
+    (_ => {
+      let active = false;
+
+      $('#<?= $_uid ?>').on('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        if (active) return;
+        active = true;
+
+        _.get.modal(_.url('<?= $this->route ?>/item_edit'))
+          .then(m => m.on('success', e => _.nav('<?= $this->route ?>/items')))
+          .then(m => active = false);
+
+      });
+
+    })(_brayworth_);
+  </script>
+
   <li class="nav-item h6 pt-3 pl-3">
     Reference Documents
 
   </li>
 
   <li class="nav-item">
-    <a class="nav-link pl-4" href="https://docs.google.com/document/d/13wwmQi9ZfyRIunOVLZl1ZKDJz-waNDm_65csP68Z_4o/">
+    <a class="nav-link pl-4" href="https://docs.google.com/document/d/1-M7o0YA7NGwqjCZHxHA1pf54DmJUERoclznsqC37Ue0/" target="_blank">
+      <i class="bi bi-file-richtext text-primary"></i> JOB - Workorder Management
+
+    </a>
+
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link pl-4" href="https://docs.google.com/document/d/13wwmQi9ZfyRIunOVLZl1ZKDJz-waNDm_65csP68Z_4o/" target="_blank">
       <i class="bi bi-file-richtext text-primary"></i> Contractors
 
     </a>

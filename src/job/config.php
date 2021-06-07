@@ -12,7 +12,7 @@
 namespace cms\job;
 
 class config extends \config {
-	const cms_job_db_version = 0.3;
+	const cms_job_db_version = 0.4;
 
   const label = 'JOB';
   const label_contractor_add = 'New Contractor';
@@ -23,6 +23,10 @@ class config extends \config {
   const label_category = 'Category';
   const label_category_add = 'New Category';
   const label_category_edit = 'Edit Category';
+  const label_items = 'Items';
+  const label_item = 'Item';
+  const label_item_add = 'New Item';
+  const label_item_edit = 'Edit Item';
   const label_matrix = 'JOB Matrix';
 
   static protected $_CMS_JOB_VERSION = 0;

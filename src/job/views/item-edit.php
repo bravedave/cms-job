@@ -16,9 +16,8 @@ use theme;
 $dto = $this->data->dto;  ?>
 
 <form id="<?= $_form = strings::rand() ?>" autocomplete="off">
-  <input type="hidden" name="action" value="category-save">
+  <input type="hidden" name="action" value="item-save">
   <input type="hidden" name="id" value="<?= $dto->id ?>">
-
   <div class="modal fade" tabindex="-1" role="dialog" id="<?= $_modal = strings::rand() ?>" aria-labelledby="<?= $_modal ?>Label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
@@ -30,9 +29,30 @@ $dto = $this->data->dto;  ?>
         </div>
 
         <div class="modal-body">
-          <div class="form-row">
+          <div class="form-row mb-2">
             <div class="col">
-              <input type="text" class="form-control" name="category" placeholder="category" required value="<?= $dto->category ?>">
+              <input type="text" class="form-control" maxlength="100" name="description" value="<?= $dto->description ?>">
+
+            </div>
+
+          </div>
+
+          <div class="form-row mb-2">
+            <div class="col">
+              <select name="job_categories_id" class="form-control" required>
+                <option>select <?= config::label_category ?></option>
+                <?php
+                foreach ($this->data->categories as $k => $v) {
+                  printf(
+                    '<option value="%s" %s>%s</option>',
+                    $k,
+                    $dto->job_categories_id == $k ? 'selected' : '',
+                    $v
+
+                  );
+                } ?>
+
+              </select>
 
             </div>
 
@@ -43,7 +63,6 @@ $dto = $this->data->dto;  ?>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">close</button>
           <button type="submit" class="btn btn-primary">Save</button>
-
         </div>
 
       </div>
@@ -53,7 +72,7 @@ $dto = $this->data->dto;  ?>
   </div>
 
   <script>
-    (_ => $(document).ready(() => {
+    (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
       $('#<?= $_form ?>')
         .on('submit', function(e) {
           let _form = $(this);
@@ -64,9 +83,12 @@ $dto = $this->data->dto;  ?>
             data: _data,
 
           }).then(d => {
-            _.growl(d);
             if ('ack' == d.response) {
+
               $('#<?= $_modal ?>').trigger('success');
+
+            } else {
+              _.growl(d);
 
             }
 
@@ -74,11 +96,11 @@ $dto = $this->data->dto;  ?>
 
           });
 
-          // console.table( _data);
-
           return false;
 
         });
+
+      $('input[name="description"]', '#<?= $_form ?>').focus();
 
     }))(_brayworth_);
   </script>
