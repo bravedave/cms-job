@@ -132,6 +132,7 @@ class job_contractors extends _dao {
 
           }
 
+          if ($_dto->console_contact_id != $dto->ContactID) $a['console_contact_id'] = $dto->ContactID;
           $CCdao = new cms\console\dao\console_contacts;
           if ( $CCdto = $CCdao->getByContactID( $dto->ContactID)) {
             if ( $_dto->primary_contact != $CCdto->people_id) $a['primary_contact'] = $CCdto->people_id;
@@ -141,7 +142,7 @@ class job_contractors extends _dao {
           if ( $a) {
             $this->UpdateByID( $a, $_dto->id);
             $stats->updated++;
-            \sys::logger( sprintf('<%s/%s> <%s> <Updating> %s', $_dto->id, $tradingname, print_r( $a, true), __METHOD__));
+            // \sys::logger( sprintf('<%s/%s> <%s> <Updating> %s', $_dto->id, $tradingname, print_r( $a, true), __METHOD__));
 
           }
           else {

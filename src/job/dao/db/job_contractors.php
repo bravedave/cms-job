@@ -18,5 +18,6 @@ $dbc->defineField( 'abn', 'varchar');
 $dbc->defineField( 'services', 'varchar');
 $dbc->defineField( 'primary_contact', 'bigint');
 $dbc->defineField( 'primary_contact_role', 'varchar');
+$dbc->defineField( 'console_contact_id', 'varchar');
 
 $dbc->check();
