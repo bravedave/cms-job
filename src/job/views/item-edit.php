@@ -31,7 +31,7 @@ $dto = $this->data->dto;  ?>
         <div class="modal-body">
           <div class="form-row mb-2">
             <div class="col">
-              <input type="text" class="form-control" maxlength="100" name="description" value="<?= $dto->description ?>">
+              <input type="text" class="form-control" maxlength="100" name="description" required value="<?= $dto->description ?>">
 
             </div>
 
