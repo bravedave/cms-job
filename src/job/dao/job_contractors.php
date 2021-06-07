@@ -101,6 +101,7 @@ class job_contractors extends _dao {
         'new' => 0,
         'updated' => 0,
         'existing' => 0,
+        'missingphone' => 0,
 
       ];
 
@@ -135,7 +136,19 @@ class job_contractors extends _dao {
           if ($_dto->console_contact_id != $dto->ContactID) $a['console_contact_id'] = $dto->ContactID;
           $CCdao = new cms\console\dao\console_contacts;
           if ( $CCdto = $CCdao->getByContactID( $dto->ContactID)) {
-            if ( $_dto->primary_contact != $CCdto->people_id) $a['primary_contact'] = $CCdto->people_id;
+            if ( !$CCdto->people_id) {
+              $CCdao->reconcile_person( $CCdto);
+
+            }
+
+            if ( $CCdto->people_id) {
+              if ( $_dto->primary_contact != $CCdto->people_id) {
+                $a['primary_contact'] = $CCdto->people_id;
+                \sys::logger( sprintf('<updated person id %s> %s', $CCdto->people_id, __METHOD__));
+
+              }
+
+            }
 
           }
 
