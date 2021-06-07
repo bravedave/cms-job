@@ -12,7 +12,7 @@ namespace cms\job\dao;
 
 use cms;
 use dao\_dao;
-use green;
+use green\{people\dao\people as dao_people};
 // use strings;
 // use sys;
 
@@ -76,7 +76,7 @@ class job_contractors extends _dao {
         p.telephone,
         p.telephone_business,
         p.email,
-        p.salute
+        p.salutation
       FROM
         `%s` c
         LEFT JOIN people p ON p.id = c.primary_contact
@@ -138,6 +138,7 @@ class job_contractors extends _dao {
           if ( $CCdto = $CCdao->getByContactID( $dto->ContactID)) {
             if ( !$CCdto->people_id) {
               $CCdao->reconcile_person( $CCdto);
+              $CCdto = $CCdao->getByContactID($dto->ContactID);
 
             }
 
@@ -145,6 +146,16 @@ class job_contractors extends _dao {
               if ( $_dto->primary_contact != $CCdto->people_id) {
                 $a['primary_contact'] = $CCdto->people_id;
                 \sys::logger( sprintf('<updated person id %s> %s', $CCdto->people_id, __METHOD__));
+
+              }
+
+              $Pdao = new dao_people;
+              if ( $Pdto = $Pdao->getByID($CCdto->people_id)) {
+                if ( $CCdto->Salutation != $Pdto->salutation) {
+                  $Pdao->UpdateByID(['salutation' =>$CCdto->Salutation ], $Pdto->id);
+                  \sys::logger( sprintf('<%s> %s', 'update salutation !', __METHOD__));
+
+                }
 
               }
 

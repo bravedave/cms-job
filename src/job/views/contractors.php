@@ -44,7 +44,7 @@ $categories = $this->data->categories;  ?>
           <td line-number class="small"></td>
           <td data-role="trading_name"><?= $dto->trading_name ?></td>
 
-          <td data-role="primary_contact"><?= trim($dto->trading_name) == trim($dto->name) ? $dto->salute : $dto->name ?></td>
+          <td data-role="primary_contact"><?= trim($dto->trading_name) == trim($dto->name) ? $dto->salutation : $dto->name ?></td>
           <td class="text-nowrap" data-role="phone">
             <?php
             if ($dto->mobile && strings::isPhone($dto->mobile)) {

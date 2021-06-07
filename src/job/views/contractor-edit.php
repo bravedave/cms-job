@@ -140,8 +140,8 @@ $categories = $this->data->categories;  ?>
                 $primary_contact = $this->data->primary_contact;
                 $primary_contact_name = $dto->trading_name;
                 if ($dto->trading_name == $primary_contact->name) {
-                  if ( $primary_contact->salute) {
-                    $primary_contact_name = $primary_contact->salute;
+                  if ( $primary_contact->salutation) {
+                    $primary_contact_name = $primary_contact->salutation;
 
                   }
 
