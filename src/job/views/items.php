@@ -68,6 +68,50 @@ use strings;  ?>
             .then(d => d.on('success', () => window.location.reload()));
 
         })
+        .on('delete', function(e) {
+          let _tr = $(this);
+
+          _.ask.alert({
+            text: 'Are you sure ?',
+            title: 'Confirm Delete',
+            buttons: {
+              yes: function(e) {
+
+                $(this).modal('hide');
+                _tr.trigger('delete-confirmed');
+
+              }
+
+            }
+
+          });
+
+        })
+        .on('delete-confirmed', function(e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'item-delete',
+              id: _data.id
+
+            },
+
+          }).then(d => {
+            if ('ack' == d.response) {
+              _tr.remove();
+              $('#<?= $tblID ?>').trigger('update-line-numbers');
+
+            } else {
+              _.growl(d);
+
+            }
+
+          });
+
+        })
         .addClass('pointer')
         .on('click', function(e) {
           e.stopPropagation();
@@ -76,7 +120,42 @@ use strings;  ?>
           _.hideContexts();
           $(this).trigger('edit');
 
-        });
+        })
+        .on('contextmenu', function(e) {
+          if (e.shiftKey)
+            return;
+
+          e.stopPropagation();
+          e.preventDefault();
+
+          _.hideContexts();
+
+          let _context = _.context();
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _context.append($('<a href="#"><i class="bi bi-trash"></i>delete</a>').on('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            _context.close();
+            _tr.trigger('delete');
+
+          }));
+
+          _context.append('<hr>');
+          _context.append($('<a href="#">close menu</a>').on('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            _context.close();
+
+
+          }));
+
+          _context.open(e);
+
+        });;
 
     });
 

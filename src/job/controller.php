@@ -88,6 +88,15 @@ class controller extends \Controller {
       }
 
     }
+    elseif ('item-delete' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job_items;
+        $dao->delete( $id);
+        Json::ack($action);
+
+      } else { Json::nak($action); }
+
+    }
     elseif ('item-save' == $action) {
 
       if ($description = $this->getPost('description')) {

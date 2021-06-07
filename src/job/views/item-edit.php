@@ -40,7 +40,7 @@ $dto = $this->data->dto;  ?>
           <div class="form-row mb-2">
             <div class="col">
               <select name="job_categories_id" class="form-control" required>
-                <option>select <?= config::label_category ?></option>
+                <option value="">select <?= config::label_category ?></option>
                 <?php
                 foreach ($this->data->categories as $k => $v) {
                   printf(
