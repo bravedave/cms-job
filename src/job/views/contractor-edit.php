@@ -45,7 +45,7 @@ $categories = $this->data->categories;  ?>
           </div>
 
           <div class="form-row mb-2">
-            <label class="col-3 text-truncate col-form-label" for="<?= $_uid = strings::rand() ?>">
+            <label class="col-md-3 text-truncate col-form-label" for="<?= $_uid = strings::rand() ?>">
               Company
             </label>
 
@@ -140,13 +140,10 @@ $categories = $this->data->categories;  ?>
                 $primary_contact = $this->data->primary_contact;
                 $primary_contact_name = $dto->trading_name;
                 if ($dto->trading_name == $primary_contact->name) {
-                  if ( $primary_contact->salutation) {
+                  if ($primary_contact->salutation) {
                     $primary_contact_name = $primary_contact->salutation;
-
                   }
-
-                }
-              ?>
+                } ?>
 
                 <div class="form-row">
                   <div class="col-md mb-2">
@@ -280,8 +277,8 @@ $categories = $this->data->categories;  ?>
 
               <?php
               } else {  ?>
-                <div class="form-row mb-2">
-                  <div class="col-md">
+                <div class="form-row">
+                  <div class="col-md mb-2">
                     <input type="search" name="primary_contact_name" class="form-control" id="<?= $_uid = strings::rand() ?>">
                     <script>
                       (_ => {
@@ -324,7 +321,7 @@ $categories = $this->data->categories;  ?>
 
                   </div>
 
-                  <div class="col-md">
+                  <div class="col-md mb-2">
                     <div class="input-group">
 
                       <div class="input-group-prepend">
@@ -349,7 +346,8 @@ $categories = $this->data->categories;  ?>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">close</button>
+          <a href="https://abr.business.gov.au/Search/Advanced" target="_blank" class="btn btn-outline-secondary"><i class="bi bi-search"></i> ABR</a>
+          <button type="button" class="btn btn-outline-secondary ml-auto" data-dismiss="modal">close</button>
           <button type="submit" class="btn btn-primary">Save</button>
 
         </div>
