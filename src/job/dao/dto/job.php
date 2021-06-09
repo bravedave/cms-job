@@ -12,10 +12,12 @@ namespace cms\job\dao\dto;
 
 use dao\dto\_dto;
 
-class job_items extends _dto {
+class job extends _dto {
   public $id = 0;
-  public $job_categories_id = '';
-  public $item = '';
+  public $created = '';
+  public $job_type = 0;
+  public $property_id = 0;
+  public $property_street = '';
   public $description = '';
 
 }

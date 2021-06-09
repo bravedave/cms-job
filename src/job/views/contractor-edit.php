@@ -382,9 +382,9 @@ $categories = $this->data->categories;  ?>
         $('option', ctrl).each((i, o) => $(o).remove());
         ctrl.append('<option>select service</option>');
         let services = String($('#<?= $_form ?> input[name="services"]').val()).split(',');
-        $.each(_data.categories, (i, cat) => {
+        $.each(_.catSort(_data.categories), (i, c) => {
           if (services.indexOf(i) < 0) {
-            ctrl.append('<option value="' + i + '">' + cat + '</option>')
+            ctrl.append('<option value="' + c[0] + '">' + c[1] + '</option>')
 
           }
 

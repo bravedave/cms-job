@@ -30,14 +30,8 @@ $dto = $this->data->dto;  ?>
 
         <div class="modal-body">
           <div class="form-row mb-2">
-            <div class="col">
-              <input type="text" class="form-control" maxlength="100" name="description" required value="<?= $dto->description ?>">
+            <div class="col-md-3 col-form-label">category</div>
 
-            </div>
-
-          </div>
-
-          <div class="form-row mb-2">
             <div class="col">
               <select name="job_categories_id" class="form-control" required>
                 <option value="">select <?= config::label_category ?></option>
@@ -53,6 +47,25 @@ $dto = $this->data->dto;  ?>
                 } ?>
 
               </select>
+
+            </div>
+
+          </div>
+
+          <div class="form-row mb-2">
+            <div class="col-md-3 col-form-label">item</div>
+
+            <div class="col">
+              <input type="text" class="form-control" maxlength="45" name="item" required value="<?= $dto->item ?>">
+
+            </div>
+
+          </div>
+
+          <div class="form-row mb-2">
+            <div class="col-md-3 col-form-label">description</div>
+            <div class="col">
+              <input type="text" class="form-control" maxlength="100" name="description" required value="<?= $dto->description ?>">
 
             </div>
 

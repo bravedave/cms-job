@@ -22,13 +22,40 @@ use strings;  ?>
 
   </li>
 
-  <li class="nav-item d-none">
+  <li class="nav-item">
     <a class="nav-link" href="<?= strings::url(sprintf('%s/matrix', $this->route)) ?>">
       <?= config::label_matrix ?>
 
     </a>
 
   </li>
+
+  <li class="nav-item">
+    <a class="nav-link pl-4" href="#" id="<?= $_uid = strings::rand() ?>">
+      <i class="bi bi-journal-plus"></i> New <?= config::label ?>
+
+    </a>
+
+  </li>
+  <script>
+    (_ => {
+      let active = false;
+
+      $('#<?= $_uid ?>').on('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        if (active) return;
+        active = true;
+
+        _.get.modal(_.url('<?= $this->route ?>/job_edit'))
+          .then(m => m.on('success', e => _.nav('<?= $this->route ?>/matrix')))
+          .then(m => active = false);
+
+      });
+
+    })(_brayworth_);
+  </script>
 
   <li class="nav-item">
     <a class="nav-link" href="<?= strings::url(sprintf('%s/contractors', $this->route)) ?>">

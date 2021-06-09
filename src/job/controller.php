@@ -16,7 +16,11 @@ use Json;
 use Response;
 use strings;
 
-use green\{people\dao\people as dao_people};
+use green\{
+  people\dao\people as dao_people,
+  search
+
+};
 
 class controller extends \Controller {
 	protected $label = config::label;
@@ -88,6 +92,18 @@ class controller extends \Controller {
       }
 
     }
+    elseif ('get-items-of-category' == $action) {
+      if ($category = (int)$this->getPost('category')) {
+        $dao = new dao\job_items;
+        if ( $items = $dao->getItemsForCategory($category)) {
+          Json::ack($action)
+            ->add( 'data', $dao->dtoSet( $items));
+
+        } else { Json::ack($action); }
+
+      } else { Json::ack($action); }
+
+    }
     elseif ('item-delete' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job_items;
@@ -102,6 +118,7 @@ class controller extends \Controller {
       if ($description = $this->getPost('description')) {
         $a = [
           'description' => $description,
+          'item' => $this->getPost('item'),
           'job_categories_id' => $this->getPost('job_categories_id')
 
         ];
@@ -117,6 +134,15 @@ class controller extends \Controller {
           Json::ack($action);
 
         }
+
+      } else { Json::nak($action); }
+
+    }
+    elseif ('search-properties' == $action) {
+      if ($term = $this->getPost('term')) {
+        Json::ack($action)
+          ->add('term', $term)
+          ->add('data', search::properties($term));
 
       } else { Json::nak($action); }
 
@@ -146,7 +172,7 @@ class controller extends \Controller {
 
     ], $params);
 
-    $params['scripts'][] = sprintf('<script type="text/javascript" src="%s"></script>', strings::url($this->route . '/js'));
+    $params['scripts'][] = sprintf('<script type="text/javascript" src="%s"></script>', strings::url($this->route . '/js/job'));
 
     parent::render($params);
 
@@ -270,6 +296,32 @@ class controller extends \Controller {
       $this->load('contractor-edit');
 
     }
+
+  }
+
+  public function job_edit() {
+    $this->data = (object)[
+      'title' => $this->title = config::label_job_add,
+      'dto' => new dao\dto\job,
+      'categories' => dao\job_categories::getCategorySet()
+
+    ];
+
+    $this->load('job-edit');
+
+  }
+
+  public function matrix() {
+    $this->data = (object)[
+      'title' => $this->title = config::label_matrix,
+
+    ];
+
+    $this->render([
+      'primary' => 'blank',
+      'secondary' => 'index',
+
+    ]);
 
   }
 

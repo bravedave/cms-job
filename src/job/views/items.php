@@ -27,7 +27,8 @@ use strings;  ?>
     <thead class="small">
       <tr>
         <td>#</td>
-        <td>Category</td>
+        <td>category</td>
+        <td>item</td>
         <td>description</td>
 
       </tr>
@@ -39,6 +40,7 @@ use strings;  ?>
         <tr data-id="<?= $dto->id ?>">
           <td line-number></td>
           <td><?= $dto->category ?></td>
+          <td><?= $dto->item ?></td>
           <td><?= $dto->description ?></td>
 
         </tr>

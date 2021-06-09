@@ -58,9 +58,9 @@ class job_categories extends _dao {
   }
 
   public static function getCategorySet() {
+    $_set = [];
     $dao = new self;
     $_cats = $dao->dtoSet( $dao->getAll());
-    $_set = [];
     foreach ($_cats as $_cat) {
       $_set[$_cat->id] = $_cat->category;
 

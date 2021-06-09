@@ -29,4 +29,15 @@ class job_items extends _dao {
 
   }
 
+  public function getItemsForCategory( int $category) {
+    $sql = sprintf(
+      'SELECT * FROM `job_items` WHERE `job_categories_id` = %d ORDER BY `description`',
+      $category
+
+    );
+
+    return $this->Result( $sql);
+
+  }
+
 }
