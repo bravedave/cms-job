@@ -38,7 +38,7 @@ use strings;  ?>
     <tbody>
       <?php while ($dto = $this->data->res->dto()) {  ?>
         <tr data-id="<?= $dto->id ?>">
-          <td line-number></td>
+          <td line-number class="small"></td>
           <td><?= $dto->category ?></td>
           <td><?= $dto->item ?></td>
           <td><?= $dto->description ?></td>

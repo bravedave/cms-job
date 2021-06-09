@@ -19,7 +19,7 @@ $categories = $this->data->categories;  ?>
 <form id="<?= $_form = strings::rand() ?>" autocomplete="off">
   <input type="hidden" name="action" value="job-save">
   <input type="hidden" name="id" value="<?= $dto->id ?>">
-  <input type="hidden" name="property_id" value="<?= $dto->property_id ?>">
+  <input type="hidden" name="properties_id" value="<?= $dto->properties_id ?>">
 
   <div class="modal fade" tabindex="-1" role="dialog" id="<?= $_modal = strings::rand() ?>" aria-labelledby="<?= $_modal ?>Label" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
@@ -96,15 +96,15 @@ $categories = $this->data->categories;  ?>
             <div class="col-md-3 col-form-label">property</div>
 
             <div class="col-md mb-2">
-              <input type="text" class="form-control" value="<?= $dto->property_street ?>" id="<?= $_uid = strings::rand() ?>">
+              <input type="text" class="form-control" value="<?= $dto->address_street ?>" id="<?= $_uid = strings::rand() ?>">
 
             </div>
 
             <div class="col-auto mb-2 d-none" id="<?= $_uid ?>suburb_div">
-              <div id="<?= $_uid ?>suburb"></div>
+              <div class="form-control" id="<?= $_uid ?>suburb"><?= $dto->address_suburb ?></div>
             </div>
             <div class="col-auto mb-2 d-none" id="<?= $_uid ?>postcode_div">
-              <div id="<?= $_uid ?>postcode"></div>
+              <div class="form-control" id="<?= $_uid ?>postcode"><?= $dto->address_postcode ?></div>
             </div>
             <script>
               (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
@@ -114,14 +114,19 @@ $categories = $this->data->categories;  ?>
                   select: (e, ui) => {
                     let o = ui.item;
                     // console.log( o);
-                    $('input[name="property_id"]', '#<?= $_form ?>').val(o.id);
-                    $('#<?= $_uid ?>suburb').html(o.suburb).addClass('form-control');
-                    $('#<?= $_uid ?>postcode').html(o.postcode).addClass('form-control');
+                    $('input[name="properties_id"]', '#<?= $_form ?>').val(o.id);
+                    $('#<?= $_uid ?>suburb').html(o.suburb);
+                    $('#<?= $_uid ?>postcode').html(o.postcode);
                     $('#<?= $_uid ?>suburb_div, #<?= $_uid ?>postcode_div').removeClass('d-none');
 
                   },
 
                 });
+
+                if (Number($('input[name="properties_id"]', '#<?= $_form ?>').val()) > 0) {
+                  $('#<?= $_uid ?>suburb_div, #<?= $_uid ?>postcode_div').removeClass('d-none');
+
+                }
 
               }))(_brayworth_);
             </script>
@@ -157,85 +162,255 @@ $categories = $this->data->categories;  ?>
 
       let cats = <?= json_encode($categories) ?>;
 
-      $('#<?= $_form ?>')
-        .on('item-add', e => {
-          let row = $('<div class="form-row" item-row></div>');
+      let newRow = () => {
+        let row = $('<div class="form-row" item-row></div>');
+        $('<input type="hidden" name="job_line_id[]" value="0">').appendTo(row);
 
-          let cat = $('<select name="item_job_categories_id[]" class="form-control"></select>');
-          cat.append('<option value="">select category</option>');
+        let cat = $('<select name="item_job_categories_id[]" class="form-control"></select>');
+        cat.append('<option value="">select category</option>');
 
-          let catsSorted = Object.entries(cats).sort((a, b) => String(a[1]).toUpperCase().localeCompare(String(b[1]).toUpperCase()));
+        $.each(_.catSort(cats), (i, c) => $('<option></option>').val(c[0]).html(c[1]).appendTo(cat));
+        cat.on('change', e => row.trigger('category-change'));
 
-          $.each(_.catSort(cats), (i, c) => cat.append('<option value="' + c[0] + '">' + c[1] + '</option>'));
-          cat.on('change', e => row.trigger( 'category-change'));
+        $('<div class="col mb-2" category></div>').append(cat).appendTo(row);
 
-          $('<div class="col mb-2" category></div>').append(cat).appendTo(row);
+        let itemSub = $('<select name="item_sub[]" class="form-control" disabled></select>');
+        itemSub.append('<option value="">select item</option>');
+        itemSub.on('change', e => row.trigger('item-sub-change'));
 
-          let item = $('<select name="item_id[]" class="form-control" disabled></select>');
-          item.append('<option value="">select item</option>');
+        $('<div class="col mb-2" item></div>').append(itemSub).appendTo(row);
 
-          $('<div class="col mb-2" item></div>').append(item).appendTo(row);
+        let item = $('<select name="item_id[]" class="form-control" disabled></select>');
+        item.append('<option value="">select issue</option>');
 
-          row
-            .on('category-change', function(e) {
-              let cat = $('select[name="item_job_categories_id\[\]"]', this);
-              let item = $('select[name="item_id\[\]"]', this);
-              item
-                .prop('disabled', true)
-                .find('option')
-                .remove()
-                .end()
-                .append('<option value="" selected>select item</option>')
-                .val('');
+        $('<div class="col mb-2" item></div>').append(item).appendTo(row);
 
-              if ('' !== cat.val()) {
+        let btnDelete = $('<div class="btn btn-light" type="button"><i class="bi bi-dash-circle-dotted text-danger"></i></div>');
+        btnDelete.on('click', function(e) {
+          e.stopPropagation();
+          $(this).closest('div[item-row]').trigger('delete');
 
-                _.post({
-                  url: _.url('<?= $this->route ?>'),
-                  data: {
-                    action: 'get-items-of-category',
-                    category: cat.val()
+        });
 
-                  },
+        $('<div class="col-auto mb-2" item></div>').append(btnDelete).appendTo(row);
 
-                }).then(d => {
-                  console.log(d);
-                  if ('ack' == d.response) {
-                    $.each(d.data, (i, _item) => {
-                      $('<option></option>')
-                        .val(_item.id)
-                        .html(_item.description)
-                        .appendTo(item)
+        row
+          .on('category-change', function(e, callback) {
+            let cat = $('select[name="item_job_categories_id\[\]"]', this);
+            let itemSub = $('select[name="item_sub\[\]"]', this);
+            let item = $('select[name="item_id\[\]"]', this);
+            itemSub
+              .prop('disabled', true)
+              .find('option')
+              .remove()
+              .end()
+              .append('<option value="" selected>select item</option>')
+              .val('');
 
-                    });
+            item
+              .prop('disabled', true)
+              .find('option')
+              .remove()
+              .end()
+              .append('<option value="" selected>select issue</option>')
+              .val('');
 
-                    item.prop('disabled', false);
+            if ('' !== cat.val()) {
 
-                  } else {
-                    _.growl(d);
+              _.post({
+                url: _.url('<?= $this->route ?>'),
+                data: {
+                  action: 'get-items-of-category-distinctly',
+                  category: cat.val()
 
-                  }
+                },
 
-                });
+              }).then(d => {
+                if ('ack' == d.response) {
+                  $.each(d.data, (i, _item) => {
+                    $('<option></option>')
+                      .val(_item.item)
+                      .html(_item.item)
+                      .appendTo(itemSub)
+
+                  });
+
+                  itemSub.prop('disabled', false);
+                  if ('function' == typeof callback) callback();
+
+                } else {
+                  _.growl(d);
+
+                }
+
+              });
+
+            }
+
+          })
+          .on('item-sub-change', function(e, callback) {
+
+            // console.log( e.type);
+
+            let cat = $('select[name="item_job_categories_id\[\]"]', this);
+            let itemSub = $('select[name="item_sub\[\]"]', this);
+            let item = $('select[name="item_id\[\]"]', this);
+
+            item
+              .prop('disabled', true)
+              .find('option')
+              .remove()
+              .end()
+              .append('<option value="" selected>select issue</option>')
+              .val('');
+
+            if ('' !== cat.val()) {
+
+              let sendData = {
+                action: 'get-items-of-category-item',
+                category: cat.val(),
+                item: itemSub.val(),
+
+              };
+
+              _.post({
+                url: _.url('<?= $this->route ?>'),
+                data: sendData,
+
+              }).then(d => {
+                // console.log(sendData, d);
+                if ('ack' == d.response) {
+                  $.each(d.data, (i, _item) => {
+                    $('<option></option>')
+                      .val(_item.id)
+                      .html(_item.description)
+                      .appendTo(item)
+
+                  });
+
+                  item.prop('disabled', false);
+                  if ('function' == typeof callback) callback();
+
+                } else {
+                  _.growl(d);
+
+                }
+
+              });
+
+            }
+
+          })
+          .on('delete', function(e) {
+            let _me = $(this);
+
+            _.ask.alert({
+              title: 'Confirm',
+              text: 'Are you Sure ?',
+              buttons: {
+                yes: function(e) {
+                  $(this).modal('hide');
+                  _me.trigger('delete-confirmed');
+
+                }
 
               }
 
+            })
+
+          })
+          .on('delete-confirmed', function(e) {
+            let jobline = Number($('input[name="job_line_id\[\]"]', this).val());
+            console.log(jobline);
+
+            if (jobline > 0) {
+              _.post({
+                url: _.url('<?= $this->route ?>'),
+                data: {
+                  action: 'job-line-delete',
+                  id: jobline
+
+                },
+
+              }).then(d => {
+                if ('ack' == d.response) {
+                  $(this).remove();
+
+                } else {
+                  _.growl(d);
+
+                }
+
+              });
+
+            } else {
+              $(this).remove();
+
+            }
+
+          });
+
+        row.appendTo('#<?= $_uidItemContainer ?>');
+
+        $('> div[caption]', '#<?= $_uidItemContainer ?>').removeClass('d-none');
+
+        return row;
+
+      }
+
+      $('#<?= $_form ?>')
+        .on('item-add', e => newRow())
+        .one('items-init', function(e) {
+          let initItems = <?= json_encode($dto->lines) ?>;
+          // console.log(initItems);
+
+          $.each(initItems, (i, _item) => {
+            let row = newRow();
+            let jobline = $('input[name="job_line_id\[\]"]', row);
+            let cat = $('select[name="item_job_categories_id\[\]"]', row);
+            let itemSub = $('select[name="item_sub\[\]"]', row);
+            let item = $('select[name="item_id\[\]"]', row);
+
+            jobline.val(_item.id);
+            cat.val(_item.job_categories_id);
+            row.trigger('category-change', () => {
+              itemSub.val(_item.item);
+              row.trigger('item-sub-change', () => {
+                item.val(_item.item_id);
+
+              })
+
             });
 
-          row.appendTo('#<?= $_uidItemContainer ?>');
-
-          $('> div[caption]', '#<?= $_uidItemContainer ?>').removeClass('d-none');
+          });
 
         })
         .on('submit', function(e) {
           let _form = $(this);
           let _data = _form.serializeFormJSON();
-          let _modalBody = $('.modal-body', _form);
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: _data,
+
+          }).then(d => {
+            if ('ack' == d.response) {
+              $('#<?= $_modal ?>').trigger('success');
+
+            } else {
+              _.growl(d);
+
+            }
+
+            $('#<?= $_modal ?>').modal('hide');
+
+          });
 
           // console.table( _data);
           return false;
 
         });
+
+      $('#<?= $_form ?>').trigger('items-init');
 
     }))(_brayworth_);
   </script>

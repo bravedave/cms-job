@@ -16,8 +16,13 @@ class job extends _dto {
   public $id = 0;
   public $created = '';
   public $job_type = 0;
-  public $property_id = 0;
-  public $property_street = '';
   public $description = '';
+
+  public $properties_id = 0;
+  public $address_street = '';
+  public $address_suburb = '';
+  public $address_postcode = '';
+
+  public $lines = [];
 
 }
