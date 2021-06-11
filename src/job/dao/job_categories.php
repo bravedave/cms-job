@@ -31,9 +31,9 @@ class job_categories extends _dao {
       FROM
         `%s`
       WHERE
-        `category` = "%s"',
+        `category` = %s',
       $this->db_name(),
-      $this->escape( $category)
+      $this->_quote( $category)
 
     );
 

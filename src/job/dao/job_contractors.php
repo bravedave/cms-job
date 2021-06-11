@@ -21,34 +21,17 @@ class job_contractors extends _dao {
   protected $template = __NAMESPACE__ . '\dto\job_contractors';
 
   public function getByTradingName( string $name) : ?dto\job_contractors {
-    if ( 'sqlite' == \config::$DB_TYPE) {
-      $sql = sprintf(
-        "SELECT
-          *
-        FROM
-          `%s`
-        WHERE
-          `trading_name` = '%s'",
-        $this->db_name(),
-        $this->escape( $name)
+    $sql = sprintf(
+      "SELECT
+        *
+      FROM
+        `%s`
+      WHERE
+        `trading_name` = %s",
+      $this->db_name(),
+      $this->_quote( $name)
 
-      );
-
-    }
-    else {
-      $sql = sprintf(
-        'SELECT
-          *
-        FROM
-          `%s`
-        WHERE
-          `trading_name` = "%s"',
-        $this->db_name(),
-        $this->escape( $name)
-
-      );
-
-    }
+    );
 
     // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
 
@@ -208,6 +191,26 @@ class job_contractors extends _dao {
       \sys::logger( sprintf('<new:%s> <updated:%s> <existing:%s> %s', $stats->new, $stats->updated, $stats->existing, __METHOD__));
 
     }
+
+  }
+
+  public function search( string $term) : array {
+    $ret = [];
+
+    $sql = sprintf(
+      'SELECT id, trading_name, trading_name `label` FROM `job_contractors` WHERE `trading_name` LIKE %s',
+      $this->_quote( '%' . $term . '%')
+
+    );
+
+    // \sys::logger( sprintf('<%s> %s', $sql, __METHOD__));
+
+    if ( $res = $this->Result( $sql)) {
+      return $res->dtoSet();
+
+    }
+
+    return $ret;
 
   }
 

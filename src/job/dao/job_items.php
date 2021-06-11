@@ -39,24 +39,18 @@ class job_items extends _dao {
 
     }
     elseif ( $item) {
-      if ( 'sqlite' == \config::$DB_TYPE) {
-        $sql = sprintf(
-          "SELECT * FROM `job_items` WHERE `job_categories_id` = %d AND item = '%s' ORDER BY `item` ASC, `description` ASC",
-          $category,
-          $this->escape( $item)
+      $sql = sprintf(
+        'SELECT
+          *
+          FROM `job_items`
+          WHERE `job_categories_id` = %d
+            AND item = %s
+          ORDER BY
+            `item` ASC, `description` ASC',
+        $category,
+        $this->_quote( $item)
 
-        );
-
-      }
-      else {
-        $sql = sprintf(
-          'SELECT * FROM `job_items` WHERE `job_categories_id` = %d AND item = "%s" ORDER BY `item` ASC, `description` ASC',
-          $category,
-          $this->escape( $item)
-
-        );
-
-      }
+      );
 
     }
     else {

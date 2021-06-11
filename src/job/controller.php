@@ -174,8 +174,10 @@ class controller extends \Controller {
 
       $a = [
         'updated' => \db::dbTimeStamp(),
+        'contractor_id' => (int)$this->getPost('contractor_id'),
         'properties_id' => (int)$this->getPost('properties_id'),
         'job_type' => (int)$this->getPost( 'job_type'),
+        'status' => (int)$this->getPost( 'status'),
         'description' => (string)$this->getPost( 'description'),
 
       ];
@@ -234,6 +236,16 @@ class controller extends \Controller {
           Json::ack($action);
 
         }
+
+      } else { Json::nak($action); }
+
+    }
+    elseif ('search-contractor' == $action) {
+      if ($term = $this->getPost('term')) {
+        $dao = new dao\job_contractors;
+        Json::ack($action)
+          ->add('term', $term)
+          ->add('data', $dao->search($term));
 
       } else { Json::nak($action); }
 

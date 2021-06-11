@@ -20,6 +20,7 @@ $categories = $this->data->categories;  ?>
   <input type="hidden" name="action" value="job-save">
   <input type="hidden" name="id" value="<?= $dto->id ?>">
   <input type="hidden" name="properties_id" value="<?= $dto->properties_id ?>">
+  <input type="hidden" name="contractor_id" value="<?= $dto->contractor_id ?>">
 
   <div class="modal fade" tabindex="-1" role="dialog" id="<?= $_modal = strings::rand() ?>" aria-labelledby="<?= $_modal ?>Label" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
@@ -29,13 +30,41 @@ $categories = $this->data->categories;  ?>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
+
         </div>
+
         <div class="modal-body">
           <div class="form-row mb-2">
-            <div class="col-3">created</div>
+            <div class="col">&nbsp;</div>
+            <div class="col-auto small">created: <?= $dto->id ? strings::asLocalDate(($dto->created)) : 'new' ?></div>
+            <?php if ( $dto->id) {
+              printf(
+                '<div class="col-auto small">updated:%s</div>',
+                strings::asLocalDate($dto->updated)
+
+              );
+
+            }  ?>
+
+          </div>
+
+          <div class="form-row mb-2">
+            <div class="col-3 col-form-label">status</div>
 
             <div class="col">
-              <?= $dto->id ? strings::asLocalDate(($dto->created)) : 'new' ?>
+              <select name="status" class="form-control">
+                <?php
+                foreach (config::job_status as $k => $label) {
+                  printf(
+                    '<option value="%s" %s>%s</option>',
+                    $k,
+                    $k == $dto->status ? 'selected' : '',
+                    $label
+
+                  );
+                } ?>
+
+              </select>
 
             </div>
 
@@ -118,6 +147,50 @@ $categories = $this->data->categories;  ?>
                     $('#<?= $_uid ?>suburb').html(o.suburb);
                     $('#<?= $_uid ?>postcode').html(o.postcode);
                     $('#<?= $_uid ?>suburb_div, #<?= $_uid ?>postcode_div').removeClass('d-none');
+
+                  },
+
+                });
+
+                if (Number($('input[name="properties_id"]', '#<?= $_form ?>').val()) > 0) {
+                  $('#<?= $_uid ?>suburb_div, #<?= $_uid ?>postcode_div').removeClass('d-none');
+
+                }
+
+              }))(_brayworth_);
+            </script>
+
+          </div>
+
+          <div class="form-row">
+            <div class="col-md-3 col-form-label"><?= config::label_contractor ?></div>
+
+            <div class="col-md mb-2">
+              <input type="text" class="form-control" value="<?= $dto->contractor_trading_name ?>" id="<?= $_uid = strings::rand() ?>">
+
+            </div>
+
+            <script>
+              (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
+                $('#<?= $_uid ?>').autofill({
+                  autoFocus: true,
+                  source: (request, response) => {
+                    _.post({
+                      url: _.url('<?= $this->route ?>'),
+                      data: {
+                        action: 'search-contractor',
+                        term: request.term,
+                        services: ''
+
+                      },
+
+                    }).then(d => response('ack' == d.response ? d.data : []));
+
+                  },
+                  select: (e, ui) => {
+                    let o = ui.item;
+                    console.log(o);
+                    $('input[name="contractor_id"]', '#<?= $_form ?>').val(o.id);
 
                   },
 

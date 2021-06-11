@@ -26,10 +26,12 @@ class job extends _dao {
     $sql =
     'SELECT
         job.*,
-        p.address_street
+        p.address_street,
+        c.trading_name `contractor_trading_name`
       FROM
         `job`
-        LEFT JOIN properties p on p.id = job.properties_id';
+        LEFT JOIN properties p on p.id = job.properties_id
+        LEFT JOIN job_contractors c on c.id = job.contractor_id';
 
     return $this->Result( $sql);
 
@@ -38,6 +40,15 @@ class job extends _dao {
   public function getRichData( dto\job $job) : dto\job {
     $dao = new job_lines;
     $job->lines = $dao->getLinesOfJobID( $job->id);
+
+    if ( $job->contractor_id) {
+      $dao = new job_contractors;
+      if ( $contractor = $dao->getByID( $job->contractor_id)) {
+        $job->contractor_trading_name = $contractor->trading_name;
+
+      }
+
+    }
 
     if ( $job->properties_id) {
       $dao = new properties;

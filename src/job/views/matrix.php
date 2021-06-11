@@ -18,6 +18,8 @@ use strings;  ?>
       <tr>
         <td>#</td>
         <td>Property</td>
+        <td>Contractor</td>
+        <td class="text-center">Status</td>
 
       </tr>
 
@@ -28,6 +30,27 @@ use strings;  ?>
         <tr data-id="<?= $dto->id ?>">
           <td class="small" line-number></td>
           <td><?= $dto->address_street ?></td>
+          <td><?= $dto->contractor_trading_name ?></td>
+          <td class="text-center">
+            <?php
+            if ( config::job_status_new == $dto->status) {
+              print 'new';
+
+            }
+            elseif ( config::job_status_quote == $dto->status) {
+              print 'quote';
+
+            }
+            elseif ( config::job_status_assigned == $dto->status) {
+              print 'assigned';
+
+            }
+            else {
+              print $dto->status;
+
+            } ?>
+
+          </td>
 
         </tr>
 

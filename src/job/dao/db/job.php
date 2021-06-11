@@ -14,7 +14,9 @@ $dbc = \sys::dbCheck('job' );
 
 $dbc->defineField('job_type', 'int');
 $dbc->defineField('properties_id', 'bigint');
+$dbc->defineField('contractor_id', 'text');
 $dbc->defineField('description', 'text');
+$dbc->defineField('status', 'int');
 $dbc->defineField('updated', 'datetime');
 $dbc->defineField('created', 'datetime');
 
