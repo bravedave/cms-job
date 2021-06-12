@@ -34,19 +34,22 @@ $categories = $this->data->categories;  ?>
         </div>
 
         <div class="modal-body">
-          <div class="form-row mb-2">
-            <div class="col">&nbsp;</div>
-            <div class="col-auto small">created: <?= $dto->id ? strings::asLocalDate(($dto->created)) : 'new' ?></div>
-            <?php if ( $dto->id) {
-              printf(
-                '<div class="col-auto small">updated:%s</div>',
-                strings::asLocalDate($dto->updated)
+          <?php if ( $dto->id) {  ?>
+            <div class="form-row mb-2">
+              <div class="col">&nbsp;</div>
+              <div class="col-auto small">created: <?= $dto->id ? strings::asLocalDate(($dto->created)) : 'new' ?></div>
+              <?php if ( strtotime( $dto->updated) > strtotime( $dto->created)) {
+                printf(
+                  '<div class="col-auto small">updated:%s</div>',
+                  strings::asLocalDate($dto->updated)
 
-              );
+                );
 
-            }  ?>
+              }  ?>
 
-          </div>
+            </div>
+
+          <?php }  ?>
 
           <div class="form-row mb-2">
             <div class="col-3 col-form-label">status</div>

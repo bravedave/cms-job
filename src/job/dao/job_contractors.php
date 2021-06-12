@@ -29,7 +29,7 @@ class job_contractors extends _dao {
       WHERE
         `trading_name` = %s",
       $this->db_name(),
-      $this->_quote( $name)
+      $this->quote( $name)
 
     );
 
@@ -199,7 +199,7 @@ class job_contractors extends _dao {
 
     $sql = sprintf(
       'SELECT id, trading_name, trading_name `label` FROM `job_contractors` WHERE `trading_name` LIKE %s',
-      $this->_quote( '%' . $term . '%')
+      $this->quote( '%' . $term . '%')
 
     );
 

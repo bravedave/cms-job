@@ -48,7 +48,7 @@ class job_items extends _dao {
           ORDER BY
             `item` ASC, `description` ASC',
         $category,
-        $this->_quote( $item)
+        $this->quote( $item)
 
       );
 
