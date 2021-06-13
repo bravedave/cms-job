@@ -194,23 +194,46 @@ class job_contractors extends _dao {
 
   }
 
-  public function search( string $term) : array {
-    $ret = [];
-
+  public function search( string $term, string $services = '') : array {
     $sql = sprintf(
-      'SELECT id, trading_name, trading_name `label` FROM `job_contractors` WHERE `trading_name` LIKE %s',
+      'SELECT id, trading_name, trading_name `label`, services FROM `job_contractors` WHERE `trading_name` LIKE %s',
       $this->quote( '%' . $term . '%')
 
     );
 
-    // \sys::logger( sprintf('<%s> %s', $sql, __METHOD__));
-
     if ( $res = $this->Result( $sql)) {
+      if ( $services) {
+        $requires = explode( ',', $services);
+        $a = [];
+        while ( $dto = $res->dto()) {
+          if ( $dto->services) {
+            $provides = explode(',', $dto->services);
+            $yes = true;
+            foreach ($requires as $req) {
+              if ( !in_array( $req, $provides)) {
+                $yes = false;
+                break;
+
+              }
+
+            }
+
+            if ( $yes) $a[] = $dto;
+
+          }
+
+        }
+
+        // \sys::logger( sprintf('<required %s #%s> %s', $services, count( $a), __METHOD__));
+        return $a;
+
+      }
+
       return $res->dtoSet();
 
     }
 
-    return $ret;
+    return [];
 
   }
 

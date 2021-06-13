@@ -57,6 +57,32 @@ class job_categories extends _dao {
 
   }
 
+  public function getCategoriesOf( string $ids) : array {
+    if ( $ids) {
+      $sql = sprintf(
+        'SELECT
+          *
+        FROM
+          `%s`
+        WHERE
+          `id` in (%s)',
+        $this->db_name(),
+        $ids
+
+      );
+
+      // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
+      if ( $res = $this->Result( $sql)) {
+        return $this->dtoSet($res);
+
+      }
+
+    }
+
+    return [];
+
+  }
+
   public static function getCategorySet() {
     $_set = [];
     $dao = new self;

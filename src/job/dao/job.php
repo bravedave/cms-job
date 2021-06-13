@@ -33,7 +33,70 @@ class job extends _dao {
         LEFT JOIN properties p on p.id = job.properties_id
         LEFT JOIN job_contractors c on c.id = job.contractor_id';
 
-    return $this->Result( $sql);
+    $this->Q(
+      sprintf(
+        'CREATE TEMPORARY TABLE `matrix` AS %s',
+        $sql
+
+      )
+
+    );
+
+    $this->Q( 'ALTER TABLE `matrix` ADD COLUMN `lines` TEXT');
+
+    $sql =
+    'SELECT
+        m.*,
+        jl.item_id,
+        ji.item,
+        ji.description
+      FROM `matrix` m
+        LEFT JOIN `job_lines` jl ON jl.job_id = m.id
+        LEFT JOIN `job_items` ji ON ji.id = jl.item_id
+      ORDER BY m.id, ji.job_categories_id';
+
+    if ( $res = $this->Result( $sql)) {
+      $items = [];
+      $res->dtoSet( function( $dto) use (&$items){
+        // \sys::logger(
+        //   sprintf(
+        //     '<%s: %s - %s> %s',
+        //     $dto->item_id,
+        //     $dto->item,
+        //     $dto->description,
+        //     __METHOD__
+
+        //   )
+
+        // );
+
+        if ( ! isset( $items[ $dto->id])) $items[ $dto->id] = [];
+        $items[ $dto->id][] = (object)[
+          'item' => $dto->item,
+          'description' => $dto->description,
+
+        ];
+
+        return $dto;
+
+      });
+
+      foreach ($items as $k => $v) {
+        $sql = sprintf(
+          'UPDATE `matrix` SET `lines` = %s WHERE `id` = %d',
+          $this->quote( json_encode( $v)),
+          $k
+
+        );
+
+        // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
+        $this->Q($sql);
+
+      }
+
+    }
+
+    return $this->Result( 'SELECT * FROM `matrix`');
 
   }
 

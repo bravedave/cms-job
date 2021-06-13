@@ -92,6 +92,21 @@ class controller extends \Controller {
       }
 
     }
+    elseif ('get-contractor-by-id' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job_contractors;
+        if ( $dto = $dao->getByID($id)) {
+
+          $dao = new dao\job_categories;
+          Json::ack($action)
+            ->add( 'data', $dto);
+            // ->add( 'services', $dao->getCategoriesOf($dto->services));
+
+        } else { Json::nak($action); }
+
+      } else { Json::nak($action); }
+
+    }
     elseif ('get-items-of-category-distinctly' == $action) {
       if ($category = (int)$this->getPost('category')) {
         $dao = new dao\job_items;
@@ -172,70 +187,53 @@ class controller extends \Controller {
     }
     elseif ('job-save' == $action) {
 
-      $a = [
-        'updated' => \db::dbTimeStamp(),
-        'contractor_id' => (int)$this->getPost('contractor_id'),
-        'properties_id' => (int)$this->getPost('properties_id'),
-        'job_type' => (int)$this->getPost( 'job_type'),
-        'status' => (int)$this->getPost( 'status'),
-        'description' => (string)$this->getPost( 'description'),
-
-      ];
-
-      $dao = new dao\job;
-      if ( $id = (int)$this->getPost('id')) {
-        $dao->UpdateByID( $a, $id);
-
-      }
-      else {
-        $a['created'] = $a['updated'];
-        $id = $dao->Insert( $a);
-
-      }
-
-      $job_line_id = $this->getPost('job_line_id');
-      $item_id = $this->getPost('item_id');
-
-      for ($i=0; $i < count($item_id); $i++) {
+      if ($description = $this->getPost('description')) {
         $a = [
           'updated' => \db::dbTimeStamp(),
-          'item_id' => $item_id[$i],
-          'job_id' => $id,
+          'contractor_id' => (int)$this->getPost('contractor_id'),
+          'properties_id' => (int)$this->getPost('properties_id'),
+          'job_type' => (int)$this->getPost( 'job_type'),
+          'status' => (int)$this->getPost( 'status'),
+          'description' => (string)$this->getPost( 'description'),
 
         ];
 
-        $dao = new dao\job_lines;
-        if ( isset( $job_line_id[$i]) && $job_line_id[$i]) {
-          $dao->UpdateByID($a, $job_line_id[$i]);
+        $dao = new dao\job;
+        if ( $id = (int)$this->getPost('id')) {
+          $dao->UpdateByID( $a, $id);
 
         }
         else {
           $a['created'] = $a['updated'];
-          $dao->Insert($a);
+          $id = $dao->Insert( $a);
 
         }
 
-      }
+        $job_line_id = $this->getPost('job_line_id');
+        $item_id = $this->getPost('item_id');
 
-      if ($description = $this->getPost('description')) {
-        $a = [
-          'description' => $description,
-          'item' => $this->getPost('item'),
-          'job_categories_id' => $this->getPost('job_categories_id')
+        for ($i=0; $i < count($item_id); $i++) {
+          $a = [
+            'updated' => \db::dbTimeStamp(),
+            'item_id' => $item_id[$i],
+            'job_id' => $id,
 
-        ];
+          ];
 
-        $dao = new dao\job_items;
-        if ($id = (int)$this->getPost('id')) {
-          $dao->UpdateByID($a, $id);
-          Json::ack($action);
+          $dao = new dao\job_lines;
+          if ( isset( $job_line_id[$i]) && $job_line_id[$i]) {
+            $dao->UpdateByID($a, $job_line_id[$i]);
+
+          }
+          else {
+            $a['created'] = $a['updated'];
+            $dao->Insert($a);
+
+          }
 
         }
-        else {
-          $dao->Insert($a);
-          Json::ack($action);
 
-        }
+        Json::ack($action);
 
       } else { Json::nak($action); }
 
@@ -245,7 +243,7 @@ class controller extends \Controller {
         $dao = new dao\job_contractors;
         Json::ack($action)
           ->add('term', $term)
-          ->add('data', $dao->search($term));
+          ->add('data', $dao->search($term, $this->getPost('services')));
 
       } else { Json::nak($action); }
 

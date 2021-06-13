@@ -21,6 +21,7 @@ $categories = $this->data->categories;  ?>
   <input type="hidden" name="id" value="<?= $dto->id ?>">
   <input type="hidden" name="properties_id" value="<?= $dto->properties_id ?>">
   <input type="hidden" name="contractor_id" value="<?= $dto->contractor_id ?>">
+  <input type="hidden" name="required_services">
 
   <div class="modal fade" tabindex="-1" role="dialog" id="<?= $_modal = strings::rand() ?>" aria-labelledby="<?= $_modal ?>Label" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
@@ -34,17 +35,16 @@ $categories = $this->data->categories;  ?>
         </div>
 
         <div class="modal-body">
-          <?php if ( $dto->id) {  ?>
-            <div class="form-row mb-2">
+          <?php if ($dto->id) {  ?>
+            <div class="form-row mb-2 d-md-none">
               <div class="col">&nbsp;</div>
               <div class="col-auto small">created: <?= $dto->id ? strings::asLocalDate(($dto->created)) : 'new' ?></div>
-              <?php if ( strtotime( $dto->updated) > strtotime( $dto->created)) {
+              <?php if (strtotime($dto->updated) > strtotime($dto->created)) {
                 printf(
                   '<div class="col-auto small">updated:%s</div>',
                   strings::asLocalDate($dto->updated)
 
                 );
-
               }  ?>
 
             </div>
@@ -70,6 +70,18 @@ $categories = $this->data->categories;  ?>
               </select>
 
             </div>
+
+            <?php if ($dto->id) {  ?>
+              <div class="col-auto pt-2 d-none d-md-block small">created: <?= $dto->id ? strings::asLocalDate(($dto->created)) : 'new' ?></div>
+              <?php if (strtotime($dto->updated) > strtotime($dto->created)) {
+                printf(
+                  '<div class="col-auto pt-2 d-none d-md-block  small">updated:%s</div>',
+                  strings::asLocalDate($dto->updated)
+
+                );
+              }  ?>
+
+            <?php }  ?>
 
           </div>
 
@@ -115,7 +127,8 @@ $categories = $this->data->categories;  ?>
             <div class="col-md-3 col-form-label">description</div>
 
             <div class="col-md mb-2">
-              <textarea class="form-control" name="description" placeholder="describe the need for this job ..." id="<?= $_uid = strings::rand() ?>"><?= $dto->description ?></textarea>
+              <textarea class="form-control" name="description" placeholder="describe the need for this job ..." required
+                id="<?= $_uid = strings::rand() ?>"><?= $dto->description ?></textarea>
 
             </div>
             <script>
@@ -165,16 +178,19 @@ $categories = $this->data->categories;  ?>
 
           </div>
 
+          <!-- contractor -->
           <div class="form-row">
             <div class="col-md-3 col-form-label"><?= config::label_contractor ?></div>
 
             <div class="col-md mb-2">
               <input type="text" class="form-control" value="<?= $dto->contractor_trading_name ?>" id="<?= $_uid = strings::rand() ?>">
+              <div id="<?= $_missingServices = strings::rand() ?>"></div>
 
             </div>
 
             <script>
               (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
+                let reqServices = $('input[name="required_services"]', '#<?= $_form ?>');
                 $('#<?= $_uid ?>').autofill({
                   autoFocus: true,
                   source: (request, response) => {
@@ -183,7 +199,7 @@ $categories = $this->data->categories;  ?>
                       data: {
                         action: 'search-contractor',
                         term: request.term,
-                        services: ''
+                        services: reqServices.val()
 
                       },
 
@@ -192,8 +208,8 @@ $categories = $this->data->categories;  ?>
                   },
                   select: (e, ui) => {
                     let o = ui.item;
-                    console.log(o);
                     $('input[name="contractor_id"]', '#<?= $_form ?>').val(o.id);
+                    $('#<?= $_form ?>').trigger('qualify-contractor');
 
                   },
 
@@ -321,6 +337,8 @@ $categories = $this->data->categories;  ?>
 
               });
 
+              $('#<?= $_form ?>').trigger('update-required-services');
+
             }
 
           })
@@ -397,7 +415,7 @@ $categories = $this->data->categories;  ?>
           })
           .on('delete-confirmed', function(e) {
             let jobline = Number($('input[name="job_line_id\[\]"]', this).val());
-            console.log(jobline);
+            // console.log(jobline);
 
             if (jobline > 0) {
               _.post({
@@ -411,6 +429,7 @@ $categories = $this->data->categories;  ?>
               }).then(d => {
                 if ('ack' == d.response) {
                   $(this).remove();
+                  $('#<?= $_form ?>').trigger('update-required-services');
 
                 } else {
                   _.growl(d);
@@ -460,6 +479,59 @@ $categories = $this->data->categories;  ?>
 
           });
 
+          $(this)
+            .on('qualify-contractor', function(e) {
+              let _form = $(this);
+              let _data = _form.serializeFormJSON();
+
+              if (Number(_data.contractor_id) > 0 && '' != _data.required_services) {
+
+                _.post({
+                  url: _.url('<?= $this->route ?>'),
+                  data: {
+                    action: 'get-contractor-by-id',
+                    id: _data.contractor_id
+
+                  },
+
+                }).then(d => {
+                  if ('ack' == d.response) {
+                    let requiredServices = String(_data.required_services).split(',');
+                    let contractorServices = String(d.data.services).split(',');
+                    let missingServices = [];
+                    let missingServicesNames = [];
+
+                    $.each(requiredServices, (i, s) => {
+                      if (contractorServices.indexOf(s) < 0 && missingServices.indexOf(s) < 0) {
+                        missingServices.push(s);
+                        missingServicesNames.push(cats[s]);
+
+                      }
+
+                    });
+
+                    if (missingServices.length > 0) {
+                      $('#<?= $_missingServices ?>')
+                        .addClass('text-danger font-italic small pl-2')
+                        .html('contractor does not provide ' + missingServicesNames.join(', '));
+
+                    } else {
+                      $('#<?= $_missingServices ?>').removeClass().html('');
+
+                    }
+
+                  } else {
+                    _.growl(d);
+
+                  }
+
+                });
+
+              }
+
+            })
+            .trigger('qualify-contractor');
+
         })
         .on('submit', function(e) {
           let _form = $(this);
@@ -483,6 +555,19 @@ $categories = $this->data->categories;  ?>
 
           // console.table( _data);
           return false;
+
+        })
+        .on('update-required-services', function(e) {
+
+          let services = [];
+          $('select[name="item_job_categories_id\[\]"]', this).each((i, el) => {
+            let service = $(el).val();
+            if (services.indexOf(service) < 0) services.push(service);
+
+          });
+
+          $('input[name="required_services"]', this).val(services.join(','));
+          $(this).trigger('qualify-contractor');
 
         });
 

@@ -11,6 +11,28 @@
 namespace cms\job;
 
 use strings;  ?>
+<style>
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .constrain {
+      max-width: 160px;
+    }
+
+  }
+
+  @media (min-width: 1024px) and (max-width: 1439px) {
+    .constrain {
+      max-width: 250px;
+    }
+
+  }
+
+  @media (min-width: 1440px) {
+    .constrain {
+      max-width: 300px;
+    }
+
+  }
+</style>
 
 <div class="table-responsive">
   <table class="table table-sm" id="<?= $tblID = strings::rand() ?>">
@@ -19,6 +41,7 @@ use strings;  ?>
         <td>#</td>
         <td>Property</td>
         <td>Contractor</td>
+        <td>Items</td>
         <td class="text-center">Status</td>
 
       </tr>
@@ -29,25 +52,46 @@ use strings;  ?>
       <?php while ($dto = $this->data->res->dto()) { ?>
         <tr data-id="<?= $dto->id ?>">
           <td class="small" line-number></td>
-          <td><?= $dto->address_street ?></td>
-          <td><?= $dto->contractor_trading_name ?></td>
+          <td>
+            <div class="constrain text-truncate">
+              <?= $dto->address_street ?>
+
+            </div>
+
+          </td>
+
+          <td>
+            <div class="constrain text-truncate">
+              <?= $dto->contractor_trading_name ?>
+
+            </div>
+
+          </td>
+
+          <td><?php
+              $lines = json_decode($dto->lines);
+              foreach ($lines as $line) {
+                // \sys::logger( sprintf('<%s> %s', print_r( $line, true), __METHOD__));
+                printf(
+                  '<div class="form-row mb-1"><div class="col-4">%s</div><div class="col">%s</div></div>',
+                  $line->item,
+                  $line->description
+
+                );
+              }
+
+              ?></td>
+
           <td class="text-center">
             <?php
-            if ( config::job_status_new == $dto->status) {
+            if (config::job_status_new == $dto->status) {
               print 'new';
-
-            }
-            elseif ( config::job_status_quote == $dto->status) {
+            } elseif (config::job_status_quote == $dto->status) {
               print 'quote';
-
-            }
-            elseif ( config::job_status_assigned == $dto->status) {
+            } elseif (config::job_status_assigned == $dto->status) {
               print 'assigned';
-
-            }
-            else {
+            } else {
               print $dto->status;
-
             } ?>
 
           </td>
