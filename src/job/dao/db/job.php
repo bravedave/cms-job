@@ -17,6 +17,8 @@ $dbc->defineField('properties_id', 'bigint');
 $dbc->defineField('contractor_id', 'text');
 $dbc->defineField('description', 'text');
 $dbc->defineField('status', 'int');
+$dbc->defineField('due', 'date');
+$dbc->defineField('job_payment', 'int');
 $dbc->defineField('updated', 'datetime');
 $dbc->defineField('created', 'datetime');
 

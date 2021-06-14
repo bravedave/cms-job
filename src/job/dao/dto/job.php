@@ -18,6 +18,8 @@ class job extends _dto {
   public $job_type = 0;
   public $description = '';
   public $status = 0;
+  public $due = '';
+  public $job_payment = 0;
 
   public $contractor_id = 0;
   public $contractor_trading_name = '';

@@ -204,6 +204,8 @@ class controller extends \Controller {
           'properties_id' => (int)$this->getPost('properties_id'),
           'job_type' => (int)$this->getPost( 'job_type'),
           'status' => (int)$this->getPost( 'status'),
+          'due' => $this->getPost( 'due'),
+          'job_payment' => (int)$this->getPost('job_payment'),
           'description' => (string)$this->getPost( 'description'),
 
         ];

@@ -23,6 +23,20 @@ $categories = $this->data->categories;  ?>
   <input type="hidden" name="contractor_id" value="<?= $dto->contractor_id ?>">
   <input type="hidden" name="required_services">
 
+  <style>
+    #<?= $_form ?>button:focus {
+      box-shadow: none;
+    }
+
+    @media (max-width: 768px) {
+      [item-row] {
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 1rem;
+      }
+
+    }
+  </style>
+
   <div class="modal fade" tabindex="-1" role="dialog" id="<?= $_modal = strings::rand() ?>" aria-labelledby="<?= $_modal ?>Label" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
       <div class="modal-content">
@@ -36,7 +50,7 @@ $categories = $this->data->categories;  ?>
 
         <div class="modal-body">
           <?php if ($dto->id) {  ?>
-            <div class="form-row mb-2 d-md-none">
+            <div class="form-row mb-2">
               <div class="col">&nbsp;</div>
               <div class="col-auto small">created: <?= $dto->id ? strings::asLocalDate(($dto->created)) : 'new' ?></div>
               <?php if (strtotime($dto->updated) > strtotime($dto->created)) {
@@ -51,10 +65,10 @@ $categories = $this->data->categories;  ?>
 
           <?php }  ?>
 
-          <div class="form-row mb-2">
-            <div class="col-3 col-form-label">status</div>
+          <div class="form-row">
+            <div class="col-md-3 col-form-label">status</div>
 
-            <div class="col">
+            <div class="col mb-2">
               <select name="status" class="form-control">
                 <?php
                 foreach (config::job_status as $k => $label) {
@@ -71,24 +85,49 @@ $categories = $this->data->categories;  ?>
 
             </div>
 
-            <?php if ($dto->id) {  ?>
-              <div class="col-auto pt-2 d-none d-md-block small">created: <?= $dto->id ? strings::asLocalDate(($dto->created)) : 'new' ?></div>
-              <?php if (strtotime($dto->updated) > strtotime($dto->created)) {
-                printf(
-                  '<div class="col-auto pt-2 d-none d-md-block  small">updated:%s</div>',
-                  strings::asLocalDate($dto->updated)
+            <div class="col-lg-6 mb-2">
+              <div class="form-row">
+                <div class="col-lg-auto col-form-label">due</div>
 
-                );
-              }  ?>
+                <div class="col">
+                  <div class="input-group">
+                    <input name="due" class="form-control" type="date" id="<?= $_uid = strings::rand() ?>" value="<?php if (strtotime($dto->due) > 0) print $dto->due; ?>">
 
-            <?php }  ?>
+                    <div class="input-group-append">
+                      <button type="button" class="btn input-group-text" id="<?= $_uid ?>7">7</button>
+                    </div>
+
+                    <div class="input-group-append">
+                      <button type="button" class="btn input-group-text" id="<?= $_uid ?>14">14</button>
+                    </div>
+
+                    <div class="input-group-append">
+                      <button type="button" class="btn input-group-text" id="<?= $_uid ?>28">28</button>
+                    </div>
+
+                  </div>
+
+                  <script>
+                    (_ => {
+                      $('#<?= $_uid ?>7').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+7 days')) ?>'));
+                      $('#<?= $_uid ?>14').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+14 days')) ?>'));
+                      $('#<?= $_uid ?>28').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+28 days')) ?>'));
+
+                    })(_brayworth_);
+                  </script>
+
+                </div>
+
+              </div>
+
+            </div>
 
           </div>
 
           <div class="form-row mb-2">
-            <div class="col-3">type</div>
+            <div class="col-md-3 col-form-label">type</div>
 
-            <div class="col">
+            <div class="col pt-md-2">
               <div class="form-check form-check-inline">
                 <input type="radio" class="form-check-input" name="job_type" value="<?= config::job_type_order ?>" id="<?= $_uid = strings::rand() ?>" <?php if (config::job_type_order == $dto->job_type) print 'checked'; ?>>
 
@@ -123,12 +162,39 @@ $categories = $this->data->categories;  ?>
 
           </div>
 
+          <div class="form-row mb-2">
+            <div class="col-md-3 col-form-label">payment</div>
+
+            <div class="col pt-md-2">
+              <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" name="job_payment" value="<?= config::job_payment_owner ?>" id="<?= $_uid = strings::rand() ?>" <?php if (config::job_payment_owner == $dto->job_payment) print 'checked'; ?>>
+
+                <label class="form-check-label" for="<?= $_uid ?>">
+                  Owner
+
+                </label>
+
+              </div>
+
+              <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" name="job_payment" value="<?= config::job_payment_tenant ?>" id="<?= $_uid = strings::rand() ?>" <?php if (config::job_payment_tenant == $dto->job_payment) print 'checked'; ?>>
+
+                <label class="form-check-label" for="<?= $_uid ?>">
+                  Tenant
+
+                </label>
+
+              </div>
+
+            </div>
+
+          </div>
+
           <div class="form-row">
             <div class="col-md-3 col-form-label">description</div>
 
             <div class="col-md mb-2">
-              <textarea class="form-control" name="description" placeholder="describe the need for this job ..." required
-                id="<?= $_uid = strings::rand() ?>"><?= $dto->description ?></textarea>
+              <textarea class="form-control" name="description" placeholder="describe the need for this job ..." required id="<?= $_uid = strings::rand() ?>"><?= $dto->description ?></textarea>
 
             </div>
             <script>
@@ -145,7 +211,7 @@ $categories = $this->data->categories;  ?>
 
             </div>
 
-            <div class="col-auto mb-2 d-none" id="<?= $_uid ?>suburb_div">
+            <div class="col col-md-auto mb-2 d-none" id="<?= $_uid ?>suburb_div">
               <div class="form-control" id="<?= $_uid ?>suburb"><?= $dto->address_suburb ?></div>
             </div>
             <div class="col-auto mb-2 d-none" id="<?= $_uid ?>postcode_div">
@@ -227,7 +293,7 @@ $categories = $this->data->categories;  ?>
 
           <div class="form-row">
             <div class="col" id="<?= $_uidItemContainer = strings::rand() ?>">
-              <div class="border-bottom d-none" caption>items..</div>
+              <div class="d-none col-form-label" caption>items..</div>
 
             </div>
 
@@ -264,7 +330,7 @@ $categories = $this->data->categories;  ?>
         $.each(_.catSort(cats), (i, c) => $('<option></option>').val(c[0]).html(c[1]).appendTo(cat));
         cat.on('change', e => row.trigger('category-change'));
 
-        $('<div class="col mb-2" category></div>').append(cat).appendTo(row);
+        $('<div class="col-md mb-2" category></div>').append(cat).appendTo(row);
 
         let itemSub = $('<select name="item_sub[]" class="form-control" disabled></select>');
         itemSub.append('<option value="">select item</option>');

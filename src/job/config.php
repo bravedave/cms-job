@@ -12,7 +12,7 @@
 namespace cms\job;
 
 class config extends \config {
-	const cms_job_db_version = 0.7;
+	const cms_job_db_version = 0.9;
 
   const label = 'JOB';
   const label_contractor_add = 'New Contractor';
@@ -35,6 +35,9 @@ class config extends \config {
 	const job_type_order = 0;
 	const job_type_recurring = 1;
 	const job_type_quote = 2;
+
+	const job_payment_owner = 0;
+	const job_payment_tenant = 1;
 
 	const job_status = [
 		0 => 'new',

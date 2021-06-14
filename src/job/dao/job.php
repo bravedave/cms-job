@@ -23,21 +23,30 @@ class job extends _dao {
   protected $template = __NAMESPACE__ . '\dto\job';
 
   public function getMatrix() {
-    $sql =
+    $sql = sprintf(
     'SELECT
         job.*,
         p.address_street,
         p.property_manager,
-        c.trading_name `contractor_trading_name`
+        c.trading_name `contractor_trading_name`,
+        CASE
+        WHEN p.property_manager > 0 THEN u.name
+        WHEN cp.PropertyManager > %s THEN uc.name
+        ELSE %s
+        END pm
       FROM
         `job`
         LEFT JOIN `properties` p on p.id = job.properties_id
         LEFT JOIN `job_contractors` c on c.id = job.contractor_id
         LEFT JOIN `console_properties` cp on cp.properties_id = p.id
         LEFT JOIN `users` u ON u.id = p.property_manager
-        LEFT JOIN `users` uc ON uc.console_code = cp.PropertyManager';
+        LEFT JOIN `users` uc ON uc.console_code = cp.PropertyManager',
+      $this->quote(''),
+      $this->quote('')
 
-    \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
+    );
+
+    // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
 
     $this->Q(
       sprintf(

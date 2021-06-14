@@ -12,13 +12,25 @@ namespace cms\job;
 
 use strings;  ?>
 <style>
-  @media (min-width: 768px) and (max-width: 1023px) {
-    .constrain { width: 168px; }
-    .constrained { max-width: 160px; }
+  @media (max-width: 768px) {
+    .constrain { width: 208px; }
+    .constrained { max-width: 200px; }
 
   }
 
-  @media (min-width: 1024px) and (max-width: 1439px) {
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .constrain { width: 148px; }
+    .constrained { max-width: 140px; }
+
+  }
+
+  @media (min-width: 1024px) and (max-width: 1199px) {
+    .constrain { width: 188px; }
+    .constrained { max-width: 180px; }
+
+  }
+
+  @media (min-width: 1200px) and (max-width: 1439px) {
     .constrain { width: 228px; }
     .constrained { max-width: 220px; }
 
@@ -36,10 +48,11 @@ use strings;  ?>
     <thead class="small">
       <tr>
         <td>#</td>
-        <td>Property</td>
-        <td>Contractor</td>
-        <td>Items</td>
+        <td class="constrain">Property</td>
+        <td class="d-none d-md-table-cell constrain">Contractor</td>
+        <td class="d-none d-md-table-cell">Items</td>
         <td class="text-center">Status</td>
+        <td class="text-center">PM</td>
 
       </tr>
 
@@ -48,10 +61,12 @@ use strings;  ?>
     <tbody>
       <?php while ($dto = $this->data->res->dto()) {
         $lines = json_decode($dto->lines) ?? [];
+        $pm = strings::initials($dto->pm);
         ?>
         <tr
           data-id="<?= $dto->id ?>"
           data-line_count="<?= count($lines) ?>"
+          data-pm="<?= $pm ?>"
           >
           <td class="small" line-number></td>
           <td class="constrain">
@@ -59,10 +74,14 @@ use strings;  ?>
               <?= $dto->address_street ?>
 
             </div>
+            <div class="d-md-none constrained text-truncate">
+              <?= $dto->contractor_trading_name ?>
+
+            </div>
 
           </td>
 
-          <td class="constrain">
+          <td class="d-none d-md-table-cell constrain">
             <div class="constrained text-truncate">
               <?= $dto->contractor_trading_name ?>
 
@@ -70,13 +89,13 @@ use strings;  ?>
 
           </td>
 
-          <td>
+          <td class="d-none d-md-table-cell">
             <?php
               if ( $lines) {
                 foreach ($lines as $line) {
                   // \sys::logger( sprintf('<%s> %s', print_r( $line, true), __METHOD__));
                   printf(
-                    '<div class="form-row mb-1"><div class="col-4">%s</div><div class="col">%s</div></div>',
+                    '<div class="form-row mb-1"><div class="col-4 col-md-3">%s</div><div class="col">%s</div></div>',
                     $line->item,
                     $line->description
 
@@ -87,9 +106,7 @@ use strings;  ?>
               else {
                 print strings::brief( $dto->description);
 
-              }
-
-              ?>
+              } ?>
 
           </td>
 
@@ -106,6 +123,8 @@ use strings;  ?>
             } ?>
 
           </td>
+
+          <td class="text-center"><?= $pm ?></td>
 
         </tr>
 
