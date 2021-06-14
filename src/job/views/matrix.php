@@ -13,23 +13,20 @@ namespace cms\job;
 use strings;  ?>
 <style>
   @media (min-width: 768px) and (max-width: 1023px) {
-    .constrain {
-      max-width: 160px;
-    }
+    .constrain { width: 168px; }
+    .constrained { max-width: 160px; }
 
   }
 
   @media (min-width: 1024px) and (max-width: 1439px) {
-    .constrain {
-      max-width: 250px;
-    }
+    .constrain { width: 228px; }
+    .constrained { max-width: 220px; }
 
   }
 
   @media (min-width: 1440px) {
-    .constrain {
-      max-width: 300px;
-    }
+    .constrain { width: 308px; }
+    .constrained { max-width: 300px; }
 
   }
 </style>
@@ -49,38 +46,52 @@ use strings;  ?>
     </thead>
 
     <tbody>
-      <?php while ($dto = $this->data->res->dto()) { ?>
-        <tr data-id="<?= $dto->id ?>">
+      <?php while ($dto = $this->data->res->dto()) {
+        $lines = json_decode($dto->lines) ?? [];
+        ?>
+        <tr
+          data-id="<?= $dto->id ?>"
+          data-line_count="<?= count($lines) ?>"
+          >
           <td class="small" line-number></td>
-          <td>
-            <div class="constrain text-truncate">
+          <td class="constrain">
+            <div class="constrained text-truncate">
               <?= $dto->address_street ?>
 
             </div>
 
           </td>
 
-          <td>
-            <div class="constrain text-truncate">
+          <td class="constrain">
+            <div class="constrained text-truncate">
               <?= $dto->contractor_trading_name ?>
 
             </div>
 
           </td>
 
-          <td><?php
-              $lines = json_decode($dto->lines);
-              foreach ($lines as $line) {
-                // \sys::logger( sprintf('<%s> %s', print_r( $line, true), __METHOD__));
-                printf(
-                  '<div class="form-row mb-1"><div class="col-4">%s</div><div class="col">%s</div></div>',
-                  $line->item,
-                  $line->description
+          <td>
+            <?php
+              if ( $lines) {
+                foreach ($lines as $line) {
+                  // \sys::logger( sprintf('<%s> %s', print_r( $line, true), __METHOD__));
+                  printf(
+                    '<div class="form-row mb-1"><div class="col-4">%s</div><div class="col">%s</div></div>',
+                    $line->item,
+                    $line->description
 
-                );
+                  );
+                }
+
+              }
+              else {
+                print strings::brief( $dto->description);
+
               }
 
-              ?></td>
+              ?>
+
+          </td>
 
           <td class="text-center">
             <?php
@@ -147,6 +158,27 @@ use strings;  ?>
           let _tr = $(this);
           let _data = _tr.data();
 
+          _context.append($('<a href="#" class="font-weight-bold"><i class="bi bi-pencil"></i>edit</a>').on('click', function(e) {
+            e.stopPropagation();
+            // e.preventDefault();
+
+            _tr.trigger('edit');
+            _context.close();
+
+          }));
+
+          if ( 0 == Number(_data.line_count)) {
+            _context.append($('<a href="#"><i class="bi bi-trash"></i>delete</a>').on('click', function(e) {
+              e.stopPropagation();
+              // e.preventDefault();
+
+              _tr.trigger('delete');
+              _context.close();
+
+            }));
+
+          }
+
           _context.append('<hr>');
           _context.append($('<a href="#">close menu</a>').on('click', function(e) {
             e.stopPropagation();
@@ -154,12 +186,53 @@ use strings;  ?>
 
             _context.close();
 
-
           }));
 
           _context.open(e);
 
-        });;
+        })
+        .on('delete', function( e) {
+          let _tr = $(this);
+
+          _.ask.alert({
+            title : 'confirm delete',
+            text : 'Are you Sure ?',
+            buttons : {
+              yes : function(e) {
+                _tr.trigger('delete-confirmed');
+                $(this).modal('hide');
+
+              }
+
+            }
+
+          });
+
+        })
+        .on('delete-confirmed', function( e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _tr.addClass('text-muted');
+
+          _.post({
+            url : _.url('<?= $this->route ?>'),
+            data : {
+              action : 'job-delete',
+              id : _data.id
+
+            },
+
+          }).then( d => {
+            _.growl( d);
+            if ( 'ack' == d.response) {
+              _tr.remove();
+
+            }
+
+          });
+
+        });
 
     });
 

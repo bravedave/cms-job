@@ -27,11 +27,17 @@ class job extends _dao {
     'SELECT
         job.*,
         p.address_street,
+        p.property_manager,
         c.trading_name `contractor_trading_name`
       FROM
         `job`
-        LEFT JOIN properties p on p.id = job.properties_id
-        LEFT JOIN job_contractors c on c.id = job.contractor_id';
+        LEFT JOIN `properties` p on p.id = job.properties_id
+        LEFT JOIN `job_contractors` c on c.id = job.contractor_id
+        LEFT JOIN `console_properties` cp on cp.properties_id = p.id
+        LEFT JOIN `users` u ON u.id = p.property_manager
+        LEFT JOIN `users` uc ON uc.console_code = cp.PropertyManager';
+
+    \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
 
     $this->Q(
       sprintf(
@@ -70,12 +76,15 @@ class job extends _dao {
 
         // );
 
-        if ( ! isset( $items[ $dto->id])) $items[ $dto->id] = [];
-        $items[ $dto->id][] = (object)[
-          'item' => $dto->item,
-          'description' => $dto->description,
+        if ( $dto->item || $dto->description) {
+          if ( ! isset( $items[ $dto->id])) $items[ $dto->id] = [];
+          $items[ $dto->id][] = (object)[
+            'item' => $dto->item,
+            'description' => $dto->description,
 
-        ];
+          ];
+
+        }
 
         return $dto;
 

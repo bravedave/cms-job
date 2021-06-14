@@ -46,6 +46,7 @@
         ],
         "import-contacts": "cms\\console\\utility::import_contacts",
         "import-contractors": "cms\\job\\utility::contractors_import",
-        "reset-contractors": "cms\\job\\utility::contractors_reset"
+        "reset-contractors": "cms\\job\\utility::contractors_reset",
+        "import-properties": "cms\\console\\utility::import_properties"
     }
 }
