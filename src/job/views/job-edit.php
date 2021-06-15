@@ -38,7 +38,7 @@ $categories = $this->data->categories;  ?>
   </style>
 
   <div class="modal fade" tabindex="-1" role="dialog" id="<?= $_modal = strings::rand() ?>" aria-labelledby="<?= $_modal ?>Label" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header <?= theme::modalHeader() ?>">
           <h5 class="modal-title" id="<?= $_modal ?>Label"><?= $this->title ?></h5>
@@ -465,8 +465,8 @@ $categories = $this->data->categories;  ?>
             let _me = $(this);
 
             _.ask.alert({
-              title: 'Confirm',
-              text: 'Are you Sure ?',
+              title: 'Confirm Row Delete',
+              text: 'Note - action is immediate<br>(does not require saving)',
               buttons: {
                 yes: function(e) {
                   $(this).modal('hide');
@@ -476,7 +476,7 @@ $categories = $this->data->categories;  ?>
 
               }
 
-            })
+            });
 
           })
           .on('delete-confirmed', function(e) {
@@ -520,7 +520,11 @@ $categories = $this->data->categories;  ?>
       }
 
       $('#<?= $_form ?>')
-        .on('item-add', e => newRow())
+        .on('item-add', e => {
+          let row = newRow();
+          $('select[name="item_job_categories_id\[\]"]', row).focus();
+
+        })
         .one('items-init', function(e) {
           let initItems = <?= json_encode($dto->lines) ?>;
           // console.log(initItems);
