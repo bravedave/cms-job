@@ -31,14 +31,14 @@ use strings;  ?>
   }
 
   @media (min-width: 1200px) and (max-width: 1439px) {
-    .constrain { width: 228px; }
-    .constrained { max-width: 220px; }
+    .constrain { width: 208px; }
+    .constrained { max-width: 200px; }
 
   }
 
   @media (min-width: 1440px) {
-    .constrain { width: 308px; }
-    .constrained { max-width: 300px; }
+    .constrain { width: 228px; }
+    .constrained { max-width: 220px; }
 
   }
 </style>
