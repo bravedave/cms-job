@@ -2,6 +2,7 @@
 
 WD=`pwd`
 PORT=$[RANDOM%1000+1024]
+PORT=8991
 php=php
 if [[ -x /usr/bin/php8 ]]; then php=php8; fi
 

@@ -244,9 +244,15 @@ $categories = $this->data->categories;  ?>
 
           </div>
 
+          <div class="form-row d-none" id="<?= $_uidTenants = strings::rand() ?>-envelope">
+            <div class="col-md-3 col-form-label">tenants</div>
+            <div class="col" id="<?= $_uidTenants ?>"></div>
+
+          </div>
+
           <!-- contractor -->
           <div class="form-row">
-            <div class="col-md-3 col-form-label"><?= config::label_contractor ?></div>
+            <div class="col-md-3 col-form-label"><?= strtolower( config::label_contractor) ?></div>
 
             <div class="col-md mb-2">
               <input type="text" class="form-control" value="<?= $dto->contractor_trading_name ?>" id="<?= $_uid = strings::rand() ?>">
@@ -520,6 +526,113 @@ $categories = $this->data->categories;  ?>
       }
 
       $('#<?= $_form ?>')
+        .on('get-tenants', function(e) {
+          let _form = $(this);
+          let _data = _form.serializeFormJSON();
+
+          // console.log('get-tenants', _data.properties_id);
+          // console.log(_data);
+          if (_data.properties_id) {
+            _.post({
+              url: _.url('leasing'),
+              data: {
+                action: 'get-tenants-for-property',
+                id: _data.properties_id
+
+              }
+
+            }).then(d => {
+              if ('ack' == d.response) {
+                $('#<?= $_uidTenants ?>').html('');
+                $.each(d.tenants, (i, t) => {
+                  // console.log(t);
+                  let row = $('<div class="form-row mb-2"></div>').appendTo('#<?= $_uidTenants ?>');
+                  $('<div class="col-auto p-2"></div>').html(t.name).appendTo(row);
+
+                  let col = $('<div class="col-auto"></div>').appendTo(row);
+                  let m = String(t.phone);
+                  if (m.IsMobilePhone()) {
+                    let ig = $('<div class="input-group"></div>').appendTo(col);
+                    $('<input type="text" class="form-control" readonly>').val(m.AsMobilePhone()).appendTo(ig);
+
+                    let btn = $('<button type="button" class="btn input-group-text"><i class="bi bi-chat-dots"></i></button>');
+                    btn.on('click', function(e) {
+                      e.stopPropagation();
+                      e.preventDefault();
+
+                      if (!!window._cms_) {
+                        _cms_.modal.sms({
+                          to: m
+                        });
+
+                      } else {
+                        _.ask.warning({
+                          title: 'Warning',
+                          text: 'no SMS program'
+                        });
+
+                      }
+
+                    });
+
+                    $('<div class="input-group-append"></div>').append(btn).appendTo(ig);
+
+                  } else if (m.IsPhone()) {
+                    col.html(m.AsLocalPhone()).addClass('p-2');
+
+                  }
+
+                  col = $('<div class="col"></div>').appendTo(row);
+                  if (String(t.email).isEmail()) {
+                    let ig = $('<div class="input-group"></div>').appendTo(col);
+                    $('<input type="text" class="form-control" readonly>').val(t.email).appendTo(ig);
+
+                    let btn = $('<button type="button" class="btn input-group-text"><i class="bi bi-cursor"></i></button>');
+                    btn.on('click', function(e) {
+                      e.stopPropagation();
+                      e.preventDefault();
+
+                      if (!!_.email.activate) {
+                        _.email.activate({
+                          to: _.email.rfc922(t)
+                        });
+
+                      } else {
+                        _.ask.warning({
+                          title: 'Warning',
+                          text: 'no email program'
+                        });
+
+                      }
+
+                    });
+
+                    $('<div class="input-group-append"></div>').append(btn).appendTo(ig);
+
+                  } else {
+                    col.html(t.email).addClass('p-2');
+
+                  }
+
+                });
+
+                $('#<?= $_uidTenants ?>-envelope').removeClass('d-none');
+                // console.log($('#<?= $_uidTenants ?>-envelope'));
+
+              } else {
+                _.growl(d);
+                $('#<?= $_uidTenants ?>-envelope').addClass('d-none');
+
+              }
+
+            });
+
+          } else {
+            $('#<?= $_uidTenants ?>-envelope').addClass('d-none');
+
+          }
+
+        })
         .on('item-add', e => {
           let row = newRow();
           $('select[name="item_job_categories_id\[\]"]', row).focus();
@@ -601,6 +714,9 @@ $categories = $this->data->categories;  ?>
 
             })
             .trigger('qualify-contractor');
+
+
+          $(this).trigger('get-tenants');
 
         })
         .on('submit', function(e) {

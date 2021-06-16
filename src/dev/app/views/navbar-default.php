@@ -49,6 +49,14 @@
 
         </li>
 
+        <li class="nav-item">
+          <a class="nav-link" href="<?= strings::url('offertolease') ?>">
+            Offer to Lease
+
+          </a>
+
+        </li>
+
         <li class="nav-item dropdown">
           <a class="nav-link pb-0 dropdown-toggle" href="#" id="navbarDropdown" role="button" aria-label="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class="bi bi-gear"></i>
