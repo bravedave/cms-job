@@ -11,7 +11,11 @@
 namespace cms\job;
 
 use application;
-use dvc\service;
+use cms;
+use dvc\{
+  service,
+  offertolease
+};
 use green;
 
 class utility extends service {
@@ -36,13 +40,13 @@ class utility extends service {
     $db = \sys::dbi();
 
     $sql = sprintf(
-      'SELECT `id` FROM users where name = %s',
+      'SELECT `id` FROM users where `name` = %s',
       $db->quote('Administrator')
 
     );
 
     if (file_exists($passFile = sprintf('%s/dev-password.txt', config::dataPath()))) {
-      if ($password = file_get_contents($passFile)) {
+      if ($password = trim( file_get_contents($passFile))) {
         if ($res = $db->Result($sql)) {
           if ($dto = $res->dto()) {
             $a = [
@@ -89,6 +93,10 @@ class utility extends service {
 
     config::cms_job_checkdatabase();
 
+    cms\keyregister\config::keyregister_checkdatabase();
+
+    offertolease\config::offertolease_checkdatabase();
+
     green\baths\config::green_baths_checkdatabase();
     green\beds_list\config::green_beds_list_checkdatabase();
 
@@ -114,6 +122,7 @@ class utility extends service {
     config::route_register('otl', 'dvc\\offertolease\\otlclient');
     config::route_register('banklink', 'cms\\banklink\controller');
     config::route_register('sms', 'sms\\controller');
+    config::route_register('keyregister', 'cms\\keyregister\\controller');
 
     echo (sprintf('%s : %s%s', 'updated (dev)', __METHOD__, PHP_EOL));
   }

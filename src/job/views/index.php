@@ -164,6 +164,14 @@ use strings;  ?>
     })(_brayworth_);
   </script>
 
+  <li class="nav-item">
+    <a class="nav-link pl-4" href="<?= strings::url('keyregister') ?>">
+      <i class="bi bi-key"></i> Key Register
+
+    </a>
+
+  </li>
+
   <li class="nav-item h6 pt-3 pl-3">
     Reference Documents
 

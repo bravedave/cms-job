@@ -1,70 +1,77 @@
 {
-    "name": "bravedave/cms-job",
-    "description": "JOB's module for CMS",
-    "minimum-stability": "dev",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Dave Bray",
-            "email": "david@brayworth.com.au"
-        }
-    ],
-    "repositories": {
-        "cms-leasing": {
-            "type": "git",
-            "url": "https://github.com/bravedave/cms-leasing"
-        },
-        "sms": {
-            "type": "git",
-            "url": "https://github.com/bravedave/sms"
-        },
-        "offer_to_lease": {
-            "type": "git",
-            "url": "https://github.com/bravedave/offer_to_lease"
-        },
-        "cms-console": {
-            "type": "git",
-            "url": "https://github.com/bravedave/cms-console"
-        },
-        "dvc": {
-            "type": "git",
-            "url": "https://github.com/bravedave/dvc"
-        }
-    },
-    "require": {
-        "bravedave/cms-console": "*",
-        "bravedave/dvc": "*",
-        "bravedave/green": "*",
-        "bravedave/offer_to_lease": "dev-master",
-        "bravedave/cms-leasing": "dev-main"
-    },
-    "require-dev": {
-        "ext-apcu": "*",
-        "matthiasmullie/scrapbook": "*"
-    },
-    "autoload": {
-        "psr-4": {
-            "cms\\job\\": "src/job/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "": "src/dev/app/"
-        }
-    },
-    "scripts": {
-        "post-update-cmd": [
-            "cms\\console\\utility::upgrade",
-            "cms\\console\\utility::upgrade_dev",
-            "cms\\job\\utility::upgrade",
-            "cms\\job\\utility::upgrade_dev"
-        ],
-        "create-dev-user": [
-            "cms\\job\\utility::devuser"
-        ],
-        "import-contacts": "cms\\console\\utility::import_contacts",
-        "import-contractors": "cms\\job\\utility::contractors_import",
-        "reset-contractors": "cms\\job\\utility::contractors_reset",
-        "import-properties": "cms\\console\\utility::import_properties"
+  "name": "bravedave/cms-job",
+  "description": "JOB's module for CMS",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Dave Bray",
+      "email": "david@brayworth.com.au"
     }
+  ],
+  "repositories": {
+    "cms-keyregister": {
+      "type": "git",
+      "url": "https://github.com/bravedave/cms-keyregister"
+    },
+    "cms-leasing": {
+      "type": "git",
+      "url": "https://github.com/bravedave/cms-leasing"
+    },
+    "sms": {
+      "type": "git",
+      "url": "https://github.com/bravedave/sms"
+    },
+    "offer_to_lease": {
+      "type": "git",
+      "url": "https://github.com/bravedave/offer_to_lease"
+    },
+    "cms-console": {
+      "type": "git",
+      "url": "https://github.com/bravedave/cms-console"
+    },
+    "dvc": {
+      "type": "git",
+      "url": "https://github.com/bravedave/dvc"
+    }
+  },
+  "require": {
+    "bravedave/cms-console": "*",
+    "bravedave/dvc": "*",
+    "bravedave/green": "*",
+    "bravedave/offer_to_lease": "*",
+    "bravedave/cms-leasing": "*",
+    "bravedave/cms-keyregister": "*"
+  },
+  "require-dev": {
+    "ext-apcu": "*",
+    "matthiasmullie/scrapbook": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "cms\\job\\": "src/job/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "": "src/dev/app/"
+    }
+  },
+  "scripts": {
+    "post-update-cmd": [
+      "cms\\console\\utility::upgrade",
+      "cms\\console\\utility::upgrade_dev",
+      "cms\\job\\utility::upgrade",
+      "cms\\job\\utility::upgrade_dev"
+    ],
+    "create-dev-user": [
+      "cms\\job\\utility::devuser"
+    ],
+    "import-contacts": "cms\\console\\utility::import_contacts",
+    "import-contractors": "cms\\job\\utility::contractors_import",
+    "reset-contractors": "cms\\job\\utility::contractors_reset",
+    "import-properties": "cms\\console\\utility::import_properties",
+    "import-keyregister": "cms\\keyregister\\utility::import"
+  }
 }

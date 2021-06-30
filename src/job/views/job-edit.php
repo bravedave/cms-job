@@ -203,46 +203,58 @@ $categories = $this->data->categories;  ?>
 
           </div>
 
+          <!-- --[property]-- -->
           <div class="form-row">
             <div class="col-md-3 col-form-label">property</div>
 
-            <div class="col-md mb-2">
-              <input type="text" class="form-control" value="<?= $dto->address_street ?>" id="<?= $_uid = strings::rand() ?>">
+            <div class="col">
+              <div class="form-row">
+                <div class="col-md mb-2">
+                  <input type="text" class="form-control" value="<?= $dto->address_street ?>" id="<?= $_uid = strings::rand() ?>">
+
+                </div>
+
+                <div class="col col-md-auto mb-2 d-none" id="<?= $_uid ?>suburb_div">
+                  <div class="form-control" id="<?= $_uid ?>suburb"><?= $dto->address_suburb ?></div>
+                </div>
+                <div class="col-auto mb-2 d-none" id="<?= $_uid ?>postcode_div">
+                  <div class="form-control" id="<?= $_uid ?>postcode"><?= $dto->address_postcode ?></div>
+                </div>
+                <script>
+                  (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
+                    $('#<?= $_uid ?>').autofill({
+                      autoFocus: true,
+                      source: _.search.address,
+                      select: (e, ui) => {
+                        let o = ui.item;
+                        // console.log( o);
+                        $('input[name="properties_id"]', '#<?= $_form ?>').val(o.id);
+                        $('#<?= $_uid ?>suburb').html(o.suburb);
+                        $('#<?= $_uid ?>postcode').html(o.postcode);
+                        $('#<?= $_uid ?>suburb_div, #<?= $_uid ?>postcode_div').removeClass('d-none');
+
+                        $('#<?= $_form ?>').trigger('get-keyset');
+
+                      },
+
+                    });
+
+                    if (Number($('input[name="properties_id"]', '#<?= $_form ?>').val()) > 0) {
+                      $('#<?= $_uid ?>suburb_div, #<?= $_uid ?>postcode_div').removeClass('d-none');
+
+                    }
+
+                  }))(_brayworth_);
+                </script>
+
+              </div>
+
+              <div id="<?= $_uidKeyRow = strings::rand() ?>"></div>
 
             </div>
-
-            <div class="col col-md-auto mb-2 d-none" id="<?= $_uid ?>suburb_div">
-              <div class="form-control" id="<?= $_uid ?>suburb"><?= $dto->address_suburb ?></div>
-            </div>
-            <div class="col-auto mb-2 d-none" id="<?= $_uid ?>postcode_div">
-              <div class="form-control" id="<?= $_uid ?>postcode"><?= $dto->address_postcode ?></div>
-            </div>
-            <script>
-              (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
-                $('#<?= $_uid ?>').autofill({
-                  autoFocus: true,
-                  source: _.search.address,
-                  select: (e, ui) => {
-                    let o = ui.item;
-                    // console.log( o);
-                    $('input[name="properties_id"]', '#<?= $_form ?>').val(o.id);
-                    $('#<?= $_uid ?>suburb').html(o.suburb);
-                    $('#<?= $_uid ?>postcode').html(o.postcode);
-                    $('#<?= $_uid ?>suburb_div, #<?= $_uid ?>postcode_div').removeClass('d-none');
-
-                  },
-
-                });
-
-                if (Number($('input[name="properties_id"]', '#<?= $_form ?>').val()) > 0) {
-                  $('#<?= $_uid ?>suburb_div, #<?= $_uid ?>postcode_div').removeClass('d-none');
-
-                }
-
-              }))(_brayworth_);
-            </script>
 
           </div>
+
 
           <div class="form-row d-none" id="<?= $_uidTenants = strings::rand() ?>-envelope">
             <div class="col-md-3 col-form-label">tenants</div>
@@ -252,7 +264,7 @@ $categories = $this->data->categories;  ?>
 
           <!-- contractor -->
           <div class="form-row">
-            <div class="col-md-3 col-form-label"><?= strtolower( config::label_contractor) ?></div>
+            <div class="col-md-3 col-form-label"><?= strtolower(config::label_contractor) ?></div>
 
             <div class="col-md mb-2">
               <input type="text" class="form-control" value="<?= $dto->contractor_trading_name ?>" id="<?= $_uid = strings::rand() ?>">
@@ -526,6 +538,70 @@ $categories = $this->data->categories;  ?>
       }
 
       $('#<?= $_form ?>')
+        .on('get-keyset', function(e) {
+          let _form = $(this);
+          let _data = _form.serializeFormJSON();
+
+          console.log('get-keyset');
+
+          if (Number(_data.properties_id) > 0) {
+            _.post({
+              url: _.url('keyregister'),
+              data: {
+                action: 'get-keys-for-property',
+                id: _data.properties_id
+
+              },
+
+            }).then(d => {
+              console.log(d);
+
+              $('#<?= $_uidKeyRow ?>')
+                .html('')
+                .addClass('form-row mb-1');
+
+              // $('<div class="col-2 pt-2">Keys</div>').appendTo('#<?= $_uidKeyRow ?>');
+              let col = $('<div class="col pt-2"></div>').appendTo('#<?= $_uidKeyRow ?>');
+
+              (row => {
+                // title row
+                $('<div class="col-2">KeySet</div>').appendTo(row)
+                $('<div class="col-2">Type</div>').appendTo(row)
+                $('<div class="col">Location/Person</div>').appendTo(row)
+
+              })($('<div class="form-row mb-2 small border-bottom"></div>').appendTo(col));
+
+
+              $.each(d.data, (i, keyset) => {
+                let row = $('<div class="form-row mb-2"></div>').appendTo(col);
+
+                $('<div class="col-2"></div>').html(keyset.keyset).appendTo(row)
+                $('<div class="col-2 text-truncate"></div>')
+                  .html(
+                    <?= \cms\keyregister\config::keyset_management ?> == keyset.keyset_type ?
+                    '<?= \cms\keyregister\config::keyset_management_label ?>' :
+                    (
+                      <?= \cms\keyregister\config::keyset_tenant ?> == keyset.keyset_type ?
+                      '<?= \cms\keyregister\config::keyset_tenant_label ?>' : '?'
+
+                    )
+                  )
+                  .appendTo(row)
+                $('<div class="col"></div>').html(keyset.people_id > 0 ? keyset.name : keyset.location).appendTo(row)
+                // console.log(keyset);
+
+              });
+
+            });
+
+          } else {
+            $('#<?= $_uidKeyRow ?>')
+              .html('')
+              .removeClass();
+
+          }
+
+        })
         .on('get-tenants', function(e) {
           let _form = $(this);
           let _data = _form.serializeFormJSON();
@@ -757,7 +833,9 @@ $categories = $this->data->categories;  ?>
 
         });
 
-      $('#<?= $_form ?>').trigger('items-init');
+      $('#<?= $_form ?>')
+        .trigger('get-keyset')
+        .trigger('items-init');
 
     }))(_brayworth_);
   </script>
