@@ -641,9 +641,9 @@ $categories = $this->data->categories;  ?>
                   $.each(d.data, (i, sched) => {
                     let row = $('<div class="form-row"></div>');
 
-                    let type = $('<div class="form-control gorm-control-sm"></div>').html(sched.Type);
-                    let limit = $('<div class="form-control gorm-control-sm text-right"></div>').html(sched.Limit);
-                    let notes = $('<div class="form-control gorm-control-sm"></div>').html(sched.Notes);
+                    let type = $('<div class="form-control form-control-sm"></div>').html(sched.Type);
+                    let limit = $('<div class="form-control form-control-sm text-right"></div>').html(sched.Limit);
+                    let notes = $('<div class="form-control form-control-sm h-auto"></div>').html(sched.Notes);
 
                     let fglimit = $('<div class="input-group"><div class="input-group-prepend"><div class="input-group-text">limit</div></div></div>');
                     fglimit.append(limit);
