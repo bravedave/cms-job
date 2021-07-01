@@ -639,13 +639,13 @@ $categories = $this->data->categories;  ?>
                 if (d.data.length > 0) {
                   //~ $('#<?= $_uid ?>').closest( '.row').removeClass('d-none');
                   $.each(d.data, (i, sched) => {
-                    let row = $('<div class="form-row"></div>');
+                    let row = $('<div class="form-row mb-2"></div>');
 
                     let type = $('<div class="form-control form-control-sm"></div>').html(sched.Type);
                     let limit = $('<div class="form-control form-control-sm text-right"></div>').html(sched.Limit);
                     let notes = $('<div class="form-control form-control-sm h-auto"></div>').html(sched.Notes);
 
-                    let fglimit = $('<div class="input-group"><div class="input-group-prepend"><div class="input-group-text">limit</div></div></div>');
+                    let fglimit = $('<div class="input-group input-group-sm"><div class="input-group-prepend"><div class="input-group-text">limit</div></div></div>');
                     fglimit.append(limit);
 
                     $('<div class="col-6 col-md-2 mb-1 mb-md-0"></div>')
