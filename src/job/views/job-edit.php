@@ -639,22 +639,22 @@ $categories = $this->data->categories;  ?>
                 if (d.data.length > 0) {
                   //~ $('#<?= $_uid ?>').closest( '.row').removeClass('d-none');
                   $.each(d.data, (i, sched) => {
-                    let row = $('<div class="form-row mb-2"></div>');
+                    let row = $('<div class="form-row"></div>');
 
-                    let type = $('<div class="form-control form-control-sm"></div>').html(sched.Type);
-                    let limit = $('<div class="form-control form-control-sm text-right"></div>').html(sched.Limit);
-                    let notes = $('<div class="form-control form-control-sm h-auto"></div>').html(sched.Notes);
+                    let type = $('<div class="form-control form-control-sm bg-light"></div>').html(sched.Type);
+                    let limit = $('<div class="form-control form-control-sm bg-ligh text-right"></div>').html(sched.Limit);
+                    let notes = $('<div class="form-control form-control-sm bg-ligh h-auto"></div>').html(sched.Notes);
 
                     let fglimit = $('<div class="input-group input-group-sm"><div class="input-group-prepend"><div class="input-group-text">limit</div></div></div>');
                     fglimit.append(limit);
 
-                    $('<div class="col-6 col-md-2 mb-1 mb-md-0"></div>')
+                    $('<div class="col-6 col-md-2 mb-1"></div>')
                       .append(type)
                       .appendTo(row);
-                    $('<div class="col-6 col-md-3 mb-1 mb-md-0"></div>')
+                    $('<div class="col-6 col-md-3 mb-1"></div>')
                       .append(fglimit)
                       .appendTo(row);
-                    $('<div class="col-md-7"></div>')
+                    $('<div class="col-md-7 mb-2"></div>')
                       .append(notes)
                       .appendTo(row);
 
@@ -698,13 +698,18 @@ $categories = $this->data->categories;  ?>
                 $('#<?= $_uidTenants ?>').html('');
                 $.each(d.tenants, (i, t) => {
                   // console.log(t);
-                  let row = $('<div class="form-row mb-2"></div>').appendTo('#<?= $_uidTenants ?>');
-                  $('<div class="col-3 p-2"></div>').html(t.name).appendTo(row);
+                  let row = $('<div class="form-row"></div>').appendTo('#<?= $_uidTenants ?>');
+                  $('<div class="col-md-2 mb-1"></div>')
+                    .append(
+                      $('<div class="form-control form-control-sm bg-light"></div>')
+                      .html(t.name)
+                    )
+                    .appendTo(row);
 
-                  let col = $('<div class="col-auto"></div>').appendTo(row);
+                  let col = $('<div class="col-md-auto mb-1"></div>').appendTo(row);
                   let m = String(t.phone);
                   if (m.IsMobilePhone()) {
-                    let ig = $('<div class="input-group"></div>').appendTo(col);
+                    let ig = $('<div class="input-group input-group-sm"></div>').appendTo(col);
                     $('<input type="text" class="form-control" readonly>').val(m.AsMobilePhone()).appendTo(ig);
 
                     let btn = $('<button type="button" class="btn input-group-text"><i class="bi bi-chat-dots"></i></button>');
@@ -734,9 +739,9 @@ $categories = $this->data->categories;  ?>
 
                   }
 
-                  col = $('<div class="col"></div>').appendTo(row);
+                  col = $('<div class="col-md mb-2"></div>').appendTo(row);
                   if (String(t.email).isEmail()) {
-                    let ig = $('<div class="input-group"></div>').appendTo(col);
+                    let ig = $('<div class="input-group input-group-sm"></div>').appendTo(col);
                     $('<input type="text" class="form-control" readonly>').val(t.email).appendTo(ig);
 
                     let btn = $('<button type="button" class="btn input-group-text"><i class="bi bi-cursor"></i></button>');
