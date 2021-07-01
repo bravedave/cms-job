@@ -235,6 +235,7 @@ $categories = $this->data->categories;  ?>
                           $('#<?= $_uid ?>suburb_div, #<?= $_uid ?>postcode_div').removeClass('d-none');
 
                           $('#<?= $_form ?>')
+                            .trigger('get-tenants')
                             .trigger('get-keyset')
                             .trigger('get-maintenance');
 
@@ -683,8 +684,6 @@ $categories = $this->data->categories;  ?>
           let _form = $(this);
           let _data = _form.serializeFormJSON();
 
-          // console.log('get-tenants', _data.properties_id);
-          // console.log(_data);
           if (_data.properties_id) {
             _.post({
               url: _.url('leasing'),
