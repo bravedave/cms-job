@@ -569,32 +569,37 @@ $categories = $this->data->categories;  ?>
               // $('<div class="col-2 pt-2">Keys</div>').appendTo('#<?= $_uidKeyRow ?>');
               let col = $('<div class="col pt-2"></div>').appendTo('#<?= $_uidKeyRow ?>');
 
-              (row => {
-                // title row
-                $('<div class="col-2">KeySet</div>').appendTo(row)
-                $('<div class="col-2">Type</div>').appendTo(row)
-                $('<div class="col">Location/Person</div>').appendTo(row)
+              // (row => {
+              //   // title row
+              //   $('<div class="col-2">KeySet</div>').appendTo(row)
+              //   $('<div class="col-2">Type</div>').appendTo(row)
+              //   $('<div class="col">Location/Person</div>').appendTo(row)
 
-              })($('<div class="form-row mb-2 small border-bottom"></div>').appendTo(col));
+              // })($('<div class="form-row mb-2 small border-bottom"></div>').appendTo(col));
 
 
               $.each(d.data, (i, keyset) => {
-                let row = $('<div class="form-row mb-2"></div>').appendTo(col);
+                if (<?= \cms\keyregister\config::keyset_management ?> == keyset.keyset_type) {
+                  let row = $('<div class="form-row"></div>').appendTo(col);
+                  let ig = $('<div class="input-group input-group-sm"></div>');
+                  ig.append('<div class="input-group-append"><div class="input-group-text">key</div></div>');
 
-                $('<div class="col-2"></div>').html(keyset.keyset).appendTo(row)
-                $('<div class="col-2 text-truncate"></div>')
-                  .html(
-                    <?= \cms\keyregister\config::keyset_management ?> == keyset.keyset_type ?
-                    '<?= \cms\keyregister\config::keyset_management_label ?>' :
-                    (
-                      <?= \cms\keyregister\config::keyset_tenant ?> == keyset.keyset_type ?
-                      '<?= \cms\keyregister\config::keyset_tenant_label ?>' : '?'
+                  $('<div class="form-control form-control-sm bg-light"></div>')
+                    .html(keyset.keyset)
+                    .appendTo(ig);
 
+                  $('<div class="col-md-2 mb-1"></div>')
+                    .append(ig)
+                    .appendTo(row)
+
+                  $('<div class="col mb-2"></div>')
+                    .append(
+                      $('<div class="form-control form-control-sm bg-light"></div>')
+                      .html(keyset.people_id > 0 ? keyset.name : keyset.location)
                     )
-                  )
-                  .appendTo(row)
-                $('<div class="col"></div>').html(keyset.people_id > 0 ? keyset.name : keyset.location).appendTo(row)
-                // console.log(keyset);
+                    .appendTo(row)
+
+                }
 
               });
 
@@ -642,8 +647,8 @@ $categories = $this->data->categories;  ?>
                     let row = $('<div class="form-row"></div>');
 
                     let type = $('<div class="form-control form-control-sm bg-light"></div>').html(sched.Type);
-                    let limit = $('<div class="form-control form-control-sm bg-ligh text-right"></div>').html(sched.Limit);
-                    let notes = $('<div class="form-control form-control-sm bg-ligh h-auto"></div>').html(sched.Notes);
+                    let limit = $('<div class="form-control form-control-sm bg-light text-right"></div>').html(sched.Limit);
+                    let notes = $('<div class="form-control form-control-sm bg-light h-auto"></div>').html(sched.Notes);
 
                     let fglimit = $('<div class="input-group input-group-sm"><div class="input-group-prepend"><div class="input-group-text">limit</div></div></div>');
                     fglimit.append(limit);
