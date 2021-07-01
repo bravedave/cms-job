@@ -66,7 +66,7 @@ $categories = $this->data->categories;  ?>
           <?php }  ?>
 
           <div class="form-row">
-            <div class="col-md-3 col-form-label">status</div>
+            <div class="col-md-3 col-xl-2 col-form-label">status</div>
 
             <div class="col mb-2">
               <select name="status" class="form-control">
@@ -125,7 +125,7 @@ $categories = $this->data->categories;  ?>
           </div>
 
           <div class="form-row mb-2">
-            <div class="col-md-3 col-form-label">type</div>
+            <div class="col-md-3 col-xl-2 col-form-label">type</div>
 
             <div class="col pt-md-2">
               <div class="form-check form-check-inline">
@@ -163,7 +163,7 @@ $categories = $this->data->categories;  ?>
           </div>
 
           <div class="form-row mb-2">
-            <div class="col-md-3 col-form-label">payment</div>
+            <div class="col-md-3 col-xl-2 col-form-label">payment</div>
 
             <div class="col pt-md-2">
               <div class="form-check form-check-inline">
@@ -191,7 +191,7 @@ $categories = $this->data->categories;  ?>
           </div>
 
           <div class="form-row">
-            <div class="col-md-3 col-form-label">description</div>
+            <div class="col-md-3 col-xl-2 col-form-label">description</div>
 
             <div class="col-md mb-2">
               <textarea class="form-control" name="description" placeholder="describe the need for this job ..." required id="<?= $_uid = strings::rand() ?>"><?= $dto->description ?></textarea>
@@ -205,7 +205,7 @@ $categories = $this->data->categories;  ?>
 
           <!-- --[property]-- -->
           <div class="form-row">
-            <div class="col-md-3 col-form-label">property</div>
+            <div class="col-md-3 col-xl-2 col-form-label">property</div>
 
             <div class="col">
               <div class="form-row">
@@ -262,14 +262,14 @@ $categories = $this->data->categories;  ?>
 
 
           <div class="form-row d-none" id="<?= $_uidTenants = strings::rand() ?>-envelope">
-            <div class="col-md-3 col-form-label">tenants</div>
+            <div class="col-md-3 col-xl-2 col-form-label">tenants</div>
             <div class="col" id="<?= $_uidTenants ?>"></div>
 
           </div>
 
           <!-- contractor -->
           <div class="form-row">
-            <div class="col-md-3 col-form-label"><?= strtolower(config::label_contractor) ?></div>
+            <div class="col-md-3 col-xl-2 col-form-label"><?= strtolower(config::label_contractor) ?></div>
 
             <div class="col-md mb-2">
               <input type="text" class="form-control" value="<?= $dto->contractor_trading_name ?>" id="<?= $_uid = strings::rand() ?>">
@@ -700,7 +700,7 @@ $categories = $this->data->categories;  ?>
                 $.each(d.tenants, (i, t) => {
                   // console.log(t);
                   let row = $('<div class="form-row mb-2"></div>').appendTo('#<?= $_uidTenants ?>');
-                  $('<div class="col-auto p-2"></div>').html(t.name).appendTo(row);
+                  $('<div class="col-3 p-2"></div>').html(t.name).appendTo(row);
 
                   let col = $('<div class="col-auto"></div>').appendTo(row);
                   let m = String(t.phone);
