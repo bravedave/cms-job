@@ -19,11 +19,10 @@ use strings;
 use green\{
   people\dao\people as dao_people,
   search
-
 };
 
 class controller extends \Controller {
-	protected $label = config::label;
+  protected $label = config::label;
   protected $viewPath = __DIR__ . '/views/';
 
   protected function _index() {
@@ -33,40 +32,31 @@ class controller extends \Controller {
       'secondary' => 'index'
 
     ]);
-
   }
 
   protected function postHandler() {
-    $action =$this->getPost('action');
+    $action = $this->getPost('action');
 
     if ('category-save' == $action) {
 
-      if ( $category = $this->getPost('category')) {
+      if ($category = $this->getPost('category')) {
         $a = [
           'category' => $category
 
         ];
 
         $dao = new dao\job_categories;
-        if ( $id = (int)$this->getPost('id')) {
-          $dao->UpdateByID( $a, $id);
-          Json::ack( $action);
-
+        if ($id = (int)$this->getPost('id')) {
+          $dao->UpdateByID($a, $id);
+          Json::ack($action);
+        } else {
+          $dao->Insert($a);
+          Json::ack($action);
         }
-        else {
-          $dao->Insert( $a);
-          Json::ack( $action);
-
-        }
-
+      } else {
+        Json::nak($action);
       }
-      else {
-        Json::nak( $action);
-
-      }
-
-    }
-    elseif ( 'contractor-save' == $action) {
+    } elseif ('contractor-save' == $action) {
       $a = [
         'trading_name' => $this->getPost('trading_name'),
         'company_name' => $this->getPost('company_name'),
@@ -80,77 +70,67 @@ class controller extends \Controller {
       $id = (int)$this->getPost('id');
 
       $dao = new dao\job_contractors;
-      if ( $id) {
+      if ($id) {
         $dao->UpdateByID($a, $id);
-        Json::ack( $action);
-
-      }
-      else {
+        Json::ack($action);
+      } else {
         $dao->Insert($a);
-        Json::ack( $action);
-
+        Json::ack($action);
       }
-
-    }
-    elseif ('get-contractor-by-id' == $action) {
+    } elseif ('get-contractor-by-id' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job_contractors;
-        if ( $dto = $dao->getByID($id)) {
+        if ($dto = $dao->getByID($id)) {
 
           $dao = new dao\job_categories;
           Json::ack($action)
-            ->add( 'data', $dto);
-            // ->add( 'services', $dao->getCategoriesOf($dto->services));
-
-        } else { Json::nak($action); }
-
-      } else { Json::nak($action); }
-
-    }
-    elseif ('get-items-of-category-distinctly' == $action) {
-      if ($category = (int)$this->getPost('category')) {
-        $dao = new dao\job_items;
-        if ( $items = $dao->getItemsForCategory($category, $distinct = true)) {
-          Json::ack($action)
-            ->add( 'data', $dao->dtoSet( $items));
-
-        } else { Json::nak($action); }
-
-      } else { Json::nak($action); }
-
-    }
-    elseif ('get-items-of-category-item' == $action) {
-      if ($category = (int)$this->getPost('category')) {
-        if ($item = $this->getPost('item')) {
-          $dao = new dao\job_items;
-          if ( $items = $dao->getItemsForCategory($category, $distinct = false, $item)) {
-            Json::ack($action)
-              ->add( 'data', $dao->dtoSet( $items));
-
-          } else {
-            Json::ack($action)
-              ->add( 'data', []);
-
-          }
+            ->add('data', $dto);
+          // ->add( 'services', $dao->getCategoriesOf($dto->services));
 
         } else {
           Json::nak($action);
-
         }
-
-      } else { Json::nak($action); }
-
-    }
-    elseif ('item-delete' == $action) {
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('get-items-of-category-distinctly' == $action) {
+      if ($category = (int)$this->getPost('category')) {
+        $dao = new dao\job_items;
+        if ($items = $dao->getItemsForCategory($category, $distinct = true)) {
+          Json::ack($action)
+            ->add('data', $dao->dtoSet($items));
+        } else {
+          Json::nak($action);
+        }
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('get-items-of-category-item' == $action) {
+      if ($category = (int)$this->getPost('category')) {
+        if ($item = $this->getPost('item')) {
+          $dao = new dao\job_items;
+          if ($items = $dao->getItemsForCategory($category, $distinct = false, $item)) {
+            Json::ack($action)
+              ->add('data', $dao->dtoSet($items));
+          } else {
+            Json::ack($action)
+              ->add('data', []);
+          }
+        } else {
+          Json::nak($action);
+        }
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('item-delete' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job_items;
-        $dao->delete( $id);
+        $dao->delete($id);
         Json::ack($action);
-
-      } else { Json::nak($action); }
-
-    }
-    elseif ('item-save' == $action) {
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('item-save' == $action) {
 
       if ($description = $this->getPost('description')) {
         $a = [
@@ -164,67 +144,58 @@ class controller extends \Controller {
         if ($id = (int)$this->getPost('id')) {
           $dao->UpdateByID($a, $id);
           Json::ack($action);
-
-        }
-        else {
+        } else {
           $dao->Insert($a);
           Json::ack($action);
-
         }
-
-      } else { Json::nak($action); }
-
-    }
-    elseif ('job-line-delete' == $action) {
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('job-line-delete' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job_lines;
         $dao->delete($id);
 
         Json::ack($action);
-
-      } else { Json::nak($action); }
-
-    }
-    elseif ('job-delete' == $action) {
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('job-delete' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job;
         $dao->delete($id);
 
         Json::ack($action);
-
-      } else { Json::nak($action); }
-
-    }
-    elseif ('job-save' == $action) {
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('job-save' == $action) {
 
       if ($description = $this->getPost('description')) {
         $a = [
           'updated' => \db::dbTimeStamp(),
           'contractor_id' => (int)$this->getPost('contractor_id'),
           'properties_id' => (int)$this->getPost('properties_id'),
-          'job_type' => (int)$this->getPost( 'job_type'),
-          'status' => (int)$this->getPost( 'status'),
-          'due' => $this->getPost( 'due'),
+          'job_type' => (int)$this->getPost('job_type'),
+          'status' => (int)$this->getPost('status'),
+          'due' => $this->getPost('due'),
           'job_payment' => (int)$this->getPost('job_payment'),
-          'description' => (string)$this->getPost( 'description'),
+          'description' => (string)$this->getPost('description'),
 
         ];
 
         $dao = new dao\job;
-        if ( $id = (int)$this->getPost('id')) {
-          $dao->UpdateByID( $a, $id);
-
-        }
-        else {
+        if ($id = (int)$this->getPost('id')) {
+          $dao->UpdateByID($a, $id);
+        } else {
           $a['created'] = $a['updated'];
-          $id = $dao->Insert( $a);
-
+          $id = $dao->Insert($a);
         }
 
-        if ( $item_id = $this->getPost('item_id')) {
+        if ($item_id = $this->getPost('item_id')) {
           $job_line_id = $this->getPost('job_line_id');
 
-          for ($i=0; $i < count($item_id); $i++) {
+          for ($i = 0; $i < count($item_id); $i++) {
             $a = [
               'updated' => \db::dbTimeStamp(),
               'item_id' => $item_id[$i],
@@ -233,61 +204,50 @@ class controller extends \Controller {
             ];
 
             $dao = new dao\job_lines;
-            if ( isset( $job_line_id[$i]) && $job_line_id[$i]) {
+            if (isset($job_line_id[$i]) && $job_line_id[$i]) {
               $dao->UpdateByID($a, $job_line_id[$i]);
-
-            }
-            else {
+            } else {
               $a['created'] = $a['updated'];
               $dao->Insert($a);
-
             }
-
           }
-
         }
 
         Json::ack($action);
-
-      } else { Json::nak($action); }
-
-    }
-    elseif ('search-contractor' == $action) {
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('search-contractor' == $action) {
       if ($term = $this->getPost('term')) {
         $dao = new dao\job_contractors;
         Json::ack($action)
           ->add('term', $term)
           ->add('data', $dao->search($term, $this->getPost('services')));
-
-      } else { Json::nak($action); }
-
-    }
-    elseif ('search-properties' == $action) {
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('search-properties' == $action) {
       if ($term = $this->getPost('term')) {
         Json::ack($action)
           ->add('term', $term)
           ->add('data', search::properties($term));
-
-      } else { Json::nak($action); }
-
-    }
-    elseif ('set-primary-contact' == $action) {
-      if ( $id = (int)$this->getPost('id')) {
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('set-primary-contact' == $action) {
+      if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job_contractors;
         $dao->UpdateByID([
           'primary_contact' => (int)$this->getPost('people_id')
         ], $id);
 
         Json::ack($action);
-
-      } else { Json::nak($action); }
-
-    }
-    else {
+      } else {
+        Json::nak($action);
+      }
+    } else {
       parent::postHandler();
-
     }
-
   }
 
   protected function render($params) {
@@ -299,7 +259,6 @@ class controller extends \Controller {
     $params['scripts'][] = sprintf('<script type="text/javascript" src="%s"></script>', strings::url($this->route . '/js/job'));
 
     parent::render($params);
-
   }
 
   public function categories() {
@@ -320,29 +279,23 @@ class controller extends \Controller {
       ],
 
     ]);
-
   }
 
-  public function category_edit( $id = 0) {
-    if ( $id = (int)$id) {
+  public function category_edit($id = 0) {
+    if ($id = (int)$id) {
       $dao = new dao\job_categories;
-      if ( $dto = $dao->getByID( $id)) {
+      if ($dto = $dao->getByID($id)) {
         $this->data = (object)[
           'dto' => $dto
 
         ];
 
         $this->title = config::label_category_edit;
-        $this->load( 'category-edit');
-
+        $this->load('category-edit');
+      } else {
+        $this->load('not-found');
       }
-      else {
-        $this->load( 'not-found');
-
-      }
-
-    }
-    else {
+    } else {
       $this->data = (object)[
         'dto' => new dao\dto\job_categories
 
@@ -350,9 +303,7 @@ class controller extends \Controller {
 
       $this->title = config::label_category_add;
       $this->load('category-edit');
-
     }
-
   }
 
   public function contractors() {
@@ -369,12 +320,11 @@ class controller extends \Controller {
       'secondary' => 'index',
       'data' => (object)[
         'searchFocus' => false,
-        'pageUrl' => strings::url( sprintf( '%s/contractors', $this->route))
+        'pageUrl' => strings::url(sprintf('%s/contractors', $this->route))
 
       ],
 
     ]);
-
   }
 
   public function contractor_edit($id = 0) {
@@ -388,26 +338,19 @@ class controller extends \Controller {
 
         ];
 
-        if ( $dto->primary_contact) {
+        if ($dto->primary_contact) {
           $dao = new dao_people;
-          if ( $dto = $dao->getByID( $dto->primary_contact)) {
+          if ($dto = $dao->getByID($dto->primary_contact)) {
             $this->data->primary_contact = $dto;
-
           }
-
         }
 
         $this->title = config::label_contractor_edit;
         $this->load('contractor-edit');
-
-      }
-      else {
+      } else {
         $this->load('not-found');
-
       }
-
-    }
-    else {
+    } else {
       $this->title = config::label_contractor_add;
 
       $this->data = (object)[
@@ -418,16 +361,14 @@ class controller extends \Controller {
       ];
 
       $this->load('contractor-edit');
-
     }
-
   }
 
   public function job_edit($id = 0) {
-    if ( $id = (int)$id) {
+    if ($id = (int)$id) {
       $dao = new dao\job;
-      if ( $dto = $dao->getByID( $id)) {
-        $dto = $dao->getRichData( $dto);
+      if ($dto = $dao->getByID($id)) {
+        $dto = $dao->getRichData($dto);
 
         // \sys::logger(sprintf('<found street> <%s> %s', $dto->address_street, __METHOD__));
 
@@ -439,15 +380,10 @@ class controller extends \Controller {
         ];
 
         $this->load('job-edit');
-
-      }
-      else {
+      } else {
         $this->load('not-found');
-
       }
-
-    }
-    else {
+    } else {
       $this->data = (object)[
         'title' => $this->title = config::label_job_add,
         'dto' => new dao\dto\job,
@@ -456,9 +392,7 @@ class controller extends \Controller {
       ];
 
       $this->load('job-edit');
-
     }
-
   }
 
   public function matrix() {
@@ -474,7 +408,6 @@ class controller extends \Controller {
       'secondary' => 'index',
 
     ]);
-
   }
 
   public function items() {
@@ -491,12 +424,11 @@ class controller extends \Controller {
       'secondary' => 'index',
       'data' => (object)[
         'searchFocus' => false,
-        'pageUrl' => strings::url( sprintf( '%s/items', $this->route))
+        'pageUrl' => strings::url(sprintf('%s/items', $this->route))
 
       ],
 
     ]);
-
   }
 
   public function item_edit($id = 0) {
@@ -511,15 +443,10 @@ class controller extends \Controller {
 
         $this->title = config::label_item_edit;
         $this->load('item-edit');
-
-      }
-      else {
+      } else {
         $this->load('not-found');
-
       }
-
-    }
-    else {
+    } else {
       $this->title = config::label_item_add;
 
       $this->data = (object)[
@@ -530,11 +457,10 @@ class controller extends \Controller {
 
       $this->load('item-edit');
     }
-
   }
 
-  public function js( string $lib = '') {
-    if ( 'job' == $lib) {
+  public function js(string $lib = '') {
+    if ('job' == $lib) {
       $s = [];
       $r = [];
 
@@ -549,21 +475,16 @@ class controller extends \Controller {
       $js = preg_replace($s, $r, $js);
 
       Response::javascript_headers();
-      if ( false) {
-      // if ($this->Request->ClientIsLocal()) {
+      if (false) {
+        // if ($this->Request->ClientIsLocal()) {
         print $js;
       } else {
         $minifier = new MatthiasMullie\Minify\JS;
         $minifier->add($js);
         print $minifier->minify();
       }
-
+    } else {
+      parent::js($lib);
     }
-    else {
-      parent::js( $lib);
-
-    }
-
   }
-
 }

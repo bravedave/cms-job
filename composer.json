@@ -71,6 +71,8 @@
     "import-contacts": "cms\\console\\utility::import_contacts",
     "import-contractors": "cms\\job\\utility::contractors_import",
     "reset-contractors": "cms\\job\\utility::contractors_reset",
+    "import-maintenance": "cms\\console\\utility::import_maintenance",
+    "import-owners": "cms\\console\\utility::import_owners",
     "import-properties": "cms\\console\\utility::import_properties",
     "import-keyregister": "cms\\keyregister\\utility::import"
   }

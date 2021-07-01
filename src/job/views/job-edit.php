@@ -221,33 +221,38 @@ $categories = $this->data->categories;  ?>
                   <div class="form-control" id="<?= $_uid ?>postcode"><?= $dto->address_postcode ?></div>
                 </div>
                 <script>
-                  (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
-                    $('#<?= $_uid ?>').autofill({
-                      autoFocus: true,
-                      source: _.search.address,
-                      select: (e, ui) => {
-                        let o = ui.item;
-                        // console.log( o);
-                        $('input[name="properties_id"]', '#<?= $_form ?>').val(o.id);
-                        $('#<?= $_uid ?>suburb').html(o.suburb);
-                        $('#<?= $_uid ?>postcode').html(o.postcode);
+                  (_ => $('#<?= $_modal ?>')
+                    .on('shown.bs.modal', () => {
+                      $('#<?= $_uid ?>').autofill({
+                        autoFocus: true,
+                        source: _.search.address,
+                        select: (e, ui) => {
+                          let o = ui.item;
+                          // console.log( o);
+                          $('input[name="properties_id"]', '#<?= $_form ?>').val(o.id);
+                          $('#<?= $_uid ?>suburb').html(o.suburb);
+                          $('#<?= $_uid ?>postcode').html(o.postcode);
+                          $('#<?= $_uid ?>suburb_div, #<?= $_uid ?>postcode_div').removeClass('d-none');
+
+                          $('#<?= $_form ?>')
+                            .trigger('get-keyset')
+                            .trigger('get-maintenance');
+
+                        },
+
+                      });
+
+                      if (Number($('input[name="properties_id"]', '#<?= $_form ?>').val()) > 0) {
                         $('#<?= $_uid ?>suburb_div, #<?= $_uid ?>postcode_div').removeClass('d-none');
 
-                        $('#<?= $_form ?>').trigger('get-keyset');
+                      }
 
-                      },
-
-                    });
-
-                    if (Number($('input[name="properties_id"]', '#<?= $_form ?>').val()) > 0) {
-                      $('#<?= $_uid ?>suburb_div, #<?= $_uid ?>postcode_div').removeClass('d-none');
-
-                    }
-
-                  }))(_brayworth_);
+                    }))(_brayworth_);
                 </script>
 
               </div>
+
+              <div id="<?= $_uidMaintenanceRow = strings::rand() ?>"></div>
 
               <div id="<?= $_uidKeyRow = strings::rand() ?>"></div>
 
@@ -542,7 +547,7 @@ $categories = $this->data->categories;  ?>
           let _form = $(this);
           let _data = _form.serializeFormJSON();
 
-          console.log('get-keyset');
+          // console.log('get-keyset');
 
           if (Number(_data.properties_id) > 0) {
             _.post({
@@ -598,6 +603,78 @@ $categories = $this->data->categories;  ?>
             $('#<?= $_uidKeyRow ?>')
               .html('')
               .removeClass();
+
+          }
+
+        })
+        .on('get-maintenance', function(e) {
+          let _form = $(this);
+          let _data = _form.serializeFormJSON();
+
+          // console.log('get-maintenance');
+
+          if (Number(_data.properties_id) > 0) {
+            _.post({
+              url: _.url('leasing'),
+              data: {
+                action: 'get-maintenance-instructions',
+                id: _data.properties_id
+
+              },
+
+            }).then(d => {
+              console.log(d);
+
+              let col = $('<div class="col"></div>');
+              $('#<?= $_uidMaintenanceRow ?>')
+                .html('')
+                .addClass('form-row')
+                .append(col);
+
+              col.append('<h6>maintenance instructions</h6>');
+
+              if ('ack' == d.response) {
+                //~ console.log( d);
+                if (d.data.length > 0) {
+                  //~ $('#<?= $_uid ?>').closest( '.row').removeClass('d-none');
+                  $.each(d.data, (i, sched) => {
+                    let row = $('<div class="form-row"></div>');
+
+                    let type = $('<div class="form-control gorm-control-sm"></div>').html(sched.Type);
+                    let limit = $('<div class="form-control gorm-control-sm text-right"></div>').html(sched.Limit);
+                    let notes = $('<div class="form-control gorm-control-sm"></div>').html(sched.Notes);
+
+                    let fglimit = $('<div class="input-group"><div class="input-group-prepend"><div class="input-group-text">limit</div></div></div>');
+                    fglimit.append(limit);
+
+                    $('<div class="col-6 col-md-2 mb-1 mb-md-0"></div>')
+                      .append(type)
+                      .appendTo(row);
+                    $('<div class="col-6 col-md-3 mb-1 mb-md-0"></div>')
+                      .append(fglimit)
+                      .appendTo(row);
+                    $('<div class="col-md-7"></div>')
+                      .append(notes)
+                      .appendTo(row);
+
+                    col.append(row);
+                    //~ console.log( sched);
+
+                  });
+
+                } else {
+                  $('#<?= $_uidMaintenanceRow ?>')
+                    .addClass('text-muted font-italic pt-2')
+                    .html('no maintenance instructions found...');
+
+                }
+
+              } else {
+                _.growl(d);
+
+              }
+
+            });
 
           }
 
@@ -764,11 +841,8 @@ $categories = $this->data->categories;  ?>
                       if (contractorServices.indexOf(s) < 0 && missingServices.indexOf(s) < 0) {
                         missingServices.push(s);
                         missingServicesNames.push(cats[s]);
-
                       }
-
                     });
-
                     if (missingServices.length > 0) {
                       $('#<?= $_missingServices ?>')
                         .addClass('text-danger font-italic small pl-2')
@@ -825,18 +899,15 @@ $categories = $this->data->categories;  ?>
           $('select[name="item_job_categories_id\[\]"]', this).each((i, el) => {
             let service = $(el).val();
             if (services.indexOf(service) < 0) services.push(service);
-
           });
-
-          $('input[name="required_services"]', this).val(services.join(','));
+          $('input[name="required_services" ]', this).val(services.join(','));
           $(this).trigger('qualify-contractor');
-
         });
 
       $('#<?= $_form ?>')
         .trigger('get-keyset')
+        .trigger('get-maintenance')
         .trigger('items-init');
-
     }))(_brayworth_);
   </script>
 
