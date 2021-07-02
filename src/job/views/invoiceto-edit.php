@@ -51,10 +51,9 @@ use strings, theme; ?>
             data: _data,
 
           }).then(d => {
+            _.growl(d);
             if ('ack' == d.response) {
               $('#<?= $_modal ?>').trigger('success');
-            } else {
-              _.growl(d);
             }
 
             $('#<?= $_modal ?>').modal('hide');
