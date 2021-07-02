@@ -88,7 +88,7 @@ use strings;  ?>
         $lines = json_decode($dto->lines) ?? [];
         $pm = strings::initials($dto->pm);
       ?>
-        <tr data-id="<?= $dto->id ?>" data-line_count="<?= count($lines) ?>" data-pm="<?= $pm ?>">
+        <tr data-id="<?= $dto->id ?>" data-properties_id="<?= $dto->properties_id ?>" data-address_street="<?= htmlentities($dto->address_street) ?>" data-line_count="<?= count($lines) ?>" data-pm="<?= $pm ?>">
           <td class="small" line-number></td>
           <td class="constrain">
             <div class="constrained text-truncate">
@@ -233,7 +233,7 @@ use strings;  ?>
                   if ('ack' == d.response) {
                     if ('yes' == d.workorder) {
                       _me
-                        .html('<div class="pointer">view workorder</div>')
+                        .html('<div class="pointer"><i class="bi bi-file-pdf text-danger"></i>view workorder</div>')
                         .on('click', e => {
                           e.stopPropagation();
                           _tr.trigger('view-workorder');
@@ -261,6 +261,18 @@ use strings;  ?>
 
               })
               .trigger('reconcile');
+
+          }
+
+          if (Number(_data.properties_id) > 0) {
+            _context.append(
+              $('<a target="_blank">goto </a>')
+              .html('goto ' + _data.address_street)
+              .prepend('<i class="bi bi-box-arrow-up-right"></i>')
+              .attr('href', _.url('property/view/' + _data.properties_id))
+              .on('click', e => _context.close())
+
+            );
 
           }
 
