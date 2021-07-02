@@ -68,6 +68,7 @@ class config extends \config {
 
 			self::$_CMS_JOB_VERSION = $j->cms_job_version = $set;
 
+			if ( file_exists($config)) unlink($config);
 			file_put_contents($config, json_encode($j, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 			chmod($config, 0777);
 		}
@@ -99,6 +100,7 @@ class config extends \config {
 
 			self::$_CMS_JOB_INVOICE_TO = $j->cms_job_invoice_to = $set;
 
+			if (file_exists($config)) unlink($config);
 			file_put_contents($config, json_encode($j, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 			chmod($config, 0777);
 		}
