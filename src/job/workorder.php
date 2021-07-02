@@ -103,7 +103,7 @@ abstract class workorder {
         $tenants[] = sprintf('<div class="mb-1">%s</div>', implode(', ', $_tenant));
       }
 
-      if ($tenants) $access[] = sprintf('<td>%s</td>', implode($tenants));
+      if ($tenants) $access[] = sprintf('<td class="noborder"><h3 class="mb-0 pl-1">Tenants</h3>%s</td>', implode($tenants));
     }
 
 
@@ -113,7 +113,7 @@ abstract class workorder {
         $keys[] = sprintf('<div class="mb-1">Key : %s</div>', $key->keyset);
       }
 
-      if ($keys) $access[] = sprintf('<td>%s</td>', implode($keys));
+      if ($keys) $access[] = sprintf('<td class="noborder">%s</td>', implode($keys));
     }
 
     if ($access) {
