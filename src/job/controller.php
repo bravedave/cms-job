@@ -189,6 +189,10 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
+    } elseif ('invoiceto-save' == $action) {
+      config::cms_job_invoiceto( $this->getPost('invoiceto'));
+      Json::ack( $action);
+
     } elseif ('item-delete' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job_items;
@@ -460,6 +464,11 @@ class controller extends \Controller {
 
       $this->load('job-edit');
     }
+  }
+
+  public function invoiceto_edit() {
+    $this->load('invoiceto-edit');
+
   }
 
   public function matrix() {

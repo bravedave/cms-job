@@ -65,6 +65,19 @@ abstract class workorder {
     ];
     $t->replace('address', implode('<br>', $address));
 
+    $invoice_to = [
+      'Invoice To:',
+      $dto->owner_name
+
+    ];
+
+    if ( config::cms_job_invoiceto()) {
+      $invoice_to[] = strings::text2html(config::cms_job_invoiceto());
+
+    }
+
+    $t->replace('invoice_to', implode('<br>', $invoice_to));
+
     $cells = [
       '<td>category</td>',
       '<td>item</td>',

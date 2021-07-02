@@ -53,6 +53,8 @@ class config extends \config {
 
 	static protected $_CMS_JOB_VERSION = 0;
 
+	static protected $_CMS_JOB_INVOICE_TO = '';
+
 	static protected function cms_job_version($set = null) {
 		$ret = self::$_CMS_JOB_VERSION;
 
@@ -81,6 +83,24 @@ class config extends \config {
 
 		// sys::logger( 'bro!');
 
+	}
+
+	static function cms_job_invoiceto($set = null) {
+		$ret = self::$_CMS_JOB_INVOICE_TO;
+
+		if ((string)$set) {
+			$config = self::cms_job_config();
+
+			$j = file_exists($config) ?
+				json_decode(file_get_contents($config)) :
+				(object)[];
+
+			self::$_CMS_JOB_INVOICE_TO = $j->cms_job_invoice_to = $set;
+
+			file_put_contents($config, json_encode($j, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+		}
+
+		return $ret;
 	}
 
 	static function cms_job_store(): string {
@@ -115,6 +135,10 @@ class config extends \config {
 
 			if (isset($j->cms_job_version)) {
 				self::$_CMS_JOB_VERSION = (float)$j->cms_job_version;
+			};
+
+			if (isset($j->cms_job_invoice_to)) {
+				self::$_CMS_JOB_INVOICE_TO = $j->cms_job_invoice_to;
 			};
 		}
 	}

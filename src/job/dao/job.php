@@ -12,7 +12,7 @@ namespace cms\job\dao;
 
 use cms\job\config;
 use dao\_dao;
-use green\properties\dao\properties;
+use dao\properties, dao\people;
 
 // use green;
 // use strings;
@@ -130,21 +130,29 @@ class job extends _dao {
         $job->address_street = $prop->address_street;
         $job->address_suburb = $prop->address_suburb;
         $job->address_postcode = $prop->address_postcode;
+
+        if ($prop->people_id) {
+          $dao = new people;
+          if ($person = $dao->getByID($prop->people_id)) {
+            $job->owner_name = $person->name;
+            // \sys::logger(sprintf('<%s> %s', $person->name, __METHOD__));
+          } else {
+            \sys::logger(sprintf('<person not found %s> %s', $prop->people_id, __METHOD__));
+          }
+        } else {
+          \sys::logger(sprintf('<%s> %s', 'person not specifed', __METHOD__));
+        }
       }
 
       $dao = new \cms\keyregister\dao\keyregister;
       $job->keys = [];
-      if ( $keys = $dao->getKeysForProperty($job->properties_id)) {
+      if ($keys = $dao->getKeysForProperty($job->properties_id)) {
         foreach ($keys as $key) {
-          if ( \cms\keyregister\config::keyset_management == $key->keyset_type) {
+          if (\cms\keyregister\config::keyset_management == $key->keyset_type) {
             $job->keys[] = $key;
-
           }
-
         }
-
       }
-
     }
 
     return $job;

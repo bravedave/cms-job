@@ -172,6 +172,27 @@ use strings;  ?>
 
   </li>
 
+  <li class="nav-item">
+    <a class="nav-link" href="#" id="<?= $_uid = strings::rand() ?>">
+      <i class="bi bi-gear"></i> Invoice To
+
+    </a>
+
+  </li>
+  <script>
+    (_ => {
+      $('#<?= $_uid ?>')
+        .on('click', function(e) {
+          e.stopPropagation();
+          e.preventDefault();
+
+          _.get.modal(_.url('<?= $this->route ?>/invoiceto_edit'));
+
+        });
+
+    })(_brayworth_);
+  </script>
+
   <li class="nav-item h6 pt-3 pl-3">
     Reference Documents
 
