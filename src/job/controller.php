@@ -12,9 +12,7 @@ namespace cms\job;
 
 use FilesystemIterator;
 use MatthiasMullie;
-use Json;
-use Response;
-use strings;
+use Json, Response, strings, sys;
 
 use green\{
   people\dao\people as dao_people,
@@ -56,6 +54,18 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
+    } elseif ('check-has-workorder' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          Json::ack($action)
+            ->add('workorder', file_exists($path = $dao->getWorkOrderPath($dto)) ? 'yes' : 'no');
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak(sprintf('%s - missing id', $action));
+      }
     } elseif ('contractor-save' == $action) {
       $a = [
         'trading_name' => $this->getPost('trading_name'),
@@ -76,6 +86,27 @@ class controller extends \Controller {
       } else {
         $dao->Insert($a);
         Json::ack($action);
+      }
+    } elseif ('create-workorder' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          $dto = $dao->getRichData($dto);
+
+          if (workorder::create($dto)) {
+            // $dao = new dao\job_categories;
+            Json::ack($action);
+            //   ->add('data', $dto);
+            // ->add( 'services', $dao->getCategoriesOf($dto->services));
+            // Json::nak(sprintf('%s - cool - but I\'m not ready', $action));
+          } else {
+            Json::nak(sprintf('%s - not found', $action));
+          }
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak(sprintf('%s - missing id', $action));
       }
     } elseif ('get-contractor-by-id' == $action) {
       if ($id = (int)$this->getPost('id')) {
@@ -485,6 +516,44 @@ class controller extends \Controller {
       }
     } else {
       parent::js($lib);
+    }
+  }
+
+  public function workorder($id = 0) {
+    if ($id = (int)$id) {
+      $dao = new dao\job;
+      if ($dto = $dao->getByID($id)) {
+        $dto = $dao->getRichData($dto);
+
+        $this->data = (object)[
+          'title' => $this->title = config::label_job_viewworkorder,
+          'dto' => $dto,
+
+        ];
+
+        $this->load('job-view-workorder');
+      } else {
+        $this->load('not-found');
+      }
+    } else {
+      $this->load('invalid');
+    }
+  }
+
+  public function workorderpdf($id = 0) {
+    if ($id = (int)$id) {
+      $dao = new dao\job;
+      if ($dto = $dao->getByID($id)) {
+        if (file_exists($path = $dao->getWorkOrderPath($dto))) {
+          sys::serve($path);
+        } else {
+          print file_get_contents(__DIR__ . '/views/not-found.html');
+        }
+      } else {
+        print file_get_contents(__DIR__ . '/views/not-found.html');
+      }
+    } else {
+      print file_get_contents(__DIR__ . '/views/invalid.html');
     }
   }
 }

@@ -10,7 +10,7 @@
 
 namespace cms\job\dao;
 
-// use cms;
+use cms\job\config;
 use dao\_dao;
 use green\properties\dao\properties;
 
@@ -24,7 +24,7 @@ class job extends _dao {
 
   public function getMatrix() {
     $sql = sprintf(
-    'SELECT
+      'SELECT
         job.*,
         p.address_street,
         p.property_manager,
@@ -57,10 +57,10 @@ class job extends _dao {
 
     );
 
-    $this->Q( 'ALTER TABLE `matrix` ADD COLUMN `lines` TEXT');
+    $this->Q('ALTER TABLE `matrix` ADD COLUMN `lines` TEXT');
 
     $sql =
-    'SELECT
+      'SELECT
         m.*,
         jl.item_id,
         ji.item,
@@ -70,9 +70,9 @@ class job extends _dao {
         LEFT JOIN `job_items` ji ON ji.id = jl.item_id
       ORDER BY m.id, ji.job_categories_id';
 
-    if ( $res = $this->Result( $sql)) {
+    if ($res = $this->Result($sql)) {
       $items = [];
-      $res->dtoSet( function( $dto) use (&$items){
+      $res->dtoSet(function ($dto) use (&$items) {
         // \sys::logger(
         //   sprintf(
         //     '<%s: %s - %s> %s',
@@ -85,65 +85,79 @@ class job extends _dao {
 
         // );
 
-        if ( $dto->item || $dto->description) {
-          if ( ! isset( $items[ $dto->id])) $items[ $dto->id] = [];
-          $items[ $dto->id][] = (object)[
+        if ($dto->item || $dto->description) {
+          if (!isset($items[$dto->id])) $items[$dto->id] = [];
+          $items[$dto->id][] = (object)[
             'item' => $dto->item,
             'description' => $dto->description,
 
           ];
-
         }
 
         return $dto;
-
       });
 
       foreach ($items as $k => $v) {
         $sql = sprintf(
           'UPDATE `matrix` SET `lines` = %s WHERE `id` = %d',
-          $this->quote( json_encode( $v)),
+          $this->quote(json_encode($v)),
           $k
 
         );
 
         // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
         $this->Q($sql);
-
       }
-
     }
 
-    return $this->Result( 'SELECT * FROM `matrix`');
-
+    return $this->Result('SELECT * FROM `matrix`');
   }
 
-  public function getRichData( dto\job $job) : dto\job {
+  public function getRichData(dto\job $job): dto\job {
     $dao = new job_lines;
-    $job->lines = $dao->getLinesOfJobID( $job->id);
+    $job->lines = $dao->getLinesOfJobID($job->id);
 
-    if ( $job->contractor_id) {
+    if ($job->contractor_id) {
       $dao = new job_contractors;
-      if ( $contractor = $dao->getByID( $job->contractor_id)) {
+      if ($contractor = $dao->getByID($job->contractor_id)) {
         $job->contractor_trading_name = $contractor->trading_name;
-
       }
-
     }
 
-    if ( $job->properties_id) {
+    if ($job->properties_id) {
       $dao = new properties;
-      if ( $prop = $dao->getByID( $job->properties_id)) {
+      if ($prop = $dao->getByID($job->properties_id)) {
         $job->address_street = $prop->address_street;
         $job->address_suburb = $prop->address_suburb;
         $job->address_postcode = $prop->address_postcode;
-
       }
-
     }
 
     return $job;
-
   }
 
+  public function getWorkOrderPath(dto\job $job): string {
+    $path = implode(DIRECTORY_SEPARATOR, [
+      $this->store($job),
+      'workorder.pdf'
+
+    ]);
+
+    return $path;
+  }
+
+  public function store(dto\job $job): string {
+    $path = implode(DIRECTORY_SEPARATOR, [
+      config::cms_job_store(),
+      $job->id
+
+    ]);
+
+    if (!is_dir($path)) {
+      mkdir($path, 0777);
+      chmod($path, 0777);
+    }
+
+    return $path;
+  }
 }

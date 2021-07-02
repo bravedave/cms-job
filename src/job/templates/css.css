@@ -1,0 +1,56 @@
+body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"; }
+
+table { width: 100%; margin: 0; border-collapse: collapse; }
+
+tr { vertical-align: top; }
+td { border-bottom: 1px solid #f0f0f0; padding: 4px 4px; }
+
+p { margin: 8px 0 4px; }
+
+body, h4 { font-size: 12px; }
+
+.table th.noborder, .table td.noborder {
+	border-top: none !important;
+	border-bottom: none !important;
+}
+
+.text-right { text-align: right; }
+.bold { font-weight: bold; }
+.mt-0, .mx-0 { margin-top: 0; }
+.mb-0, .mx-0 { margin-bottom: 0 }
+
+.p-0 { padding: 0; }
+.p-1 { padding: 4px; }
+.py-1, .pt-1 { padding-top: 4px; }
+.py-2, .pt-2 { padding-top: 8px; }
+.py-3, .pt-3 { padding-top: 12px; }
+.py-4, .pt-4 { padding-top: 16px; }
+.px-1, .pl-1 { padding-left: 4px; }
+.px-2, .pl-2 { padding-left: 8px; }
+.px-3, .pl-3 { padding-left: 12px; }
+.px-4, .pl-4 { padding-left: 16px; }
+
+.col-atr-left { width: 170px; }
+.col-atr-2 { width: 200px; }
+
+/*
+.col-otb-left { width: 300px; }
+small { font-size: 10px; }
+*/
+
+.card {
+	/* Add shadows to create the "card" effect */
+	box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+	border: 1px solid silver;
+
+}
+
+.card > img { border-radius: 5px 5px 0 0; }
+.card > .container { padding: 2px 16px; }
+
+.text-muted { color: #6c757d!important; }
+.list-unstyled {
+    margin-top: 0;
+    padding-left: 0;
+    list-style: none;
+}

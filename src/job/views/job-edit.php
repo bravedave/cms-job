@@ -261,7 +261,6 @@ $categories = $this->data->categories;  ?>
 
           </div>
 
-
           <div class="form-row d-none" id="<?= $_uidTenants = strings::rand() ?>-envelope">
             <div class="col-md-3 col-xl-2 col-form-label">tenants</div>
             <div class="col" id="<?= $_uidTenants ?>"></div>
@@ -568,15 +567,6 @@ $categories = $this->data->categories;  ?>
 
               // $('<div class="col-2 pt-2">Keys</div>').appendTo('#<?= $_uidKeyRow ?>');
               let col = $('<div class="col pt-2"></div>').appendTo('#<?= $_uidKeyRow ?>');
-
-              // (row => {
-              //   // title row
-              //   $('<div class="col-2">KeySet</div>').appendTo(row)
-              //   $('<div class="col-2">Type</div>').appendTo(row)
-              //   $('<div class="col">Location/Person</div>').appendTo(row)
-
-              // })($('<div class="form-row mb-2 small border-bottom"></div>').appendTo(col));
-
 
               $.each(d.data, (i, keyset) => {
                 if (<?= \cms\keyregister\config::keyset_management ?> == keyset.keyset_type) {

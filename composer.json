@@ -2,7 +2,7 @@
   "name": "bravedave/cms-job",
   "description": "JOB's module for CMS",
   "minimum-stability": "dev",
-  "prefer-stable": true,
+  "prefer-stable": false,
   "license": "MIT",
   "authors": [
     {
@@ -42,7 +42,9 @@
     "bravedave/green": "*",
     "bravedave/offer_to_lease": "*",
     "bravedave/cms-leasing": "*",
-    "bravedave/cms-keyregister": "*"
+    "bravedave/cms-keyregister": "*",
+    "dompdf/dompdf": "*",
+    "intervention/image": "*"
   },
   "require-dev": {
     "ext-apcu": "*",
