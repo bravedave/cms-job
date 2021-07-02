@@ -9,9 +9,6 @@
 */
 
 class config extends dvc\config {
-  static $WEBNAME = 'Offer to Lease';
-  static $PORTAL = 'http://localhost:8991/';
-  static $PORTAL_ADMIN = 'http://localhost:8991/';
 
   const use_inline_logon = true;
 

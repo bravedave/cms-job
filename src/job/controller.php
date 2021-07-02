@@ -467,6 +467,7 @@ class controller extends \Controller {
   }
 
   public function invoiceto_edit() {
+    $this->title = config::label_invoiceto_edit;
     $this->load('invoiceto-edit');
 
   }

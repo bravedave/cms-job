@@ -23,6 +23,7 @@ class config extends \config {
 	const label_category = 'Category';
 	const label_category_add = 'New Category';
 	const label_category_edit = 'Edit Category';
+	const label_invoiceto_edit = 'Invoice To Supplimental';
 	const label_items = 'Items';
 	const label_item = 'Item';
 	const label_item_add = 'New Item';
