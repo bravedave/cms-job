@@ -12,7 +12,7 @@
 namespace cms\job;
 
 class config extends \config {
-	const cms_job_db_version = 0.9;
+	const cms_job_db_version = 1.0;
 
 	const label = 'JOB';
 	const label_contractor_add = 'New Contractor';
@@ -69,6 +69,7 @@ class config extends \config {
 			self::$_CMS_JOB_VERSION = $j->cms_job_version = $set;
 
 			file_put_contents($config, json_encode($j, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+			chmod($config, 0777);
 		}
 
 		return $ret;
@@ -99,6 +100,7 @@ class config extends \config {
 			self::$_CMS_JOB_INVOICE_TO = $j->cms_job_invoice_to = $set;
 
 			file_put_contents($config, json_encode($j, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+			chmod($config, 0777);
 		}
 
 		return $ret;
