@@ -29,6 +29,7 @@ class job extends _dto {
   public $address_suburb = '';
   public $address_postcode = '';
 
+  public $keys = [];
   public $lines = [];
 
 }

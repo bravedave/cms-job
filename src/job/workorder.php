@@ -90,6 +90,40 @@ abstract class workorder {
     }
 
     $content = [];
+
+    $access = [];
+
+    if ($dto->tenants) {
+      $tenants = [];
+      foreach ($dto->tenants as $tenant) {
+        $_tenant = [$tenant->name];
+        if ($tenant->phone) $_tenant[] = $tenant->phone;
+        if ($tenant->email) $_tenant[] = $tenant->email;
+
+        $tenants[] = sprintf('<div class="mb-1">%s</div>', implode(', ', $_tenant));
+      }
+
+      if ($tenants) $access[] = sprintf('<td>%s</td>', implode($tenants));
+    }
+
+
+    if ($dto->keys) {
+      $keys = [];
+      foreach ($dto->keys as $key) {
+        $keys[] = sprintf('<div class="mb-1">Key : %s</div>', $key->keyset);
+      }
+
+      if ($keys) $access[] = sprintf('<td>%s</td>', implode($keys));
+    }
+
+    if ($access) {
+      $content[] = sprintf(
+        '<table class="table"><tbody><tr>%s</tr></tbody></table>',
+        implode($access)
+
+      );
+    }
+
     $content[] = sprintf(
       '<h3 class="mb-0 pl-1">Description</h3>
       <div class="p-1">%s</div>',

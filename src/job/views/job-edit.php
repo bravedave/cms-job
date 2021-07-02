@@ -551,15 +551,16 @@ $categories = $this->data->categories;  ?>
 
           if (Number(_data.properties_id) > 0) {
             _.post({
-              url: _.url('keyregister'),
+              url: _.url('<?= $this->route ?>'),
               data: {
-                action: 'get-keys-for-property',
-                id: _data.properties_id
+                action: 'get-keys',
+                id: _data.id
 
               },
 
             }).then(d => {
-              console.log(d);
+
+              // console.log(d, _data.id);
 
               $('#<?= $_uidKeyRow ?>')
                 .html('')
@@ -569,27 +570,25 @@ $categories = $this->data->categories;  ?>
               let col = $('<div class="col pt-2"></div>').appendTo('#<?= $_uidKeyRow ?>');
 
               $.each(d.data, (i, keyset) => {
-                if (<?= \cms\keyregister\config::keyset_management ?> == keyset.keyset_type) {
-                  let row = $('<div class="form-row"></div>').appendTo(col);
-                  let ig = $('<div class="input-group input-group-sm"></div>');
-                  ig.append('<div class="input-group-append"><div class="input-group-text">key</div></div>');
+                let row = $('<div class="form-row"></div>').appendTo(col);
+                let ig = $('<div class="input-group input-group-sm"></div>');
+                ig.append('<div class="input-group-append"><div class="input-group-text">key</div></div>');
 
-                  $('<div class="form-control form-control-sm bg-light"></div>')
-                    .html(keyset.keyset)
-                    .appendTo(ig);
+                $('<div class="form-control form-control-sm bg-light"></div>')
+                  .html(keyset.keyset)
+                  .appendTo(ig);
 
-                  $('<div class="col-md-2 mb-1"></div>')
-                    .append(ig)
-                    .appendTo(row)
+                $('<div class="col-md-2 mb-1"></div>')
+                  .append(ig)
+                  .appendTo(row)
 
-                  $('<div class="col mb-2"></div>')
-                    .append(
-                      $('<div class="form-control form-control-sm bg-light"></div>')
-                      .html(keyset.people_id > 0 ? keyset.name : keyset.location)
-                    )
-                    .appendTo(row)
+                $('<div class="col mb-2"></div>')
+                  .append(
+                    $('<div class="form-control form-control-sm bg-light"></div>')
+                    .html(keyset.people_id > 0 ? keyset.name : keyset.location)
+                  )
+                  .appendTo(row)
 
-                }
 
               });
 
@@ -619,7 +618,7 @@ $categories = $this->data->categories;  ?>
               },
 
             }).then(d => {
-              console.log(d);
+              // console.log(d);
 
               let col = $('<div class="col"></div>');
               $('#<?= $_uidMaintenanceRow ?>')

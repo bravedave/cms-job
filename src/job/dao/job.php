@@ -131,6 +131,20 @@ class job extends _dao {
         $job->address_suburb = $prop->address_suburb;
         $job->address_postcode = $prop->address_postcode;
       }
+
+      $dao = new \cms\keyregister\dao\keyregister;
+      $job->keys = [];
+      if ( $keys = $dao->getKeysForProperty($job->properties_id)) {
+        foreach ($keys as $key) {
+          if ( \cms\keyregister\config::keyset_management == $key->keyset_type) {
+            $job->keys[] = $key;
+
+          }
+
+        }
+
+      }
+
     }
 
     return $job;

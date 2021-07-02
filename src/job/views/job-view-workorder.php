@@ -16,18 +16,25 @@ $dto = $this->data->dto;
 $t = '';
 
 $dao = new dao\job;
-if ( $path = $dao->getWorkOrderPath( $dto)) {
-  if ( file_exists($path)) {
+if ($path = $dao->getWorkOrderPath($dto)) {
+  if (file_exists($path)) {
     $t = '?t=' . filemtime($path);
-
   }
-
 }
 
-?>
+$_modal = strings::rand();
 
+?>
+<style>
+  @media (min-width: 768px) {
+    #<?= $_modal ?>iframe {
+      min-height: calc(100vh - 230px) !important;
+    }
+
+  }
+</style>
 <form id="<?= $_form = strings::rand() ?>" autocomplete="off">
-  <div class="modal fade" tabindex="-1" role="dialog" id="<?= $_modal = strings::rand() ?>" aria-labelledby="<?= $_modal ?>Label" aria-hidden="true">
+  <div class="modal fade" tabindex="-1" role="dialog" id="<?= $_modal ?>" aria-labelledby="<?= $_modal ?>Label" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header <?= theme::modalHeader() ?>">
@@ -37,7 +44,7 @@ if ( $path = $dao->getWorkOrderPath( $dto)) {
           </button>
         </div>
         <div class="modal-body">
-          <iframe class="min-vh-100 w-100" src="<?= strings::url(sprintf('%s/workorderpdf/%d%s', $this->route, $dto->id, $t)) ?>"></iframe>
+          <iframe class="w-100" id="<?= $_modal ?>iframe" src="<?= strings::url(sprintf('%s/workorderpdf/%d%s', $this->route, $dto->id, $t)) ?>"></iframe>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary mr-auto" id="<?= $_RefreshWorkOrder = strings::rand() ?>">refresh workorder</button>

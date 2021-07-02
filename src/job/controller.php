@@ -12,7 +12,7 @@ namespace cms\job;
 
 use FilesystemIterator;
 use MatthiasMullie;
-use Json, Response, strings, sys;
+use Json, Response, strings, sys, cms\leasing;
 
 use green\{
   people\dao\people as dao_people,
@@ -93,6 +93,13 @@ class controller extends \Controller {
         if ($dto = $dao->getByID($id)) {
           $dto = $dao->getRichData($dto);
 
+          $dto->tenants = [];
+          if ($dto->properties_id) {
+            $dao = new leasing\dao\tenants;
+            $dto->tenants = $dao->getTenantsOfProperty($dto->properties_id);
+
+          }
+
           if (workorder::create($dto)) {
             // $dao = new dao\job_categories;
             Json::ack($action);
@@ -147,6 +154,35 @@ class controller extends \Controller {
             Json::ack($action)
               ->add('data', []);
           }
+        } else {
+          Json::nak($action);
+        }
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('get-keys' == $action) {
+      /*
+        (_ => {
+          _.post({
+            url : _.url('jobs'),
+            data : {
+              action : 'get-keys',
+              id : 1
+
+            },
+
+          }).then( d => console.log(d));
+
+        })(_brayworth_);
+      */
+
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ( $dto = $dao->getByID($id)) {
+          $dto = $dao->getRichData($dto);
+          Json::ack($action)
+            ->add('data', $dto->keys);
+
         } else {
           Json::nak($action);
         }
