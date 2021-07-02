@@ -97,7 +97,6 @@ class controller extends \Controller {
           if ($dto->properties_id) {
             $dao = new leasing\dao\tenants;
             $dto->tenants = $dao->getTenantsOfProperty($dto->properties_id);
-
           }
 
           if (workorder::create($dto)) {
@@ -178,21 +177,51 @@ class controller extends \Controller {
 
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job;
-        if ( $dto = $dao->getByID($id)) {
+        if ($dto = $dao->getByID($id)) {
           $dto = $dao->getRichData($dto);
           Json::ack($action)
             ->add('data', $dto->keys);
-
         } else {
           Json::nak($action);
         }
       } else {
         Json::nak($action);
       }
-    } elseif ('invoiceto-save' == $action) {
-      config::cms_job_invoiceto( $this->getPost('invoiceto'));
-      Json::ack( $action);
+    } elseif ('get-keys-for-property' == $action) {
+      /*
+        (_ => {
+          _.post({
+            url : _.url('jobs'),
+            data : {
+              action : 'get-keys-for-property',
+              id : 1
 
+            },
+
+          }).then( d => console.log(d));
+
+        })(_brayworth_);
+      */
+
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new \cms\keyregister\dao\keyregister;
+        $keys = [];
+        if ($_keys = $dao->getKeysForProperty($id)) {
+          foreach ($_keys as $_key) {
+            if (\cms\keyregister\config::keyset_management == $_key->keyset_type) {
+              $keys[] = $_key;
+            }
+          }
+        }
+
+        Json::ack($action)
+          ->add('data', $keys);
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('invoiceto-save' == $action) {
+      config::cms_job_invoiceto($this->getPost('invoiceto'));
+      Json::ack($action);
     } elseif ('item-delete' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job_items;
@@ -469,7 +498,6 @@ class controller extends \Controller {
   public function invoiceto_edit() {
     $this->title = config::label_invoiceto_edit;
     $this->load('invoiceto-edit');
-
   }
 
   public function matrix() {

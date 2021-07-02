@@ -553,8 +553,8 @@ $categories = $this->data->categories;  ?>
             _.post({
               url: _.url('<?= $this->route ?>'),
               data: {
-                action: 'get-keys',
-                id: _data.id
+                action: 'get-keys-for-property',
+                id: _data.properties_id
 
               },
 
