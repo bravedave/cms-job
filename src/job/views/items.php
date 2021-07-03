@@ -136,26 +136,19 @@ use strings;  ?>
           let _tr = $(this);
           let _data = _tr.data();
 
-          _context.append($('<a href="#"><i class="bi bi-trash"></i>delete</a>').on('click', function(e) {
-            e.stopPropagation();
-            e.preventDefault();
+          _context.append.a()
+            .html('<i class="bi bi-trash"></i>delete')
+            .on('click', function(e) {
+              e.stopPropagation();
 
-            _context.close();
-            _tr.trigger('delete');
+              _context.close();
+              _tr.trigger('delete');
 
-          }));
+            });
 
-          _context.append('<hr>');
-          _context.append($('<a href="#">close menu</a>').on('click', function(e) {
-            e.stopPropagation();
-            e.preventDefault();
-
-            _context.close();
-
-
-          }));
-
-          _context.open(e);
+          _context
+            .addClose()
+            .open(e);
 
         });;
 

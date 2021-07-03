@@ -196,7 +196,8 @@ use strings;  ?>
           let _data = _tr.data();
 
           _context
-            .append('<div class="pointer font-weight-bold"><i class="bi bi-pencil"></i>edit</div>')
+            .append.a()
+            .html('<i class="bi bi-pencil"></i>edit')
             .on('click', e => {
               e.stopPropagation();
               _tr.trigger('edit');
@@ -207,7 +208,8 @@ use strings;  ?>
           if (0 == Number(_data.line_count)) {
 
             _context
-              .append('<div class="pointer"><i class="bi bi-trash"></i>delete</div>')
+              .append.a()
+              .html('<i class="bi bi-trash"></i>delete')
               .on('click', e => {
                 e.stopPropagation();
                 _tr.trigger('delete');
@@ -218,7 +220,8 @@ use strings;  ?>
           } else {
 
             _context
-              .append('<div class="text-muted">workorder ...</div>')
+              .append.a()
+              .html('<div class="text-muted">workorder ...</div>')
               .on('reconcile', function(e) {
                 let _me = $(this);
 
@@ -233,7 +236,7 @@ use strings;  ?>
                   if ('ack' == d.response) {
                     if ('yes' == d.workorder) {
                       _me
-                        .html('<div class="pointer"><i class="bi bi-file-pdf text-danger"></i>view workorder</div>')
+                        .html('<i class="bi bi-file-pdf text-danger"></i>view workorder')
                         .on('click', e => {
                           e.stopPropagation();
                           _tr.trigger('view-workorder');
@@ -243,7 +246,7 @@ use strings;  ?>
 
                     } else {
                       _me
-                        .html('<div class="pointer">create workorder</div>')
+                        .html('create workorder')
                         .on('click', e => {
                           e.stopPropagation();
                           _tr.trigger('create-workorder');
@@ -265,14 +268,12 @@ use strings;  ?>
           }
 
           if (Number(_data.properties_id) > 0) {
-            _context.append(
-              $('<a target="_blank">goto </a>')
+            _context.append.a()
+              .attr('target','_blank')
               .html('goto ' + _data.address_street)
               .prepend('<i class="bi bi-box-arrow-up-right"></i>')
               .attr('href', _.url('property/view/' + _data.properties_id))
-              .on('click', e => _context.close())
-
-            );
+              .on('click', e => _context.close());
 
           }
 
