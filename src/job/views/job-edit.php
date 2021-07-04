@@ -65,6 +65,7 @@ $categories = $this->data->categories;  ?>
 
           <?php }  ?>
 
+          <!-- --[status]-- -->
           <div class="form-row">
             <div class="col-md-3 col-xl-2 col-form-label">status</div>
 
@@ -124,6 +125,7 @@ $categories = $this->data->categories;  ?>
 
           </div>
 
+          <!-- --[type]-- -->
           <div class="form-row mb-2">
             <div class="col-md-3 col-xl-2 col-form-label">type</div>
 
@@ -162,6 +164,7 @@ $categories = $this->data->categories;  ?>
 
           </div>
 
+          <!-- --[payment]-- -->
           <div class="form-row mb-2">
             <div class="col-md-3 col-xl-2 col-form-label">payment</div>
 
@@ -190,19 +193,6 @@ $categories = $this->data->categories;  ?>
 
           </div>
 
-          <div class="form-row">
-            <div class="col-md-3 col-xl-2 col-form-label">description</div>
-
-            <div class="col-md mb-2">
-              <textarea class="form-control" name="description" placeholder="describe the need for this job ..." required id="<?= $_uid = strings::rand() ?>"><?= $dto->description ?></textarea>
-
-            </div>
-            <script>
-              (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => $('#<?= $_uid ?>').autoResize()))(_brayworth_);
-            </script>
-
-          </div>
-
           <!-- --[property]-- -->
           <div class="form-row">
             <div class="col-md-3 col-xl-2 col-form-label">property</div>
@@ -220,6 +210,7 @@ $categories = $this->data->categories;  ?>
                 <div class="col-auto mb-2 d-none" id="<?= $_uid ?>postcode_div">
                   <div class="form-control" id="<?= $_uid ?>postcode"><?= $dto->address_postcode ?></div>
                 </div>
+                <div class="col-auto mb-2 d-none" id="<?= $_uidKeyCell = strings::rand() ?>"></div>
                 <script>
                   (_ => $('#<?= $_modal ?>')
                     .on('shown.bs.modal', () => {
@@ -253,13 +244,25 @@ $categories = $this->data->categories;  ?>
 
               </div>
 
-              <div id="<?= $_uidMaintenanceRow = strings::rand() ?>"></div>
-
-              <div id="<?= $_uidKeyRow = strings::rand() ?>"></div>
-
             </div>
 
           </div>
+
+          <!-- --[description]-- -->
+          <div class="form-row">
+            <div class="col-md-3 col-xl-2 col-form-label">description</div>
+
+            <div class="col-md mb-2">
+              <textarea class="form-control" name="description" placeholder="describe the need for this job ..." required id="<?= $_uid = strings::rand() ?>"><?= $dto->description ?></textarea>
+
+            </div>
+            <script>
+              (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => $('#<?= $_uid ?>').autoResize()))(_brayworth_);
+            </script>
+
+          </div>
+
+          <div class="form-row mb-2 d-none" id="<?= $_uidMaintenanceRow = strings::rand() ?>"></div>
 
           <div class="form-row d-none" id="<?= $_uidTenants = strings::rand() ?>-envelope">
             <div class="col-md-3 col-xl-2 col-form-label">tenants</div>
@@ -325,9 +328,15 @@ $categories = $this->data->categories;  ?>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" accesskey="N" id="<?= $_btnAddItem = strings::rand() ?>"><i class="bi bi-plus"></i> item</button>
+          <button type="button" class="btn btn-outline-secondary" accesskey="I" id="<?= $_btnAddItem = strings::rand() ?>">
+            <i class="bi bi-plus"></i> <span style="text-decoration: underline;">I</span>tem
+          </button>
+          <button type="button" class="btn btn-outline-secondary" accesskey="T" id="<?= $_btnTenants = strings::rand() ?>">
+            <i class="bi bi-people"></i> <span style="text-decoration: underline;">T</span>enants
+          </button>
+
           <button type="button" class="btn btn-outline-secondary ml-auto" data-dismiss="modal">close</button>
-          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="submit" class="btn btn-primary" accesskey="S"><span style="text-decoration: underline;">S</span>ave</button>
 
         </div>
 
@@ -562,42 +571,31 @@ $categories = $this->data->categories;  ?>
 
               // console.log(d, _data.id);
 
-              $('#<?= $_uidKeyRow ?>')
+              $('#<?= $_uidKeyCell ?>')
                 .html('')
-                .addClass('form-row mb-1');
-
-              // $('<div class="col-2 pt-2">Keys</div>').appendTo('#<?= $_uidKeyRow ?>');
-              let col = $('<div class="col pt-2"></div>').appendTo('#<?= $_uidKeyRow ?>');
+                .removeClass('d-none');
 
               $.each(d.data, (i, keyset) => {
-                let row = $('<div class="form-row"></div>').appendTo(col);
-                let ig = $('<div class="input-group input-group-sm"></div>');
-                ig.append('<div class="input-group-append"><div class="input-group-text">key</div></div>');
+                let row = $('<div class="form-row"></div>').appendTo('#<?= $_uidKeyCell ?>');
+                let ig = $('<div class="input-group"></div>');
+                ig.append('<div class="input-group-prepend"><div class="input-group-text"><i class="bi bi-key"></i></div></div>');
 
-                $('<div class="form-control form-control-sm bg-light"></div>')
+                $('<div class="form-control bg-light"></div>')
                   .html(keyset.keyset)
                   .appendTo(ig);
 
-                $('<div class="col-md-2 mb-1"></div>')
+                $('<div class="col"></div>')
                   .append(ig)
                   .appendTo(row)
-
-                $('<div class="col mb-2"></div>')
-                  .append(
-                    $('<div class="form-control form-control-sm bg-light"></div>')
-                    .html(keyset.people_id > 0 ? keyset.name : keyset.location)
-                  )
-                  .appendTo(row)
-
 
               });
 
             });
 
           } else {
-            $('#<?= $_uidKeyRow ?>')
+            $('#<?= $_uidKeyCell ?>')
               .html('')
-              .removeClass();
+              .addClass('d-none');
 
           }
 
@@ -623,15 +621,12 @@ $categories = $this->data->categories;  ?>
               let col = $('<div class="col"></div>');
               $('#<?= $_uidMaintenanceRow ?>')
                 .html('')
-                .addClass('form-row')
-                .append(col);
-
-              col.append('<h6>maintenance instructions</h6>');
+                .append('<div class="col-md-3 col-xl-2 text-truncate pt-1">maintenance instructions</div>')
+                .append(col)
+                .removeClass('d-none');
 
               if ('ack' == d.response) {
-                //~ console.log( d);
                 if (d.data.length > 0) {
-                  //~ $('#<?= $_uid ?>').closest( '.row').removeClass('d-none');
                   $.each(d.data, (i, sched) => {
                     let row = $('<div class="form-row"></div>');
 
@@ -653,7 +648,6 @@ $categories = $this->data->categories;  ?>
                       .appendTo(row);
 
                     col.append(row);
-                    //~ console.log( sched);
 
                   });
 
@@ -783,6 +777,8 @@ $categories = $this->data->categories;  ?>
 
           }
 
+          $('#<?= $_btnTenants ?>').remove();
+
         })
         .on('item-add', e => {
           let row = newRow();
@@ -863,9 +859,6 @@ $categories = $this->data->categories;  ?>
             })
             .trigger('qualify-contractor');
 
-
-          $(this).trigger('get-tenants');
-
         })
         .on('submit', function(e) {
           let _form = $(this);
@@ -902,10 +895,15 @@ $categories = $this->data->categories;  ?>
           $(this).trigger('qualify-contractor');
         });
 
+      $('#<?= $_btnTenants ?>').on('click', e => $('#<?= $_form ?>').trigger('get-tenants'));
+
       $('#<?= $_form ?>')
         .trigger('get-keyset')
         .trigger('get-maintenance')
         .trigger('items-init');
+
+      $('select[name="status"]', '#<?= $_form ?>').focus();
+
     }))(_brayworth_);
   </script>
 
