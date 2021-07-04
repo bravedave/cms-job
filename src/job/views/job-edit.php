@@ -325,7 +325,7 @@ $categories = $this->data->categories;  ?>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" id="<?= $_btnAddItem = strings::rand() ?>"><i class="bi bi-plus"></i> item</button>
+          <button type="button" class="btn btn-outline-secondary" accesskey="N" id="<?= $_btnAddItem = strings::rand() ?>"><i class="bi bi-plus"></i> item</button>
           <button type="button" class="btn btn-outline-secondary ml-auto" data-dismiss="modal">close</button>
           <button type="submit" class="btn btn-primary">Save</button>
 
