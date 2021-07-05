@@ -292,15 +292,17 @@ $categories = $this->data->categories;  ?>
             <div class="col-md-3 col-xl-2 col-form-label"><?= strtolower(config::label_contractor) ?></div>
 
             <div class="col-md mb-2">
-              <input type="text" class="form-control" value="<?= $dto->contractor_trading_name ?>" id="<?= $_uid = strings::rand() ?>">
+              <input type="text" class="form-control" value="<?= $dto->contractor_trading_name ?>" id="<?= $_uidContractorTradingName = strings::rand() ?>">
               <div id="<?= $_missingServices = strings::rand() ?>"></div>
 
             </div>
 
+            <div class="col-md mb-2 d-none" id="<?= $_uidContractorTradingName ?>-primary-contact"></div>
+
             <script>
               (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
                 let reqServices = $('input[name="required_services"]', '#<?= $_form ?>');
-                $('#<?= $_uid ?>').autofill({
+                $('#<?= $_uidContractorTradingName ?>').autofill({
                   autoFocus: true,
                   source: (request, response) => {
                     _.post({
@@ -317,17 +319,14 @@ $categories = $this->data->categories;  ?>
                   },
                   select: (e, ui) => {
                     let o = ui.item;
-                    $('input[name="contractor_id"]', '#<?= $_form ?>').val(o.id);
-                    $('#<?= $_form ?>').trigger('qualify-contractor');
+                    $('input[name="contractor_id"]', '#<?= $_form ?>')
+                      .val(o.id);
+                    $('#<?= $_form ?>')
+                      .trigger('qualify-contractor');
 
                   },
 
                 });
-
-                if (Number($('input[name="properties_id"]', '#<?= $_form ?>').val()) > 0) {
-                  $('#<?= $_uid ?>suburb_div, #<?= $_uid ?>postcode_div').removeClass('d-none');
-
-                }
 
               }))(_brayworth_);
             </script>
@@ -881,6 +880,64 @@ $categories = $this->data->categories;  ?>
 
                     }
 
+
+                    if (Number(d.data.primary_contact) > 0) {
+                      let ig = $('<div class="input-group"></div>');
+
+                      $('<div class="form-control text-truncate bg-light"></div>')
+                        .html(d.data.primary_contact_name)
+                        .appendTo(ig)
+
+                      if (String(d.data.primary_contact_phone).IsPhone()) {
+                        let tel = String(d.data.primary_contact_phone).IsMobilePhone() ?
+                          String(d.data.primary_contact_phone).AsMobilePhone() :
+                          String(d.data.primary_contact_phone).AsLocalPhone();
+
+                        $('<div class="input-group-append"></div>')
+                          .append(
+                            $('<div class="input-group-text"></div>')
+                            .html(tel)
+                          )
+                          .appendTo(ig)
+
+                        if (String(d.data.primary_contact_phone).IsMobilePhone()) {
+                          $('<div class="input-group-append"></div>')
+                            .append(
+                              $('<button type="button" class="btn input-group-text" "send sms"><i class="bi bi-chat-dots"></i></button>')
+                              .on('click', function(e) {
+                                e.stopPropagation();
+
+                                if (!!window._cms_) {
+                                  _cms_.modal.sms({
+                                    to: d.data.primary_contact_phone
+                                  });
+
+                                } else {
+                                  _.ask.warning({
+                                    title: 'Warning',
+                                    text: 'no SMS program'
+                                  });
+
+                                }
+
+                              })
+                            )
+                            .appendTo(ig)
+
+                        }
+
+                      }
+
+                      $('#<?= $_uidContractorTradingName ?>-primary-contact')
+                        .html('')
+                        .append(ig)
+                        .removeClass('d-none');
+
+                    } else {
+                      $('#<?= $_uidContractorTradingName ?>-primary-contact').addClass('d-none');
+
+                    }
+
                   } else {
                     _.growl(d);
 
@@ -929,7 +986,8 @@ $categories = $this->data->categories;  ?>
           $(this).trigger('qualify-contractor');
         });
 
-      $('#<?= $_btnTenants ?>').on('click', e => $('#<?= $_form ?>').trigger('get-tenants'));
+      $('#<?= $_btnTenants ?>')
+        .on('click', e => $('#<?= $_form ?>').trigger('get-tenants'));
 
       $('#<?= $_form ?>')
         .trigger('get-keyset')

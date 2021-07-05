@@ -148,7 +148,7 @@ $categories = $this->data->categories;  ?>
                 <div class="form-row">
                   <div class="col-md mb-2">
                     <div class="input-group">
-                      <div class="form-control">
+                      <div class="form-control text-truncate">
                         <?= $primary_contact_name ?>
 
                       </div>
