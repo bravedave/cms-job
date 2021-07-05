@@ -248,6 +248,23 @@ $categories = $this->data->categories;  ?>
 
           </div>
 
+          <!-- --[on_site_contact]-- -->
+          <div class="form-row">
+            <div class="col-md-3 col-xl-2 col-form-label">site contact</div>
+
+            <div class="col">
+              <div class="form-row">
+                <div class="col-md mb-2">
+                  <input type="text" class="form-control" name="on_site_contact" value="<?= $dto->on_site_contact ?>" maxlength="100" id="<?= $_uid = strings::rand() ?>">
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
           <!-- --[description]-- -->
           <div class="form-row">
             <div class="col-md-3 col-xl-2 col-form-label">description</div>
@@ -686,6 +703,7 @@ $categories = $this->data->categories;  ?>
                 $('#<?= $_uidTenants ?>').html('');
                 $.each(d.tenants, (i, t) => {
                   // console.log(t);
+                  let on_site_contact = [t.name];
                   let row = $('<div class="form-row"></div>').appendTo('#<?= $_uidTenants ?>');
                   $('<div class="col-md-2 mb-1"></div>')
                     .append(
@@ -721,9 +739,11 @@ $categories = $this->data->categories;  ?>
                     });
 
                     $('<div class="input-group-append"></div>').append(btn).appendTo(ig);
+                    on_site_contact.push(m.AsMobilePhone());
 
                   } else if (m.IsPhone()) {
                     col.html(m.AsLocalPhone()).addClass('p-2');
+                    on_site_contact.push(m.AsLocalPhone());
 
                   }
 
@@ -754,10 +774,25 @@ $categories = $this->data->categories;  ?>
 
                     $('<div class="input-group-append"></div>').append(btn).appendTo(ig);
 
+                    on_site_contact.push(t.email);
+
                   } else {
                     col.html(t.email).addClass('p-2');
 
                   }
+
+                  col = $('<div class="col-auto mb-2"></div>').appendTo(row);
+                  $('<button type="button" class="btn btn-light"><i class="bi bi-arrow-bar-up"></i></button>')
+                    .appendTo(col)
+                    .on('click', e => {
+                      // e.stopPropagation();e.preventDefault();
+
+                      $('input[name="on_site_contact"]', '#<?= $_form ?>')
+                        .val(on_site_contact.join(', '));
+
+                    });
+
+                  col.on('click', e => console.log('ouch ..'));
 
                 });
 

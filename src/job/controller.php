@@ -281,6 +281,7 @@ class controller extends \Controller {
           'due' => $this->getPost('due'),
           'job_payment' => (int)$this->getPost('job_payment'),
           'description' => (string)$this->getPost('description'),
+          'on_site_contact' => (string)$this->getPost('on_site_contact'),
 
         ];
 
