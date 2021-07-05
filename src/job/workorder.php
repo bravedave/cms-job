@@ -106,24 +106,35 @@ abstract class workorder {
 
     $access = [];
 
-    if ($dto->tenants) {
+    if ($dto->on_site_contact || $dto->tenants) {
       $tenants = [];
-      foreach ($dto->tenants as $tenant) {
-        $_tenant = [$tenant->name];
-        if ($tenant->phone) $_tenant[] = $tenant->phone;
-        if ($tenant->email) $_tenant[] = $tenant->email;
+      if ($dto->on_site_contact) {
+        $tenants[] = sprintf(
+          '<div class="mb-1"><strong>Site Contact</strong> : %s</div>',
+          $dto->on_site_contact
+        );
 
-        $tenants[] = sprintf('<div class="mb-1">%s</div>', implode(', ', $_tenant));
+      }
+      else {
+        $tenants[] = '<h3 class="mb-1 mt-0">Tenants</h3>';
+        foreach ($dto->tenants as $tenant) {
+          $_tenant = [$tenant->name];
+          if ($tenant->phone) $_tenant[] = $tenant->phone;
+          if ($tenant->email) $_tenant[] = $tenant->email;
+
+          $tenants[] = sprintf('<div class="mb-1">%s</div>', implode(', ', $_tenant));
+        }
+
       }
 
-      if ($tenants) $access[] = sprintf('<td class="noborder"><h3 class="mb-1 mt-0">Tenants</h3>%s</td>', implode($tenants));
-    }
+      if ($tenants) $access[] = sprintf('<td class="noborder">%s</td>', implode($tenants));
 
+    }
 
     if ($dto->keys) {
       $keys = [];
       foreach ($dto->keys as $key) {
-        $keys[] = sprintf('<div class="mb-1">Key : %s</div>', $key->keyset);
+        $keys[] = sprintf('<div class="mb-1 text-right"><strong>Key</strong> : %s</div>', $key->keyset);
       }
 
       if ($keys) $access[] = sprintf('<td class="noborder">%s</td>', implode($keys));

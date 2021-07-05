@@ -719,9 +719,8 @@ $categories = $this->data->categories;  ?>
                     $('<input type="text" class="form-control" readonly>').val(m.AsMobilePhone()).appendTo(ig);
 
                     let btn = $('<button type="button" class="btn input-group-text"><i class="bi bi-chat-dots"></i></button>');
-                    btn.on('click', function(e) {
+                    btn.on('click', e => {
                       e.stopPropagation();
-                      e.preventDefault();
 
                       if (!!window._cms_) {
                         _cms_.modal.sms({
@@ -755,7 +754,6 @@ $categories = $this->data->categories;  ?>
                     let btn = $('<button type="button" class="btn input-group-text"><i class="bi bi-cursor"></i></button>');
                     btn.on('click', function(e) {
                       e.stopPropagation();
-                      e.preventDefault();
 
                       if (!!_.email.activate) {
                         _.email.activate({
@@ -782,10 +780,11 @@ $categories = $this->data->categories;  ?>
                   }
 
                   col = $('<div class="col-auto mb-2"></div>').appendTo(row);
-                  $('<button type="button" class="btn btn-light"><i class="bi bi-arrow-bar-up"></i></button>')
+                  $('<button type="button" class="btn btn-light btn-sm"><i class="bi bi-arrow-bar-up"></i></button>')
+                    .attr('title', 'Assign as on Site contact')
                     .appendTo(col)
                     .on('click', e => {
-                      // e.stopPropagation();e.preventDefault();
+                      e.stopPropagation();
 
                       $('input[name="on_site_contact"]', '#<?= $_form ?>')
                         .val(on_site_contact.join(', '));

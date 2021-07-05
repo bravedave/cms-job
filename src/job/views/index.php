@@ -10,7 +10,7 @@
 
 namespace cms\job;
 
-use strings;  ?>
+use currentUser, strings;  ?>
 
 <ul class="nav flex-column">
   <li class="nav-item h6">
@@ -100,33 +100,35 @@ use strings;  ?>
 
   </li>
 
-  <li class="nav-item">
-    <a class="nav-link pl-4" href="#" id="<?= $_uid = strings::rand() ?>">
-      <i class="bi bi-plus"></i> New <?= config::label_category ?>
+  <?php if (currentUser::restriction('can-add-job-items')) { ?>
+    <li class="nav-item">
+      <a class="nav-link pl-4" href="#" id="<?= $_uid = strings::rand() ?>">
+        <i class="bi bi-plus"></i> New <?= config::label_category ?>
 
-    </a>
+      </a>
 
-  </li>
+    </li>
 
-  <script>
-    (_ => {
-      let active = false;
+    <script>
+      (_ => {
+        let active = false;
 
-      $('#<?= $_uid ?>').on('click', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
+        $('#<?= $_uid ?>').on('click', function(e) {
+          e.stopPropagation();
+          e.preventDefault();
 
-        if (active) return;
-        active = true;
+          if (active) return;
+          active = true;
 
-        _.get.modal(_.url('<?= $this->route ?>/category_edit'))
-          .then(m => m.on('success', e => _.nav('<?= $this->route ?>/categories')))
-          .then(m => active = false);
+          _.get.modal(_.url('<?= $this->route ?>/category_edit'))
+            .then(m => m.on('success', e => _.nav('<?= $this->route ?>/categories')))
+            .then(m => active = false);
 
-      });
+        });
 
-    })(_brayworth_);
-  </script>
+      })(_brayworth_);
+    </script>
+  <?php } ?>
 
   <li class="nav-item">
     <a class="nav-link" href="<?= strings::url(sprintf('%s/items', $this->route)) ?>">
@@ -136,36 +138,38 @@ use strings;  ?>
 
   </li>
 
+  <?php if (currentUser::restriction('can-add-job-items')) { ?>
+    <li class="nav-item">
+      <a class="nav-link pl-4" href="#" id="<?= $_uid = strings::rand() ?>">
+        <i class="bi bi-plus"></i> New <?= config::label_item ?>
+
+      </a>
+
+    </li>
+
+    <script>
+      (_ => {
+        let active = false;
+
+        $('#<?= $_uid ?>').on('click', function(e) {
+          e.stopPropagation();
+          e.preventDefault();
+
+          if (active) return;
+          active = true;
+
+          _.get.modal(_.url('<?= $this->route ?>/item_edit'))
+            .then(m => m.on('success', e => _.nav('<?= $this->route ?>/items')))
+            .then(m => active = false);
+
+        });
+
+      })(_brayworth_);
+    </script>
+  <?php } ?>
+
   <li class="nav-item">
-    <a class="nav-link pl-4" href="#" id="<?= $_uid = strings::rand() ?>">
-      <i class="bi bi-plus"></i> New <?= config::label_item ?>
-
-    </a>
-
-  </li>
-
-  <script>
-    (_ => {
-      let active = false;
-
-      $('#<?= $_uid ?>').on('click', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-
-        if (active) return;
-        active = true;
-
-        _.get.modal(_.url('<?= $this->route ?>/item_edit'))
-          .then(m => m.on('success', e => _.nav('<?= $this->route ?>/items')))
-          .then(m => active = false);
-
-      });
-
-    })(_brayworth_);
-  </script>
-
-  <li class="nav-item">
-    <a class="nav-link pl-4" href="<?= strings::url('keyregister') ?>">
+    <a class="nav-link" href="<?= strings::url('keyregister') ?>">
       <i class="bi bi-key"></i> Key Register
 
     </a>
