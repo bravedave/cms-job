@@ -119,7 +119,9 @@ class controller extends \Controller {
         $dao = new dao\job_contractors;
         if ($dto = $dao->getByID($id)) {
 
-          $dao = new dao\job_categories;
+          $dto = $dao->getRichData($dto);
+
+          // $dao = new dao\job_categories;
           Json::ack($action)
             ->add('data', $dto);
           // ->add( 'services', $dao->getCategoriesOf($dto->services));
@@ -218,6 +220,36 @@ class controller extends \Controller {
           ->add('data', $keys);
       } else {
         Json::nak($action);
+      }
+    } elseif ('get-workorder-as-attachment' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+
+          if (file_exists($src = $dao->getWorkOrderPath($dto))) {
+            if (!($tmpdir = $this->getPost('tmpdir'))) {
+              $tmpdir = strings::rand('email_') . '_' . time();
+            }
+
+            $_dir = config::tempdir() . $tmpdir;
+            if (!is_dir($_dir)) {
+              mkdir($_dir, 0777);
+              chmod($_dir, 0777);
+            }
+
+            $target = sprintf('%s/%s', $_dir, basename($src));
+            copy($src, $target);
+
+            Json::ack($action)
+              ->add('tmpdir',$tmpdir);
+          } else {
+            Json::nak(sprintf('%s - not found', $action));
+          }
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak(sprintf('%s - missing id', $action));
       }
     } elseif ('invoiceto-save' == $action) {
       config::cms_job_invoiceto($this->getPost('invoiceto'));

@@ -20,5 +20,8 @@ class job_contractors extends _dto {
   public $services = '';
   public $primary_contact = '';
   public $primary_contact_role = '';
+  public $primary_contact_name = '';
+  public $primary_contact_phone = '';
+  public $primary_contact_email = '';
 
 }

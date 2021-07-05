@@ -88,7 +88,18 @@ use strings;  ?>
         $lines = json_decode($dto->lines) ?? [];
         $pm = strings::initials($dto->pm);
       ?>
-        <tr data-id="<?= $dto->id ?>" data-properties_id="<?= $dto->properties_id ?>" data-address_street="<?= htmlentities($dto->address_street) ?>" data-line_count="<?= count($lines) ?>" data-pm="<?= $pm ?>">
+        <tr <?php
+            printf(
+              'data-id="%s" data-properties_id="%s" data-address_street="%s" data-line_count="%s" data-contractor="%s" data-pm="%s"',
+              $dto->id,
+              $dto->properties_id,
+              htmlentities($dto->address_street),
+              count($lines),
+              $dto->contractor_id,
+              $pm
+
+            );
+            ?>>
           <td class="small" line-number></td>
           <td class="constrain">
             <div class="constrained text-truncate">
@@ -269,7 +280,7 @@ use strings;  ?>
 
           if (Number(_data.properties_id) > 0) {
             _context.append.a()
-              .attr('target','_blank')
+              .attr('target', '_blank')
               .html('goto ' + _data.address_street)
               .prepend('<i class="bi bi-box-arrow-up-right"></i>')
               .attr('href', _.url('property/view/' + _data.properties_id))
@@ -351,13 +362,95 @@ use strings;  ?>
           });
 
         })
+        .on('email-workorder', function(e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          let f = o => {
+            if (!!window.EmailClass) {
+            // if (true) {
+              _.post({
+                url: _.url('<?= $this->route ?>'),
+                data: {
+                  action: 'get-workorder-as-attachment',
+                  id: _data.id
+                },
+
+              }).then(d => {
+                if ('ack' == d.response) {
+                  o.tmpDir = d.tmpdir;
+                  if (!!window.EmailClass) {
+                    _.email.activate(mailer);
+                  } else {
+                    console.log(o);
+                    console.log('no email program');
+
+                  }
+
+                } else {
+                  _.growl(d);
+
+                }
+
+              });
+
+            } else {
+              console.log(o);
+              console.log('no email program');
+
+            }
+
+          }
+
+          // console.log('email-workorder');
+          // console.log(_data);
+          let mailer = {
+            subject: _data.address_street + ' workorder'
+          };
+
+          if (Number(_data.contractor) > 0) {
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'get-contractor-by-id',
+                id: _data.contractor
+
+              },
+
+            }).then(d => {
+              if ('ack' == d.response) {
+                console.log(d);
+                if (String(d.data.primary_contact_email).isEmail()) {
+                  mailer.to = _.email.rfc922({
+                    name: d.data.primary_contact_name,
+                    email: d.data.primary_contact_email
+
+                  });
+
+                }
+
+                f(mailer);
+
+              } else {
+                _.growl(d);
+
+              }
+
+            });
+
+          } else {
+            f(mailer);
+
+          }
+        })
         .on('view-workorder', function(e) {
           let _tr = $(this);
           let _data = _tr.data();
 
           _.get
             .modal(_.url('<?= $this->route ?>/workorder/' + _data.id))
-            .then(m => m.on('refresh-workorder', e => _tr.trigger('create-workorder')));
+            .then(m => m.on('refresh-workorder', e => _tr.trigger('create-workorder')))
+            .then(m => m.on('email-workorder', e => _tr.trigger('email-workorder')));
 
         });
 

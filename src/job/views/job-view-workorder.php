@@ -47,7 +47,8 @@ $_modal = strings::rand();
           <iframe class="w-100" id="<?= $_modal ?>iframe" src="<?= strings::url(sprintf('%s/workorderpdf/%d%s', $this->route, $dto->id, $t)) ?>"></iframe>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary mr-auto" id="<?= $_RefreshWorkOrder = strings::rand() ?>">refresh workorder</button>
+          <button type="button" class="btn btn-outline-secondary" id="<?= $_RefreshWorkOrder = strings::rand() ?>">refresh order</button>
+          <button type="button" class="btn btn-outline-secondary mr-auto" id="<?= $_EmailOrder = strings::rand() ?>"><i class="bi bi-cursor"></i> email order</button>
           <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">close</button>
           <button type="submit" class="btn btn-primary">Save</button>
         </div>
@@ -59,10 +60,19 @@ $_modal = strings::rand();
       $('#<?= $_RefreshWorkOrder ?>')
         .on('click', function(e) {
           e.stopPropagation();
-          e.preventDefault();
 
           $('#<?= $_modal ?>')
             .trigger('refresh-workorder')
+            .modal('hide');
+
+        });
+
+      $('#<?= $_EmailOrder ?>')
+        .on('click', function(e) {
+          e.stopPropagation();
+
+          $('#<?= $_modal ?>')
+            .trigger('email-workorder')
             .modal('hide');
 
         });
