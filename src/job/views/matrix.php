@@ -366,9 +366,8 @@ use strings;  ?>
           let _tr = $(this);
           let _data = _tr.data();
 
-          let f = o => {
-            if (!!window.EmailClass) {
-            // if (true) {
+          if (!!window.EmailClass) {
+            let f = o => {
               _.post({
                 url: _.url('<?= $this->route ?>'),
                 data: {
@@ -394,54 +393,61 @@ use strings;  ?>
 
               });
 
-            } else {
-              console.log(o);
-              console.log('no email program');
-
             }
 
-          }
+            // console.log('email-workorder');
+            // console.log(_data);
+            let mailer = _.email.mailer({
+              subject: _data.address_street + ' workorder'
+            });
 
-          // console.log('email-workorder');
-          // console.log(_data);
-          let mailer = {
-            subject: _data.address_street + ' workorder'
-          };
+            if (Number(_data.contractor) > 0) {
+              _.post({
+                url: _.url('<?= $this->route ?>'),
+                data: {
+                  action: 'get-contractor-by-id',
+                  id: _data.contractor
 
-          if (Number(_data.contractor) > 0) {
-            _.post({
-              url: _.url('<?= $this->route ?>'),
-              data: {
-                action: 'get-contractor-by-id',
-                id: _data.contractor
+                },
 
-              },
+              }).then(d => {
+                if ('ack' == d.response) {
+                  if (String(d.data.primary_contact_email).isEmail()) {
+                    mailer.to = _.email.rfc922({
+                      name: d.data.primary_contact_name,
+                      email: d.data.primary_contact_email
 
-            }).then(d => {
-              if ('ack' == d.response) {
-                console.log(d);
-                if (String(d.data.primary_contact_email).isEmail()) {
-                  mailer.to = _.email.rfc922({
-                    name: d.data.primary_contact_name,
-                    email: d.data.primary_contact_email
+                    });
 
-                  });
+                    if (String(d.data.primary_contact_phone).IsMobilePhone()) {
+                      mailer.ccSMSPush({
+                        'name': d.data.primary_contact_name,
+                        'mobile': d.data.primary_contact_phone
+                      });
+
+                    }
+                  }
+
+                  f(mailer);
+
+                } else {
+                  _.growl(d);
 
                 }
 
-                f(mailer);
+              });
 
-              } else {
-                _.growl(d);
+            } else {
+              f(mailer);
 
-              }
-
-            });
+            }
 
           } else {
-            f(mailer);
+            console.log(o);
+            console.log('no email program');
 
           }
+
         })
         .on('view-workorder', function(e) {
           let _tr = $(this);
