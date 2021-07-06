@@ -241,7 +241,7 @@ class controller extends \Controller {
             copy($src, $target);
 
             Json::ack($action)
-              ->add('tmpdir',$tmpdir);
+              ->add('tmpdir', $tmpdir);
           } else {
             Json::nak(sprintf('%s - not found', $action));
           }
@@ -279,6 +279,19 @@ class controller extends \Controller {
         } else {
           $dao->Insert($a);
           Json::ack($action);
+        }
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('matrix-refresh-row' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          $dto = $dao->getRichData($dto);
+          Json::ack($action)
+            ->add('data', $dto);
+        } else {
+          Json::nak($action);
         }
       } else {
         Json::nak($action);

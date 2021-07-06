@@ -53,6 +53,8 @@ class config extends \config {
 	const job_status_quote = 5;
 	const job_status_assigned = 10;
 
+	static $CONSOLE_FALLBACK = true;
+
 	static protected $_CMS_JOB_VERSION = 0;
 
 	static protected $_CMS_JOB_INVOICE_TO = '';
@@ -69,7 +71,7 @@ class config extends \config {
 
 			self::$_CMS_JOB_VERSION = $j->cms_job_version = $set;
 
-			if ( file_exists($config)) unlink($config);
+			if (file_exists($config)) unlink($config);
 			file_put_contents($config, json_encode($j, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 			chmod($config, 0777);
 		}
@@ -87,6 +89,14 @@ class config extends \config {
 
 		// sys::logger( 'bro!');
 
+	}
+
+	static function cms_job_config() {
+		return implode(DIRECTORY_SEPARATOR, [
+			self::cms_job_store(),
+			'cms_job.json'
+
+		]);
 	}
 
 	static function cms_job_invoiceto($set = null) {
@@ -109,6 +119,36 @@ class config extends \config {
 		return $ret;
 	}
 
+	static function cms_job_init() {
+		if (file_exists($config = self::cms_job_config())) {
+			$j = json_decode(file_get_contents($config));
+
+			if (isset($j->cms_job_version)) {
+				self::$_CMS_JOB_VERSION = (float)$j->cms_job_version;
+			};
+
+			if (isset($j->cms_job_invoice_to)) {
+				self::$_CMS_JOB_INVOICE_TO = $j->cms_job_invoice_to;
+			};
+
+			if (isset($j->console_fallback)) {
+				self::$CONSOLE_FALLBACK = $j->console_fallback;
+			};
+		}
+	}
+
+	static function cms_job_status_verbatim( int $status): string {
+		if (config::job_status_new == $status) {
+			return 'new';
+		} elseif (config::job_status_quote == $status) {
+			return 'quote';
+		} elseif (config::job_status_assigned == $status) {
+			return 'assigned';
+		}
+
+		return (string)$status;
+	}
+
 	static function cms_job_store(): string {
 		$_path = method_exists(__CLASS__, 'cmsStore') ? self::cmsStore() : self::dataPath();
 		$path = implode(DIRECTORY_SEPARATOR, [
@@ -125,28 +165,6 @@ class config extends \config {
 		}
 
 		return $path;
-	}
-
-	static function cms_job_config() {
-		return implode(DIRECTORY_SEPARATOR, [
-			self::cms_job_store(),
-			'cms_job.json'
-
-		]);
-	}
-
-	static function cms_job_init() {
-		if (file_exists($config = self::cms_job_config())) {
-			$j = json_decode(file_get_contents($config));
-
-			if (isset($j->cms_job_version)) {
-				self::$_CMS_JOB_VERSION = (float)$j->cms_job_version;
-			};
-
-			if (isset($j->cms_job_invoice_to)) {
-				self::$_CMS_JOB_INVOICE_TO = $j->cms_job_invoice_to;
-			};
-		}
 	}
 }
 

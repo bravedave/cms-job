@@ -15,7 +15,7 @@ use dao\_dao;
 use dao\properties, dao\people;
 
 // use green;
-// use strings;
+use strings;
 // use sys;
 
 class job extends _dao {
@@ -31,20 +31,42 @@ class job extends _dao {
         c.trading_name `contractor_trading_name`,
         CASE
         WHEN p.property_manager > 0 THEN u.name
-        WHEN cp.PropertyManager > %s THEN uc.name
         ELSE %s
         END pm
       FROM
         `job`
         LEFT JOIN `properties` p on p.id = job.properties_id
         LEFT JOIN `job_contractors` c on c.id = job.contractor_id
-        LEFT JOIN `console_properties` cp on cp.properties_id = p.id
-        LEFT JOIN `users` u ON u.id = p.property_manager
-        LEFT JOIN `users` uc ON uc.console_code = cp.PropertyManager',
+        LEFT JOIN `users` u ON u.id = p.property_manager',
       $this->quote(''),
       $this->quote('')
 
     );
+
+    if (config::$CONSOLE_FALLBACK) {
+      $sql = sprintf(
+        'SELECT
+          job.*,
+          p.address_street,
+          p.property_manager,
+          c.trading_name `contractor_trading_name`,
+          CASE
+          WHEN p.property_manager > 0 THEN u.name
+          WHEN cp.PropertyManager > %s THEN uc.name
+          ELSE %s
+          END pm
+        FROM
+          `job`
+          LEFT JOIN `properties` p on p.id = job.properties_id
+          LEFT JOIN `job_contractors` c on c.id = job.contractor_id
+          LEFT JOIN `console_properties` cp on cp.properties_id = p.id
+          LEFT JOIN `users` u ON u.id = p.property_manager
+          LEFT JOIN `users` uc ON uc.console_code = cp.PropertyManager',
+        $this->quote(''),
+        $this->quote('')
+
+      );
+    }
 
     // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
 
@@ -73,18 +95,6 @@ class job extends _dao {
     if ($res = $this->Result($sql)) {
       $items = [];
       $res->dtoSet(function ($dto) use (&$items) {
-        // \sys::logger(
-        //   sprintf(
-        //     '<%s: %s - %s> %s',
-        //     $dto->item_id,
-        //     $dto->item,
-        //     $dto->description,
-        //     __METHOD__
-
-        //   )
-
-        // );
-
         if ($dto->item || $dto->description) {
           if (!isset($items[$dto->id])) $items[$dto->id] = [];
           $items[$dto->id][] = (object)[
@@ -142,6 +152,46 @@ class job extends _dao {
         } else {
           \sys::logger(sprintf('<%s> %s', 'person not specifed', __METHOD__));
         }
+
+        if ($prop->property_manager) {
+          $dao = new users;
+          if ($user = $dao->getByID($prop->property_manager)) {
+            $job->property_manager = $user->name;
+          } else {
+            \sys::logger(sprintf('<property manager not found %s> %s', $prop->property_manager, __METHOD__));
+          }
+        } else {
+          if (config::$CONSOLE_FALLBACK) {
+            /**
+             * Look the user up by the console_code,
+             * this part will die a natural death
+             */
+            $dao = new console_properties;
+            if ($cprop = $dao->getByPropertiesID($prop->id)) {
+              if ($cprop->PropertyManager) {
+                $sql = sprintf(
+                  'SELECT `name` FROM `users` WHERE `console_code` = %s',
+                  $this->quote($cprop->PropertyManager)
+
+                );
+
+                if ($res = $this->Result($sql)) {
+                  if ($user = $res->dto()) {
+                    $job->property_manager = $user->name;
+                  } else {
+                    \sys::logger(sprintf('<property manager (console) not found %s> %s', $cprop->PropertyManager, __METHOD__));
+                  }
+                }
+              } else {
+                \sys::logger(sprintf('<property manager (console) not specifed %s> %s', __METHOD__));
+              }
+            } else {
+              \sys::logger(sprintf('<property (console) not found %s> %s', __METHOD__));
+            }
+          } else {
+            \sys::logger(sprintf('<property manager not specifed %s> %s', __METHOD__));
+          }
+        }
       }
 
       $dao = new \cms\keyregister\dao\keyregister;
@@ -154,6 +204,9 @@ class job extends _dao {
         }
       }
     }
+
+    $job->brief = strings::brief($job->description);
+    $job->status_verbatim = config::cms_job_status_verbatim($job->status);
 
     return $job;
   }

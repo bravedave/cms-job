@@ -351,8 +351,8 @@ $categories = $this->data->categories;  ?>
             <i class="bi bi-people"></i> <span style="text-decoration: underline;">T</span>enants
           </button>
 
-          <button type="button" class="btn btn-outline-secondary ml-auto" data-dismiss="modal">close</button>
-          <button type="submit" class="btn btn-primary" accesskey="S"><span style="text-decoration: underline;">S</span>ave</button>
+          <button type="submit" class="btn btn-primary ml-auto" accesskey="S"><span style="text-decoration: underline;">S</span>ave</button>
+          <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_btnSaveAndWorkOrder = strings::rand() ?>"><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
 
         </div>
 
@@ -951,9 +951,35 @@ $categories = $this->data->categories;  ?>
             .trigger('qualify-contractor');
 
         })
+        .on('submit-and-workorder', function(e) {
+          let _form = $(this);
+          let _data = _form.serializeFormJSON();
+
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: _data,
+
+          }).then(d => {
+            if ('ack' == d.response) {
+              $('#<?= $_modal ?>').trigger('success-and-workorder');
+
+            } else {
+              _.growl(d);
+
+            }
+
+            $('#<?= $_modal ?>').modal('hide');
+
+          });
+
+          // console.table( _data);
+          return false;
+
+        })
         .on('submit', function(e) {
           let _form = $(this);
           let _data = _form.serializeFormJSON();
+
           _.post({
             url: _.url('<?= $this->route ?>'),
             data: _data,
@@ -988,6 +1014,9 @@ $categories = $this->data->categories;  ?>
 
       $('#<?= $_btnTenants ?>')
         .on('click', e => $('#<?= $_form ?>').trigger('get-tenants'));
+
+      $('#<?= $_btnSaveAndWorkOrder ?>')
+        .on('click', e => $('#<?= $_form ?>').trigger('submit-and-workorder'));
 
       $('#<?= $_form ?>')
         .trigger('get-keyset')

@@ -102,11 +102,11 @@ use strings;  ?>
             ?>>
           <td class="small" line-number></td>
           <td class="constrain">
-            <div class="constrained text-truncate">
+            <div class="constrained text-truncate" address>
               <?= $dto->address_street ?>
 
             </div>
-            <div class="d-md-none constrained text-truncate">
+            <div class="d-md-none constrained text-truncate" tradingname>
               <?= $dto->contractor_trading_name ?>
 
             </div>
@@ -114,14 +114,14 @@ use strings;  ?>
           </td>
 
           <td class="d-none d-md-table-cell constrain">
-            <div class="constrained text-truncate">
+            <div class="constrained text-truncate" tradingname>
               <?= $dto->contractor_trading_name ?>
 
             </div>
 
           </td>
 
-          <td class="d-none d-md-table-cell">
+          <td class="d-none d-md-table-cell" lines>
             <?php
             if ($lines) {
               foreach ($lines as $line) {
@@ -139,21 +139,9 @@ use strings;  ?>
 
           </td>
 
-          <td class="text-center">
-            <?php
-            if (config::job_status_new == $dto->status) {
-              print 'new';
-            } elseif (config::job_status_quote == $dto->status) {
-              print 'quote';
-            } elseif (config::job_status_assigned == $dto->status) {
-              print 'assigned';
-            } else {
-              print $dto->status;
-            } ?>
+          <td class="text-center" status><?= config::cms_job_status_verbatim($dto->status) ?></td>
 
-          </td>
-
-          <td class="text-center"><?= $pm ?></td>
+          <td class="text-center" pm><?= $pm ?></td>
 
         </tr>
 
@@ -181,7 +169,17 @@ use strings;  ?>
           let _data = _me.data();
 
           _.get.modal(_.url('<?= $this->route ?>/job_edit/' + _data.id))
-            .then(d => d.on('success', () => window.location.reload()));
+            .then(d => d.on('success', () => {
+              _me
+                .trigger('refresh');
+
+            }))
+            .then(d => d.on('success-and-workorder', () => {
+              _me
+                .trigger('refresh')
+                .trigger('create-workorder')
+
+            }));
 
         })
         .addClass('pointer')
@@ -297,6 +295,7 @@ use strings;  ?>
           let _tr = $(this);
           let _data = _tr.data();
 
+          _.hourglass.on();
           _.post({
             url: _.url('<?= $this->route ?>'),
             data: {
@@ -306,6 +305,7 @@ use strings;  ?>
             },
 
           }).then(d => {
+            _.hourglass.off();
             _.growl(d);
             if ('ack' == d.response) {
               _tr.trigger('view-workorder');
@@ -449,6 +449,63 @@ use strings;  ?>
           }
 
         })
+        .on('refresh', function(e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'matrix-refresh-row',
+              id: _data.id
+
+            },
+
+          }).then(d => {
+            if ('ack' == d.response) {
+              // console.log('matrix-refresh-row');
+              // console.log(d.data);
+
+              let pm = String(d.data.property_manager).initials();
+              _tr.data({
+                properties_id: d.data.properties_id,
+                address_street: d.data.address_street,
+                line_count: d.data.lines.length,
+                contractor: d.data.contractor_id,
+                pm: pm
+
+              });
+
+              $('[address]', _tr).html(d.data.address_street);
+              $('[tradingname]', _tr).html(d.data.contractor_trading_name);
+              $('[status]', _tr).html(d.data.status_verbatim);
+              $('[pm]', _tr).html(pm);
+
+              if (d.data.lines.length > 0) {
+                $('[lines]', _tr).html('');
+                $.each(d.data.lines, (i, line) => {
+                  let row = $('<div class="form-row mb-1"></div>');
+
+                  $('<div class="col-4 col-md-3"></div>').html(line.item).appendTo(row);
+                  $('<div class="col"></div>').html(line.description).appendTo(row);
+
+                  $('[lines]', _tr).append(row);
+
+                });
+
+              } else {
+                $('[lines]', _tr).html(d.data.brief);
+
+              }
+
+            } else {
+              _.growl(d);
+
+            }
+
+          });
+
+        })
         .on('view-workorder', function(e) {
           let _tr = $(this);
           let _data = _tr.data();
@@ -462,7 +519,8 @@ use strings;  ?>
 
     });
 
-    $(document).ready(() => $('#<?= $tblID ?>').trigger('update-line-numbers'));
+    $(document)
+      .ready(() => $('#<?= $tblID ?>').trigger('update-line-numbers'));
 
   })(_brayworth_);
 </script>

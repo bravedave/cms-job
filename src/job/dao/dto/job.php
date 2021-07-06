@@ -16,8 +16,10 @@ class job extends _dto {
   public $id = 0;
   public $created = '';
   public $job_type = 0;
+  public $brief = '';
   public $description = '';
   public $status = 0;
+  public $status_verbatim = '';
   public $due = '';
   public $job_payment = 0;
 
@@ -29,6 +31,7 @@ class job extends _dto {
   public $address_suburb = '';
   public $address_postcode = '';
   public $on_site_contact = '';
+  public $property_manager = '';
   public $owner_name = '';
 
   public $keys = [];
