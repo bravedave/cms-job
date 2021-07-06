@@ -33,11 +33,11 @@ abstract class workorder {
 
 
     if (config::job_type_recurring == $dto->job_type) {
-      $t->replace('title', 'Recurring Workorder');
+      $t->replace('title', config::PDF_title_recurring_workorder);
     } elseif (config::job_type_quote == $dto->job_type) {
-      $t->replace('title', 'Quote Request');
+      $t->replace('title', config::PDF_title_quote);
     } else {
-      $t->replace('title', 'Workorder');
+      $t->replace('title', config::PDF_title_workorder);
     }
 
     $t->replace(
@@ -62,7 +62,7 @@ abstract class workorder {
 
     $address = [
       'Address:',
-      sprintf( '<strong>%s</strong>', $dto->address_street),
+      sprintf('<strong>%s</strong>', $dto->address_street),
       sprintf('%s %s', $dto->address_suburb, $dto->address_postcode)
 
     ];
@@ -168,37 +168,32 @@ abstract class workorder {
 
     $pm = [$dto->property_manager];
 
-    if ( $dto->property_manager_mobile) {
+    if ($dto->property_manager_mobile) {
 
       $includeMobile = true;
-      if ( $dto->property_manager_id) {
+      if ($dto->property_manager_id) {
         $dao = new dao\users;
-        if ( $uDto = $dao->getByID($dto->property_manager_id)) {
+        if ($uDto = $dao->getByID($dto->property_manager_id)) {
           $options = $dao->options($uDto);
           $includeMobile = 'yes' != $options->get('mobile-exclude-from-footer');
-
         }
-
       }
 
-      if ( $includeMobile) {
+      if ($includeMobile) {
         $pm[] = sprintf(
           'm. %s',
           strings::asMobilePhone($dto->property_manager_mobile)
 
         );
-
       }
-
     }
 
-    if ( $dto->property_manager_email) {
+    if ($dto->property_manager_email) {
       $pm[] = sprintf(
         'e. %s',
         $dto->property_manager_email
 
       );
-
     }
 
     $pm[] = '<strong>Property Manager</strong>';

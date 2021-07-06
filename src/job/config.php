@@ -35,6 +35,10 @@ class config extends \config {
 	const label_job_viewworkorder = 'View Workorder';
 	const label_matrix = 'JOB Matrix';
 
+	const PDF_title_workorder = 'JOB Order';
+	const PDF_title_recurring_workorder = 'Recurring JOB Order';
+	const PDF_title_quote = 'JOB Quote Request';
+
 	const job_type_order = 0;
 	const job_type_recurring = 1;
 	const job_type_quote = 2;
