@@ -166,19 +166,15 @@ abstract class workorder {
 
     );
 
-    $pm = [
-      $dto->property_manager,
-      '<strong>Property Manager</strong>'
-
-    ];
+    $pm = [$dto->property_manager];
 
     if ( $dto->property_manager_mobile) {
 
       $includeMobile = true;
       if ( $dto->property_manager_id) {
         $dao = new dao\users;
-        if ( $user = $dao->getByID($dto->property_manager_id)) {
-          $options = $dao->options($user);
+        if ( $uDto = $dao->getByID($dto->property_manager_id)) {
+          $options = $dao->options($uDto);
           $includeMobile = 'yes' != $options->get('mobile-exclude-from-footer');
 
         }
@@ -204,6 +200,8 @@ abstract class workorder {
       );
 
     }
+
+    $pm[] = '<strong>Property Manager</strong>';
 
     $content[] = sprintf(
       '<table class="table mt-2"><tbody><tr><td class="noborder">%s</td></tr></tbody></table>',
