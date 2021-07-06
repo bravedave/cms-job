@@ -127,7 +127,7 @@ use strings;  ?>
               foreach ($lines as $line) {
                 // \sys::logger( sprintf('<%s> %s', print_r( $line, true), __METHOD__));
                 printf(
-                  '<div class="form-row mb-1"><div class="col-4 col-md-3">%s</div><div class="col">%s</div></div>',
+                  '<div class="form-row mb-1"><div class="col-4 col-md-3 text-truncate">%s</div><div class="col text-truncate">%s</div></div>',
                   $line->item,
                   $line->description
 
@@ -489,8 +489,8 @@ use strings;  ?>
                 $.each(d.data.lines, (i, line) => {
                   let row = $('<div class="form-row mb-1"></div>');
 
-                  $('<div class="col-4 col-md-3"></div>').html(line.item).appendTo(row);
-                  $('<div class="col"></div>').html(line.description).appendTo(row);
+                  $('<div class="col-4 col-md-3 text-truncate"></div>').html(line.item).appendTo(row);
+                  $('<div class="col text-truncate"></div>').html(line.description).appendTo(row);
 
                   $('[lines]', _tr).append(row);
 
