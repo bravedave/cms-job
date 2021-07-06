@@ -53,6 +53,9 @@ class user extends dvc\user {
 
 	}
 
+	public function option($key, $val = null) {
+		return '';
 
+	}
 
 }

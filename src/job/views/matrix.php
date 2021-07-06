@@ -69,7 +69,7 @@ use strings;  ?>
 </style>
 
 <div class="table-responsive">
-  <table class="table table-sm" id="<?= $tblID = strings::rand() ?>">
+  <table class="table table-sm fade" id="<?= $tblID = strings::rand() ?>">
     <thead class="small">
       <tr>
         <td>#</td>
@@ -163,35 +163,38 @@ use strings;  ?>
       })
 
     $('#<?= $tblID ?> > tbody > tr').each((i, tr) => {
-      $(tr)
+      let _tr = $(tr);
+      _tr
         .on('edit', function(e) {
-          let _me = $(this);
-          let _data = _me.data();
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _tr.addClass('bg-info');
 
           _.get.modal(_.url('<?= $this->route ?>/job_edit/' + _data.id))
             .then(d => d.on('success', () => {
-              _me
+              _tr
                 .trigger('refresh');
 
             }))
             .then(d => d.on('success-and-workorder', () => {
-              _me
+              _tr
                 .trigger('refresh')
-                .trigger('create-workorder')
+                .trigger('create-workorder');
+
+            }))
+            .then(m => m.on('hidden.bs.modal', d => {
+              _tr[0].scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+              }); // Object parameter
+
+              setTimeout(() => _tr.removeClass('bg-info'), 1000);
 
             }));
 
         })
-        .addClass('pointer')
-        .on('click', function(e) {
-          e.stopPropagation();
-          e.preventDefault();
-
-          _.hideContexts();
-          $(this).trigger('edit');
-
-        })
-        .on('contextmenu', function(e) {
+        .on(_.browser.isMobileDevice ? 'click' : 'contextmenu', function(e) {
           if (e.shiftKey)
             return;
 
@@ -517,10 +520,49 @@ use strings;  ?>
 
         });
 
+      if (!_.browser.isMobileDevice) {
+        _tr
+          .addClass('pointer')
+          .on('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            _.hideContexts();
+            $(this).trigger('edit');
+
+          });
+
+      }
+
     });
 
     $(document)
-      .ready(() => $('#<?= $tblID ?>').trigger('update-line-numbers'));
+      .ready(() => {
+        <?php if ($this->data->idx) {  ?>
+          let tr = $('#<?= $tblID ?> > tbody > tr[data-id="<?= $this->data->idx ?>"]');
+          if (tr.length > 0) {
+            tr[0].scrollIntoView({
+              block: "center"
+            });
+
+            <?php if ('workorder' == $this->data->trigger) {  ?>
+              tr.trigger('view-workorder');
+            <?php } else {  ?>
+              tr.addClass('bg-light');
+              setTimeout(() => tr.removeClass('bg-light'), 3000);
+            <?php }  ?>
+
+            history.pushState({}, '', '<?= $this->route ?>/matrix');
+
+          }
+
+        <?php }  ?>
+
+        $('#<?= $tblID ?>')
+          .addClass('show')
+          .trigger('update-line-numbers');
+
+      });
 
   })(_brayworth_);
 </script>

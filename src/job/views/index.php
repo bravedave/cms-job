@@ -41,18 +41,58 @@ use currentUser, strings;  ?>
     (_ => {
       let active = false;
 
-      $('#<?= $_uid ?>').on('click', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
+      $('#<?= $_uid ?>')
+        .on('click', function(e) {
+          e.stopPropagation();
+          e.preventDefault();
 
-        if (active) return;
-        active = true;
+          if (active) return;
+          active = true;
 
-        _.get.modal(_.url('<?= $this->route ?>/job_edit'))
-          .then(m => m.on('success', e => _.nav('<?= $this->route ?>/matrix')))
-          .then(m => active = false);
+          let _me = $(this);
 
-      });
+          _.get.modal(_.url('<?= $this->route ?>/job_edit'))
+            .then(m => m.on('success', (e, data) => {
+              _.nav('<?= $this->route ?>/matrix?idx=' + data.id);
+
+            }))
+            .then(d => d.on('success-and-workorder', (e, data) => {
+              _me
+                .trigger('create-workorder', data.id)
+
+            }))
+            .then(m => active = false);
+
+        })
+        .on('create-workorder', function(e, id) {
+
+          let _me = $(this);
+
+          _.hourglass.on();
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'create-workorder',
+              id: id
+
+            },
+
+          }).then(d => {
+            _.hourglass.off();
+            _.growl(d);
+            if ('ack' == d.response) {
+              _.nav('<?= $this->route ?>/matrix?v=workorder&idx=' + id);
+
+            } else {
+              _.ask.alert({
+                text: d.description
+
+              });
+            }
+
+          });
+
+        });
 
     })(_brayworth_);
   </script>

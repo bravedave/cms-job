@@ -32,6 +32,9 @@ class job extends _dto {
   public $address_postcode = '';
   public $on_site_contact = '';
   public $property_manager = '';
+  public $property_manager_id = 0;
+  public $property_manager_email = '';
+  public $property_manager_mobile = '';
   public $owner_name = '';
 
   public $keys = [];

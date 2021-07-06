@@ -157,6 +157,9 @@ class job extends _dao {
           $dao = new users;
           if ($user = $dao->getByID($prop->property_manager)) {
             $job->property_manager = $user->name;
+            $job->property_manager_id = $user->id;
+            $job->property_manager_email = $user->email;
+            $job->property_manager_mobile = $user->mobile;
           } else {
             \sys::logger(sprintf('<property manager not found %s> %s', $prop->property_manager, __METHOD__));
           }
@@ -170,7 +173,12 @@ class job extends _dao {
             if ($cprop = $dao->getByPropertiesID($prop->id)) {
               if ($cprop->PropertyManager) {
                 $sql = sprintf(
-                  'SELECT `name` FROM `users` WHERE `console_code` = %s',
+                  'SELECT
+                    `id`, `name`, `email`, `mobile`
+                  FROM
+                    `users`
+                  WHERE
+                    `console_code` = %s',
                   $this->quote($cprop->PropertyManager)
 
                 );
@@ -178,6 +186,9 @@ class job extends _dao {
                 if ($res = $this->Result($sql)) {
                   if ($user = $res->dto()) {
                     $job->property_manager = $user->name;
+                    $job->property_manager_id = $user->id;
+                    $job->property_manager_email = $user->email;
+                    $job->property_manager_mobile = $user->mobile;
                   } else {
                     \sys::logger(sprintf('<property manager (console) not found %s> %s', $cprop->PropertyManager, __METHOD__));
                   }

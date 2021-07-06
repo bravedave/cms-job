@@ -56,6 +56,10 @@ class users extends green\users\dao\users {
     return (false);
   }
 
+  public function options($dto) {
+    return new \cms\useroptions($dto->id, null);
+  }
+
   public function sendResetLink($dto) {
     $guid = strings::getGUID();
     $this->UpdateByID([

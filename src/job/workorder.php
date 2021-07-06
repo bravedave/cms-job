@@ -31,11 +31,14 @@ abstract class workorder {
     $t = new template(__DIR__ . '/templates/workorder.html');
     $t->css(__DIR__ . '/templates/css.css');
 
-    $t->replace(
-      'title',
-      $t->title = sprintf('%s - Workorder', $dto->address_street)
 
-    );
+    if (config::job_type_recurring == $dto->job_type) {
+      $t->replace('title', 'Recurring Workorder');
+    } elseif (config::job_type_quote == $dto->job_type) {
+      $t->replace('title', 'Quote Request');
+    } else {
+      $t->replace('title', 'Workorder');
+    }
 
     $t->replace(
       'logo',
@@ -59,7 +62,7 @@ abstract class workorder {
 
     $address = [
       'Address:',
-      $dto->address_street,
+      sprintf( '<strong>%s</strong>', $dto->address_street),
       sprintf('%s %s', $dto->address_suburb, $dto->address_postcode)
 
     ];
@@ -71,9 +74,8 @@ abstract class workorder {
 
     ];
 
-    if ( config::cms_job_invoiceto()) {
+    if (config::cms_job_invoiceto()) {
       $invoice_to[] = strings::text2html(config::cms_job_invoiceto());
-
     }
 
     $t->replace('invoice_to', implode('<br>', $invoice_to));
@@ -113,9 +115,9 @@ abstract class workorder {
           '<div class="mb-1"><strong>Site Contact</strong> : %s</div>',
           $dto->on_site_contact
         );
-
       }
-      else {
+
+      if ($dto->tenants) {
         $tenants[] = '<h3 class="mb-1 mt-0">Tenants</h3>';
         foreach ($dto->tenants as $tenant) {
           $_tenant = [$tenant->name];
@@ -124,17 +126,18 @@ abstract class workorder {
 
           $tenants[] = sprintf('<div class="mb-1">%s</div>', implode(', ', $_tenant));
         }
-
       }
 
       if ($tenants) $access[] = sprintf('<td class="noborder">%s</td>', implode($tenants));
-
     }
 
     if ($dto->keys) {
       $keys = [];
       foreach ($dto->keys as $key) {
-        $keys[] = sprintf('<div class="mb-1 text-right"><strong>Key</strong> : %s</div>', $key->keyset);
+        $keys[] = sprintf(
+          '<div class="mb-1 text-right"><strong>Key</strong> : %s</div>',
+          $key->keyset
+        );
       }
 
       if ($keys) $access[] = sprintf('<td class="noborder">%s</td>', implode($keys));
@@ -160,6 +163,44 @@ abstract class workorder {
       <table class="table"><thead>%s</thead><tbody>%s</tbody></table>',
       implode(PHP_EOL, $thead),
       implode(PHP_EOL, $tr)
+
+    );
+
+    $pm = [
+      $dto->property_manager,
+      '<strong>Property Manager</strong>'
+
+    ];
+
+    if ( $dto->property_manager_mobile) {
+      $dao = new dao\users;
+      $options = $dao->options((object)[
+        'id' => $dto->property_manager_id
+      ]);
+
+      if ( $includeMobile = 'yes' != $options->get('mobile-exclude-from-footer')) {
+        $pm[] = sprintf(
+          'm. %s',
+          strings::asMobilePhone($dto->property_manager_mobile)
+
+        );
+
+      }
+
+    }
+
+    if ( $dto->property_manager_email) {
+      $pm[] = sprintf(
+        'e. %s',
+        $dto->property_manager_email
+
+      );
+
+    }
+
+    $content[] = sprintf(
+      '<table class="table mt-2"><tbody><tr><td class="noborder">%s</td></tr></tbody></table>',
+      implode('<br>', $pm)
 
     );
 

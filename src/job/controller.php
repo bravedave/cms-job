@@ -359,7 +359,8 @@ class controller extends \Controller {
           }
         }
 
-        Json::ack($action);
+        Json::ack($action)
+          ->add('id', $id);
       } else {
         Json::nak($action);
       }
@@ -550,8 +551,9 @@ class controller extends \Controller {
     $dao = new dao\job;
     $this->data = (object)[
       'title' => $this->title = config::label_matrix,
-      'res' => $dao->getMatrix()
-
+      'res' => $dao->getMatrix(),
+      'idx' => $this->getParam('idx'),
+      'trigger' => $this->getParam('v'),
     ];
 
     $this->render([

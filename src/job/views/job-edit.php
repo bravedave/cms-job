@@ -961,14 +961,16 @@ $categories = $this->data->categories;  ?>
 
           }).then(d => {
             if ('ack' == d.response) {
-              $('#<?= $_modal ?>').trigger('success-and-workorder');
+              $('#<?= $_modal ?>')
+                .trigger('success-and-workorder', d);
 
             } else {
               _.growl(d);
 
             }
 
-            $('#<?= $_modal ?>').modal('hide');
+            $('#<?= $_modal ?>')
+              .modal('hide');
 
           });
 
@@ -986,14 +988,16 @@ $categories = $this->data->categories;  ?>
 
           }).then(d => {
             if ('ack' == d.response) {
-              $('#<?= $_modal ?>').trigger('success');
+              $('#<?= $_modal ?>')
+                .trigger('success', d);
 
             } else {
               _.growl(d);
 
             }
 
-            $('#<?= $_modal ?>').modal('hide');
+            $('#<?= $_modal ?>')
+              .modal('hide');
 
           });
 
