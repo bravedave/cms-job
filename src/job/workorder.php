@@ -173,12 +173,19 @@ abstract class workorder {
     ];
 
     if ( $dto->property_manager_mobile) {
-      $dao = new dao\users;
-      $options = $dao->options((object)[
-        'id' => $dto->property_manager_id
-      ]);
 
-      if ( $includeMobile = 'yes' != $options->get('mobile-exclude-from-footer')) {
+      $includeMobile = true;
+      if ( $dto->property_manager_id) {
+        $dao = new dao\users;
+        if ( $user = $dao->getByID($dto->property_manager_id)) {
+          $options = $dao->options($user);
+          $includeMobile = 'yes' != $options->get('mobile-exclude-from-footer');
+
+        }
+
+      }
+
+      if ( $includeMobile) {
         $pm[] = sprintf(
           'm. %s',
           strings::asMobilePhone($dto->property_manager_mobile)
