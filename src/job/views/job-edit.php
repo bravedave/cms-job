@@ -200,30 +200,30 @@ $categories = $this->data->categories;  ?>
             <div class="col">
               <div class="form-row">
                 <div class="col-md mb-2">
-                  <input type="text" class="form-control" value="<?= $dto->address_street ?>" id="<?= $_uid = strings::rand() ?>">
+                  <input type="text" class="form-control" value="<?= $dto->address_street ?>" id="<?= $_uidAddress = strings::rand() ?>">
 
                 </div>
 
-                <div class="col col-md-auto mb-2 d-none" id="<?= $_uid ?>suburb_div">
-                  <div class="form-control" id="<?= $_uid ?>suburb"><?= $dto->address_suburb ?></div>
+                <div class="col col-md-auto mb-2 d-none" id="<?= $_uidAddress ?>suburb_div">
+                  <div class="form-control" id="<?= $_uidAddress ?>suburb"><?= $dto->address_suburb ?></div>
                 </div>
-                <div class="col-auto mb-2 d-none" id="<?= $_uid ?>postcode_div">
-                  <div class="form-control" id="<?= $_uid ?>postcode"><?= $dto->address_postcode ?></div>
+                <div class="col-auto mb-2 d-none" id="<?= $_uidAddress ?>postcode_div">
+                  <div class="form-control" id="<?= $_uidAddress ?>postcode"><?= $dto->address_postcode ?></div>
                 </div>
                 <div class="col-auto mb-2 d-none" id="<?= $_uidKeyCell = strings::rand() ?>"></div>
                 <script>
                   (_ => $('#<?= $_modal ?>')
                     .on('shown.bs.modal', () => {
-                      $('#<?= $_uid ?>').autofill({
+                      $('#<?= $_uidAddress ?>').autofill({
                         autoFocus: true,
                         source: _.search.address,
                         select: (e, ui) => {
                           let o = ui.item;
                           // console.log( o);
                           $('input[name="properties_id"]', '#<?= $_form ?>').val(o.id);
-                          $('#<?= $_uid ?>suburb').html(o.suburb);
-                          $('#<?= $_uid ?>postcode').html(o.postcode);
-                          $('#<?= $_uid ?>suburb_div, #<?= $_uid ?>postcode_div').removeClass('d-none');
+                          $('#<?= $_uidAddress ?>suburb').html(o.suburb);
+                          $('#<?= $_uidAddress ?>postcode').html(o.postcode);
+                          $('#<?= $_uidAddress ?>suburb_div, #<?= $_uidAddress ?>postcode_div').removeClass('d-none');
 
                           $('#<?= $_form ?>')
                             .trigger('get-tenants')
@@ -235,7 +235,7 @@ $categories = $this->data->categories;  ?>
                       });
 
                       if (Number($('input[name="properties_id"]', '#<?= $_form ?>').val()) > 0) {
-                        $('#<?= $_uid ?>suburb_div, #<?= $_uid ?>postcode_div').removeClass('d-none');
+                        $('#<?= $_uidAddress ?>suburb_div, #<?= $_uidAddress ?>postcode_div').removeClass('d-none');
 
                       }
 
@@ -955,6 +955,35 @@ $categories = $this->data->categories;  ?>
           let _form = $(this);
           let _data = _form.serializeFormJSON();
 
+          if (Number(_data.properties_id) < 1) {
+            $('#<?= $_uidAddress ?>')
+              .popover({
+                title: 'Missing',
+                content: 'Please fill this field'
+
+              })
+              .popover('show')
+              .focus();
+            return;
+
+          } else {
+            for (var i = 0; i < _form[0].elements.length; i++) {
+              if (_form[0].elements[i].value === '' && _form[0].elements[i].hasAttribute('required')) {
+
+                $(_form[0].elements[i])
+                  .popover({
+                    title: 'Missing',
+                    content: 'Please fill this field'
+
+                  })
+                  .popover('show')
+                  .focus();
+                return;
+              }
+            }
+
+          }
+
           _.post({
             url: _.url('<?= $this->route ?>'),
             data: _data,
@@ -981,6 +1010,19 @@ $categories = $this->data->categories;  ?>
         .on('submit', function(e) {
           let _form = $(this);
           let _data = _form.serializeFormJSON();
+
+          if (Number(_data.properties_id) < 1) {
+            $('#<?= $_uidAddress ?>')
+              .popover({
+                title: 'Missing',
+                content: 'Please fill this field'
+
+              })
+              .popover('show')
+              .focus();
+            return false;
+
+          }
 
           _.post({
             url: _.url('<?= $this->route ?>'),
