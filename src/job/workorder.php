@@ -283,7 +283,8 @@ abstract class workorder {
     $search[] = '@{PMmobile}@';
     $replace[] = strings::FirstWord( $dto->property_manager_mobile);
 
-    // <strong class="user-select-all">{PMphone}</strong><br>
+    $search[] = '@{PMphone}@';
+    $replace[] = strings::FirstWord( $dto->property_manager_telephone);
 
     $_replace = array_map(function ($s) {
       return str_replace('$', '\$', $s);
