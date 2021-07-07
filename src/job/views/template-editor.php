@@ -35,10 +35,11 @@ use strings, theme;  ?>
             <strong class="user-select-all">{type}</strong> for <?= config::label ?> type (order, recurring, quote)<br>
             <strong class="user-select-all">{contact}</strong> for the site contact<br>
             <strong class="user-select-all">{duedate}</strong><br>
+            <strong class="user-select-all">{contractor_contact}</strong>, <strong class="user-select-all">{contractor_contact_firstname}</strong> for contractor detail<br>
             <strong class="user-select-all">{PMname}</strong>,
-              <strong class="user-select-all">{PMfirstname}</strong>,
-              <strong class="user-select-all">{PMemail}</strong>,
-              <strong class="user-select-all">{PMmobile}</strong> &amp; <strong class="user-select-all">{PMphone}</strong><br>
+            <strong class="user-select-all">{PMfirstname}</strong>,
+            <strong class="user-select-all">{PMemail}</strong>,
+            <strong class="user-select-all">{PMmobile}</strong> &amp; <strong class="user-select-all">{PMphone}</strong><br>
             <strong class="user-select-all">{myfirstname}</strong>, <strong class="user-select-all">{myname}</strong>
 
           </div>

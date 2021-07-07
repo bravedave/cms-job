@@ -25,6 +25,7 @@ class job extends _dto {
 
   public $contractor_id = 0;
   public $contractor_trading_name = '';
+  public $contractor_primary_contact_name = '';
 
   public $properties_id = 0;
   public $address_street = '';

@@ -257,6 +257,12 @@ abstract class workorder {
     $search[] = '@{type}@';
     $replace[] = config::cms_job_type_verbatim($dto->job_type);
 
+    $search[] = '@{contractor_contact}@';
+    $replace[] = $dto->contractor_primary_contact_name;
+
+    $search[] = '@{contractor_contact_firstname}@';
+    $replace[] = strings::FirstWord( $dto->contractor_primary_contact_name);
+
     $search[] = '@{contact}@';
     $replace[] = strings::asLocalDate($dto->on_site_contact);
 

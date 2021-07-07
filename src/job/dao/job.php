@@ -130,7 +130,10 @@ class job extends _dao {
     if ($job->contractor_id) {
       $dao = new job_contractors;
       if ($contractor = $dao->getByID($job->contractor_id)) {
-        $job->contractor_trading_name = $contractor->trading_name;
+
+        $contractor = $dao->getRichData($contractor);
+
+        $job->contractor_primary_contact_name = $contractor->primary_contact_name;
       }
     }
 
