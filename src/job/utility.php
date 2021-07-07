@@ -10,8 +10,7 @@
 
 namespace cms\job;
 
-use application;
-use cms;
+use application, cms, sys;
 use dvc\{
   service,
   offertolease
@@ -33,6 +32,25 @@ class utility extends service {
 
     $dao = new dao\dbinfo;
     $dao->dump($verbose = false);
+  }
+
+  protected function _items_import() {
+    $this->_items_reset();
+
+    $dao = new dao\job_items;
+
+    $dao->import_from_csv();
+    echo (sprintf('%s: %s : %s%s', application::app()->timer()->elapsed(), 'import complete', __METHOD__, PHP_EOL));
+  }
+
+  protected function _items_reset() {
+    $dbi = sys::dbi();
+    $dbi->Q('DROP TABLE IF EXISTS job_categories');
+    $dbi->Q('DROP TABLE IF EXISTS job_items');
+
+    $dao = new dao\dbinfo;
+    $dao->dump($verbose = false);
+
   }
 
   protected static function _devuser() {
@@ -140,6 +158,16 @@ class utility extends service {
   static function contractors_reset() {
     $app = new self(application::startDir());
     $app->_contractors_reset();
+  }
+
+  static function items_import() {
+    $app = new self(application::startDir());
+    $app->_items_import();
+  }
+
+  static function items_reset() {
+    $app = new self(application::startDir());
+    $app->_items_reset();
   }
 
   static function upgrade() {

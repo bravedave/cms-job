@@ -10,8 +10,9 @@
 
 namespace cms\job\dao;
 
-use cms;
+// use cms\job\config;
 use dao\_dao;
+use ParseCsv;
 
 class job_items extends _dao {
   protected $_db_name = 'job_items';
@@ -26,19 +27,16 @@ class job_items extends _dao {
     );
 
     return $this->Result($sql);
-
   }
 
-  public function getItemsForCategory( int $category, bool $distinct = false, string $item = '') {
-    if ( $distinct) {
+  public function getItemsForCategory(int $category, bool $distinct = false, string $item = '') {
+    if ($distinct) {
       $sql = sprintf(
         'SELECT DISTINCT `item` FROM `job_items` WHERE `job_categories_id` = %d ORDER BY `item` ASC',
         $category
 
       );
-
-    }
-    elseif ( $item) {
+    } elseif ($item) {
       $sql = sprintf(
         'SELECT
           *
@@ -48,23 +46,82 @@ class job_items extends _dao {
           ORDER BY
             `item` ASC, `description` ASC',
         $category,
-        $this->quote( $item)
+        $this->quote($item)
 
       );
-
-    }
-    else {
+    } else {
       $sql = sprintf(
         'SELECT * FROM `job_items` WHERE `job_categories_id` = %d ORDER BY `item` ASC, `description` ASC',
         $category
 
       );
-
     }
 
     // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
-    return $this->Result( $sql);
-
+    return $this->Result($sql);
   }
 
+  public function import_from_csv() {
+    $path = implode(
+      DIRECTORY_SEPARATOR,
+      [
+        dirname(__DIR__),
+        'resources',
+        'maintenance-items.csv'
+
+      ]
+
+    );
+
+    if (file_exists($path)) {
+      \sys::logger(sprintf('<importing %s> %s', $path, __METHOD__));
+
+      $csv = new ParseCsv\Csv;
+      $csv->auto($path);
+      set_time_limit(300);
+
+      \sys::logger(sprintf('<%s> %s', print_r($csv->getTotalDataRowCount(), true), __METHOD__));
+      $categories = [];
+      $daoCategories = new job_categories;
+      foreach ($csv->data as $item) {
+
+        // CATEGORY,ITEM,ISSUE
+
+        $key = array_search($item['CATEGORY'], array_column($categories, 'category'));
+        if (false === $key) {
+          $categories[] =
+            $dtoCategories = $daoCategories->getByCategory(
+              $item['CATEGORY'],
+              job_categories::autoadd
+            );
+        } else {
+          $dtoCategories = $categories[$key];
+        }
+
+        $a = [
+          'job_categories_id' => $dtoCategories->id,
+          'item' => $item['ITEM'],
+          'description' => $item['ISSUE']
+        ];
+
+        $this->Insert($a);
+
+        // if ($t['properties_id']) {
+        //     'keyset' => $t['keyset'],
+        //     'properties_id' => $t['properties_id'],
+        //     'updated' => \db::dbTimeStamp(),
+        //     'created' => \db::dbTimeStamp()
+
+
+        //   $a['keyset_type'] = config::keyset_management;
+
+        //   $a['keyset_type'] = config::keyset_tenant;
+        //   $this->Insert($a);
+        // }
+      }
+    } else {
+      \sys::logger(sprintf('<missing import file> %s', $path, __METHOD__));
+      \sys::logger(sprintf('<%s> %s', $path, __METHOD__));
+    }
+  }
 }

@@ -1,0 +1,349 @@
+CATEGORY,ITEM,ISSUE
+APPLIANCES,Airconditioning,Dripping inside
+APPLIANCES,Airconditioning,Dripping Outside
+APPLIANCES,Airconditioning,Making noises 
+APPLIANCES,Airconditioning,New airconditioner
+APPLIANCES,Airconditioning,Not heating/cooling 
+APPLIANCES,Airconditioning,Not working 
+APPLIANCES,Airconditioning,Remote control
+APPLIANCES,Cook Top - Electric,Element not working 
+APPLIANCES,Cook Top - Electric,Knobs broken
+APPLIANCES,Cook Top - Electric,New electic cook top
+APPLIANCES,Cook Top - Electric,Not working 
+APPLIANCES,Cook Top - Gas,Element not working 
+APPLIANCES,Cook Top - Gas,Gas not igniting 
+APPLIANCES,Cook Top - Gas,Knobs broken
+APPLIANCES,Cook Top - Gas,New gas cook top
+APPLIANCES,Cook Top - Gas,Not working 
+APPLIANCES,Dishwasher,Cycle not completeing 
+APPLIANCES,Dishwasher,Door broken 
+APPLIANCES,Dishwasher,Handle broken
+APPLIANCES,Dishwasher,New dishwasher
+APPLIANCES,Dishwasher,Not working 
+APPLIANCES,Dishwasher,Water not draining 
+APPLIANCES,Dryer,New clothes dryer
+APPLIANCES,Dryer,Not working 
+APPLIANCES,Oven - Electric,Control knobs missing 
+APPLIANCES,Oven - Electric,Fan not working 
+APPLIANCES,Oven - Electric,Making noises 
+APPLIANCES,Oven - Electric,New electric oven
+APPLIANCES,Oven - Electric,Not heating up 
+APPLIANCES,Oven - Electric,Not working 
+APPLIANCES,Oven - Electric,Overheating 
+APPLIANCES,Oven - Electric,Seal 
+APPLIANCES,Oven - Gas,Control knobs missing 
+APPLIANCES,Oven - Gas,Fan not working 
+APPLIANCES,Oven - Gas,Making noises 
+APPLIANCES,Oven - Gas,New gas oven
+APPLIANCES,Oven - Gas,Not heating up 
+APPLIANCES,Oven - Gas,Not working 
+APPLIANCES,Oven - Gas,Overheating 
+APPLIANCES,Oven - Gas,Seal 
+APPLIANCES,Rangehood,Lights not working 
+APPLIANCES,Rangehood,Making noises 
+APPLIANCES,Rangehood,New rangehood
+APPLIANCES,Rangehood,Not retracting
+APPLIANCES,Rangehood,Not working 
+APPLIANCES,Washing Machine,New washing machine
+APPLIANCES,Washing Machine,Not working 
+CARPORT/GARAGE,Carport,Damaged floor
+CARPORT/GARAGE,Carport,Damaged posts
+CARPORT/GARAGE,Carport,Damaged roof
+CARPORT/GARAGE,Carport,New carport
+CARPORT/GARAGE,Garage Door,Door broken 
+CARPORT/GARAGE,Garage Door,Door damage 
+CARPORT/GARAGE,Garage Door,Door jamming 
+CARPORT/GARAGE,Garage Door,General service
+CARPORT/GARAGE,Garage Door,Keys missing 
+CARPORT/GARAGE,Garage Door,New door
+CARPORT/GARAGE,Garage Door,Remote not working 
+CLEANING,Carpets,Cleaning
+CLEANING,Carport,Pressure clean
+CLEANING,Driveway,Pressure clean
+CLEANING,Floors,Cleaning
+CLEANING,Garage Floor,Pressure clean
+CLEANING,Gutters,Clean gutters
+CLEANING,Paths,Pressure clean
+CLEANING,Patio,Pressure clean
+CLEANING,Pool area,Clean the pool
+CLEANING,Pool area,Pressure clean
+CLEANING,Walls,Cleaning
+CLEANING,Window Furnishings,Cleaning
+ELECTRICAL,Ceiling Fan,Fan not secure 
+ELECTRICAL,Ceiling Fan,Faulty switch
+ELECTRICAL,Ceiling Fan,Making noises 
+ELECTRICAL,Ceiling Fan,New ceiling fan
+ELECTRICAL,Ceiling Fan,Not working 
+ELECTRICAL,Ceiling Fan,Remote control
+ELECTRICAL,Extractor Fan,Fan not working 
+ELECTRICAL,Extractor Fan,Faulty switch
+ELECTRICAL,Extractor Fan,Making excessive noises 
+ELECTRICAL,Extractor Fan,New extractor fan
+ELECTRICAL,Extractor Fan,Not working 
+ELECTRICAL,Hot Water System - Electric,New electric hot water system
+ELECTRICAL,Hot Water System - Electric,No hot water 
+ELECTRICAL,Hot Water System - Electric,No power 
+ELECTRICAL,Hot Water System - Electric,Tripping switchboard 
+ELECTRICAL,Hot Water System - Gas,No power 
+ELECTRICAL,Hot Water System - Gas,Tripping switchboard 
+ELECTRICAL,Light/Fan Combo,Blown bulb 
+ELECTRICAL,Light/Fan Combo,Faulty switch
+ELECTRICAL,Light/Fan Combo,Flickering light 
+ELECTRICAL,Light/Fan Combo,New light/fan combo
+ELECTRICAL,Light/Fan Combo,Not working 
+ELECTRICAL,Light/Fan Combo,Remote control
+ELECTRICAL,Light/Fan/Heat Combo,Blown bulb 
+ELECTRICAL,Light/Fan/Heat Combo,Fan not working 
+ELECTRICAL,Light/Fan/Heat Combo,Faulty switch
+ELECTRICAL,Light/Fan/Heat Combo,Flickering light 
+ELECTRICAL,Light/Fan/Heat Combo,Lights not working 
+ELECTRICAL,Light/Fan/Heat Combo,Making excessive noises 
+ELECTRICAL,Light/Fan/Heat Combo,New light/fan/heat combo
+ELECTRICAL,Light/Fan/Heat Combo,Not heating
+ELECTRICAL,Light/Fan/Heat Combo,Not working 
+ELECTRICAL,Lights,Blown bulb 
+ELECTRICAL,Lights,Broken socket
+ELECTRICAL,Lights,Faulty light switch 
+ELECTRICAL,Lights,Flickering light 
+ELECTRICAL,Lights,New lights
+ELECTRICAL,Lights,Not working 
+ELECTRICAL,Power Points,Faulty power point 
+ELECTRICAL,Power Points,New power point
+ELECTRICAL,Power Points,Not working 
+ELECTRICAL,Smoke Alarms,Beeping alarm 
+ELECTRICAL,Smoke Alarms,Legislation requirement 
+ELECTRICAL,Smoke Alarms,Missing alarm 
+ELECTRICAL,Smoke Alarms,New property
+ELECTRICAL,Smoke Alarms,New tenant
+ELECTRICAL,Smoke Alarms,Tenancy renewal
+ELECTRICAL,Switchboard,Energex Defect Report 
+ELECTRICAL,Switchboard,New safety switch 
+ELECTRICAL,Switchboard,New switchboard
+ELECTRICAL,Switchboard,Not working 
+ELECTRICAL,Switchboard,Safety switch not working
+ELECTRICAL,Switchboard,Safety switch tripping
+ELECTRICAL,TV Antenna,New antenna 
+ELECTRICAL,TV Antenna,Not working 
+EXTERNAL SURFACES/STRUCTURES,Clothesline,Broken clothesline 
+EXTERNAL SURFACES/STRUCTURES,Clothesline,New clothesline 
+EXTERNAL SURFACES/STRUCTURES,Clothesline,Strings broken 
+EXTERNAL SURFACES/STRUCTURES,Concreting,New concrete
+EXTERNAL SURFACES/STRUCTURES,Driveway,Damaged driveway
+EXTERNAL SURFACES/STRUCTURES,Driveway,New driveway
+EXTERNAL SURFACES/STRUCTURES,Fence,Broken pailing 
+EXTERNAL SURFACES/STRUCTURES,Fence,Fallen fence 
+EXTERNAL SURFACES/STRUCTURES,Fence,New fence
+EXTERNAL SURFACES/STRUCTURES,Fence - Pool,Fence damage
+EXTERNAL SURFACES/STRUCTURES,Fence - Pool,New fence
+EXTERNAL SURFACES/STRUCTURES,Gate,Broken pailing 
+EXTERNAL SURFACES/STRUCTURES,Gate,Fallen off hinges 
+EXTERNAL SURFACES/STRUCTURES,Gate,Latch broken 
+EXTERNAL SURFACES/STRUCTURES,Gate,New gate
+EXTERNAL SURFACES/STRUCTURES,Gate,Not closing 
+EXTERNAL SURFACES/STRUCTURES,Gutters,Damaged gutters
+EXTERNAL SURFACES/STRUCTURES,Gutters,New gutters
+EXTERNAL SURFACES/STRUCTURES,House,House wash
+EXTERNAL SURFACES/STRUCTURES,Paths,Damaged path
+EXTERNAL SURFACES/STRUCTURES,Paths,New path
+EXTERNAL SURFACES/STRUCTURES,Patio,Damaged floor
+EXTERNAL SURFACES/STRUCTURES,Patio,Damaged posts
+EXTERNAL SURFACES/STRUCTURES,Patio,Damaged roof
+EXTERNAL SURFACES/STRUCTURES,Patio,New floor
+EXTERNAL SURFACES/STRUCTURES,Patio,New posts
+EXTERNAL SURFACES/STRUCTURES,Patio,New roof
+EXTERNAL SURFACES/STRUCTURES,Pool area,Damaged surface
+EXTERNAL SURFACES/STRUCTURES,Roof,Damaged roof
+EXTERNAL SURFACES/STRUCTURES,Roof,Leaking roof
+EXTERNAL SURFACES/STRUCTURES,Roof,New roof
+EXTERNAL SURFACES/STRUCTURES,Stairs,Broken rail 
+EXTERNAL SURFACES/STRUCTURES,Stairs,Broken stairs 
+EXTERNAL SURFACES/STRUCTURES,Stairs,Loose rail 
+EXTERNAL SURFACES/STRUCTURES,Stairs,Loose stairs 
+EXTERNAL SURFACES/STRUCTURES,Stairs,New rail 
+EXTERNAL SURFACES/STRUCTURES,Stairs,New stairs
+EXTERNAL SURFACES/STRUCTURES,Stairs,Rotten rail 
+EXTERNAL SURFACES/STRUCTURES,Stairs,Rotten stairs 
+PAINTING,Ceiling,New paint
+PAINTING,Ceiling,Peeled or worn paint 
+PAINTING,Doors,New paint
+PAINTING,Doors,Peeled or worn paint 
+PAINTING,Fence,New paint
+PAINTING,Fence,Peeled or worn paint 
+PAINTING,Gate,New paint
+PAINTING,Gate,Peeled or worn paint 
+PAINTING,Gate,Peeled or worn paint 
+PAINTING,Gutters,Paint gutters
+PAINTING,Patio,New paint
+PAINTING,Patio,Peeled or worn paint 
+PAINTING,Stairs,New paint
+PAINTING,Stairs,Peeled or worn paint 
+PAINTING,Walls,New paint
+PAINTING,Walls,Peeled or worn paint 
+PAINTING,Windows,New paint
+PAINTING,Windows,Peeled or worn paint 
+PEST,Animals,Possums 
+PEST,Animals,Rats 
+PEST,Inspections,Pest inspection
+PEST,Inspections,Termite inspection
+PEST,Pests & Bugs,Bugs/insects 
+PEST,Pests & Bugs,Carpet beatle
+PEST,Pests & Bugs,Flea treatment
+PEST,Pests & Bugs,Pest treatment
+PLUMBING,Excess water,Concealed leak
+PLUMBING,Excess water,Waterwise
+PLUMBING,External Drain,Blocked drain
+PLUMBING,External Drain,Leaking drain
+PLUMBING,External Drain,Smelly drain
+PLUMBING,External Pipe,Broken downpipe
+PLUMBING,External Pipe,Broken pipe
+PLUMBING,External Pipe,Leaking pipe
+PLUMBING,External Pipe,New pipe
+PLUMBING,External Pipe,Tree roots in pipe
+PLUMBING,Gutters,Broken gutters
+PLUMBING,Gutters,New gutters
+PLUMBING,Hot Water System - Gas,Leaking system
+PLUMBING,Hot Water System - Gas,New system
+PLUMBING,Hot Water System - Gas,No hot water 
+PLUMBING,HWS - Electrical,Leaking system
+PLUMBING,HWS - Electrical,New system 
+PLUMBING,Internal Drain,Blocked drain
+PLUMBING,Internal Drain,Leaking drain
+PLUMBING,Internal Drain,Smelly drain
+PLUMBING,Internal Pipes,Burst pipe 
+PLUMBING,Internal Pipes,Leaking pipe 
+PLUMBING,Internal Pipes,New pipe
+PLUMBING,Shower,Blocked 
+PLUMBING,Shower,Leaking 
+PLUMBING,Shower,New shower 
+PLUMBING,Shower,Screen broken 
+PLUMBING,Shower,Seal 
+PLUMBING,Sink/Vanity,Blocked 
+PLUMBING,Sink/Vanity,Broken 
+PLUMBING,Sink/Vanity,Leaking 
+PLUMBING,Sink/Vanity,New sink 
+PLUMBING,Sink/Vanity,Smelly 
+PLUMBING,Taps,Broken tap
+PLUMBING,Taps,Leaking tap 
+PLUMBING,Taps,New tap 
+PLUMBING,Toilet,Blocked 
+PLUMBING,Toilet,Broken seat 
+PLUMBING,Toilet,Leaking 
+PLUMBING,Toilet,Making a loud noise 
+PLUMBING,Toilet,New toilet 
+PLUMBING,Toilet,Not flushing 
+PLUMBING,Toilet,Old seat 
+POOL,Pool safety,Safety inspection & certificate
+POOL,Pool safety,Safety re-inspection
+POOL,Pool system,Chlorinator not working
+POOL,Pool system,Filter not working
+POOL,Pool system,Not working 
+POOL,Pool system,Pump not working
+POOL,Pool system,Service
+SECURITY,Alarm System,New system
+SECURITY,Alarm System,Not working 
+SECURITY,Keys,Missing keys
+SECURITY,Keys,New keys
+SECURITY,Keys,Re-key
+SECURITY,Keys,Tenant locked out
+SMOKE ALARM TECHNICIAN,Smoke Alarms,Beeping alarm 
+SMOKE ALARM TECHNICIAN,Smoke Alarms,Legislation requirement 
+SMOKE ALARM TECHNICIAN,Smoke Alarms,Missing alarm 
+SMOKE ALARM TECHNICIAN,Smoke Alarms,New property
+SMOKE ALARM TECHNICIAN,Smoke Alarms,New tenant
+SMOKE ALARM TECHNICIAN,Smoke Alarms,Tenancy renewal
+TILING,Bathroom,Broken tiles 
+TILING,Bathroom,Falling tiles 
+TILING,Bathroom,Re-tile
+TILING,Floors,Broken tiles 
+TILING,Floors,Falling tiles 
+TILING,Floors,Re-tile
+TILING,Kitchen,Broken tiles 
+TILING,Kitchen,Falling tiles 
+TILING,Kitchen,Re-tile
+TILING,Laundry,Broken tiles 
+TILING,Laundry,Falling tiles 
+TILING,Laundry,Re-tile
+TILING,Outdoor,Broken tiles 
+TILING,Outdoor,Falling tiles 
+TILING,Outdoor,Re-tile
+WALLS/FLOORS/CEILING,Carpets,New carpet
+WALLS/FLOORS/CEILING,Carpets,Re-stretch
+WALLS/FLOORS/CEILING,Carpets,Stained
+WALLS/FLOORS/CEILING,Ceiling,Bowing
+WALLS/FLOORS/CEILING,Ceiling,Leaking
+WALLS/FLOORS/CEILING,Ceiling,Mouldy
+WALLS/FLOORS/CEILING,Floors,Lifting
+WALLS/FLOORS/CEILING,Floors,New floors
+WALLS/FLOORS/CEILING,Floors,Scratched
+WALLS/FLOORS/CEILING,Floors,Stained
+WALLS/FLOORS/CEILING,Floors,Swelling
+WALLS/FLOORS/CEILING,Mirror,Broken mirror
+WALLS/FLOORS/CEILING,Mirror,Install mirror
+WALLS/FLOORS/CEILING,Walls,Damage
+WALLS/FLOORS/CEILING,Walls,Hole
+WALLS/FLOORS/CEILING,Walls,Install hook/nail
+WALLS/FLOORS/CEILING,Walls,Mouldy
+WINDOWS/DOORS,Doors,Jamming/closure issues 
+WINDOWS/DOORS,Doors,Loose door stop 
+WINDOWS/DOORS,Doors,New door
+WINDOWS/DOORS,Doors,New door stop
+WINDOWS/DOORS,Doors,New weatherstrip
+WINDOWS/DOORS,Doors,Roller doors off track 
+WINDOWS/DOORS,Glass Doors,Broken glass 
+WINDOWS/DOORS,Glass Doors,Chip in door
+WINDOWS/DOORS,Glass Windows,Broken glass
+WINDOWS/DOORS,Glass Windows,Chip in window 
+WINDOWS/DOORS,Handles,Broken door handle 
+WINDOWS/DOORS,Handles,Broken window handle
+WINDOWS/DOORS,Handles,Loose door handle 
+WINDOWS/DOORS,Handles,Loose window handle
+WINDOWS/DOORS,Handles,New door handle
+WINDOWS/DOORS,Handles,New window handle
+WINDOWS/DOORS,Locks,Broken catch
+WINDOWS/DOORS,Locks,Broken latch
+WINDOWS/DOORS,Locks,Broken lock 
+WINDOWS/DOORS,Locks,Key not working in lock 
+WINDOWS/DOORS,Locks,Key stuck in lock
+WINDOWS/DOORS,Locks,Loose catch
+WINDOWS/DOORS,Locks,Loose latch
+WINDOWS/DOORS,Locks,Loose lock
+WINDOWS/DOORS,Locks,Loose striker plate 
+WINDOWS/DOORS,Locks,New catch
+WINDOWS/DOORS,Locks,New latch
+WINDOWS/DOORS,Locks,New lock
+WINDOWS/DOORS,Locks,Seized lock
+WINDOWS/DOORS,Screen door,Damage to lock
+WINDOWS/DOORS,Screen door,Damage to screen
+WINDOWS/DOORS,Screen door,Frame broken 
+WINDOWS/DOORS,Screen door,New lock
+WINDOWS/DOORS,Screen door,New screen window
+WINDOWS/DOORS,Screen door,Screens won't slide 
+WINDOWS/DOORS,Screen door,Tear/hole in mesh
+WINDOWS/DOORS,Screen door,Warped screens 
+WINDOWS/DOORS,Screen window,Damage to lock
+WINDOWS/DOORS,Screen window,Damage to screen
+WINDOWS/DOORS,Screen window,Frame broken 
+WINDOWS/DOORS,Screen window,New lock
+WINDOWS/DOORS,Screen window,New screen window
+WINDOWS/DOORS,Screen window,Screens won't slide 
+WINDOWS/DOORS,Screen window,Tear/hole in mesh
+WINDOWS/DOORS,Screen window,Warped screens 
+WINDOWS/DOORS,Window Furnishings,Blinds broken 
+WINDOWS/DOORS,Window Furnishings,Blinds not operating 
+WINDOWS/DOORS,Window Furnishings,Curtain rail broken 
+WINDOWS/DOORS,Window Furnishings,Curtain tracks broken 
+WINDOWS/DOORS,Window Furnishings,New curtains or blinds
+WINDOWS/DOORS,Window Furnishings,Vertical tracks not working 
+WINDOWS/DOORS,Windows,Jamming/closure issues 
+WINDOWS/DOORS,Windows,New windows
+WINDOWS/DOORS,Windows,Off hinge
+YARD,Garden Maintenance,Bushes/hedges 
+YARD,Garden Maintenance,Garden debris 
+YARD,Garden Maintenance,Garden weeds 
+YARD,Garden Maintenance,Mowing & edging
+YARD,Garden Maintenance,"Mowing, edging, hedging"
+YARD,Landscaping,New garden
+YARD,Landscaping,Rectify garden
+YARD,Tree Lopping,Branches near powerline 
+YARD,Tree Lopping,Fallen tree 
+YARD,Tree Lopping,Tree removal
