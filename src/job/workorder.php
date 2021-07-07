@@ -32,16 +32,8 @@ abstract class workorder {
     $t->css(__DIR__ . '/templates/css.css');
 
 
-    if (config::job_type_recurring == $dto->job_type) {
-      $t->replace('title', config::PDF_title_recurring_workorder);
-      $t->replace('reference', 'DEA' . str_pad($dto->id, 6, '0', STR_PAD_LEFT));
-    } elseif (config::job_type_quote == $dto->job_type) {
-      $t->replace('title', config::PDF_title_quote);
-      $t->replace('reference', 'DEA' . str_pad($dto->id, 6, '0', STR_PAD_LEFT));
-    } else {
-      $t->replace('title', config::PDF_title_workorder);
-      $t->replace('reference', 'DEA' . str_pad($dto->id, 6, '0', STR_PAD_LEFT));
-    }
+    $t->replace('title', config::cms_job_PDF_title($dto->job_type));
+    $t->replace('reference', 'DEA' . str_pad($dto->id, 6, '0', STR_PAD_LEFT));
 
     $t->replace(
       'logo',

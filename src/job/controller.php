@@ -245,6 +245,14 @@ class controller extends \Controller {
 
             Json::ack($action)
               ->add('tmpdir', $tmpdir)
+              ->add(
+                'subject',
+                sprintf(
+                  '%s - %s',
+                  $dto->address_street,
+                  config::cms_job_PDF_title($dto->job_type)
+                )
+              )
               ->add('text', workorder::expand_template($dto, config::cms_job_template('template-workorder-send')));
           } else {
             Json::nak(sprintf('%s - not found', $action));
@@ -707,16 +715,8 @@ class controller extends \Controller {
       if ($dto = $dao->getByID($id)) {
         $dto = $dao->getRichData($dto);
 
-        if (config::job_type_recurring == $dto->job_type) {
-          $this->title = config::PDF_title_recurring_workorder;
-        } elseif (config::job_type_quote == $dto->job_type) {
-          $this->title = config::PDF_title_quote;
-        } else {
-          $this->title = config::PDF_title_workorder;
-        }
-
         $this->data = (object)[
-          'title' => $this->title,
+          'title' => $this->title = config::cms_job_PDF_title($dto->job_type),
           'dto' => $dto,
 
         ];

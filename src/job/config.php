@@ -37,9 +37,12 @@ class config extends \config {
 
 	const label_template_workorder = 'JOB Order';
 
-	const PDF_title_workorder = 'JOB Order';
-	const PDF_title_recurring_workorder = 'Recurring JOB Order';
-	const PDF_title_quote = 'JOB Quote Request';
+	const PDF_title = [
+		0 => 'JOB Order',
+		1 => 'Recurring JOB Order',
+		2 => 'JOB Quote Request'
+
+	];
 
 	const job_type_order = 0;
 	const job_type_recurring = 1;
@@ -204,6 +207,14 @@ class config extends \config {
 		}
 
 		return $ret;
+	}
+
+	static function cms_job_PDF_title(int $type): string {
+		if (in_array($type, [0, 1, 2])) {
+			return self::PDF_title[$type];
+		}
+
+		return self::PDF_title[0];
 	}
 
 	static function cms_job_type_verbatim(int $type): string {
