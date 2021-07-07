@@ -381,7 +381,7 @@ use strings;  ?>
               }).then(d => {
                 if ('ack' == d.response) {
                   o.tmpDir = d.tmpdir;
-                  o.message = d.text;
+                  o.message = String(d.text).toHtml();
                   if (!!window.EmailClass) {
                     _.email.activate(o);
                   } else {
