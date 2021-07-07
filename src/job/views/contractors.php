@@ -15,17 +15,16 @@ use strings;
 $categories = $this->data->categories;  ?>
 
 <h1 class="d-none d-print-block"><?= $this->title ?></h1>
-<div class="form-row mb-2 d-print-none">
+<div class="form-row mb-2 fade d-print-none" id="<?= $srch = strings::rand() ?>row">
   <div class="col">
-    <input type="search" class="form-control" autofocus id="<?= $srch = strings::rand() ?>" />
-
+    <input type="search" class="form-control" autofocus id="<?= $srch ?>">
 
   </div>
 
 </div>
 
 <div class="table-responsive">
-  <table class="table table-sm" id="<?= $tblID = strings::rand() ?>">
+  <table class="table table-sm fade" id="<?= $tblID = strings::rand() ?>">
     <thead class="small">
       <tr>
         <td>#</td>
@@ -60,18 +59,18 @@ $categories = $this->data->categories;  ?>
 
           <td>
             <?php
-              if ($dto->services) {
-                $services = explode(',', $dto->services);
-                foreach ($services as $service) {
-                  if (isset($categories[$service])) {
-                    printf('<div class="text-nowrap">%s</div>', print_r($categories[$service], true));
-                  } else {
-                    printf('<div>%s</div>', $service);
-                  }
+            if ($dto->services) {
+              $services = explode(',', $dto->services);
+              foreach ($services as $service) {
+                if (isset($categories[$service])) {
+                  printf('<div class="text-nowrap">%s</div>', print_r($categories[$service], true));
+                } else {
+                  printf('<div>%s</div>', $service);
                 }
-              } else {
-                print '&nbsp;';
               }
+            } else {
+              print '&nbsp;';
+            }
             ?>
           </td>
 
@@ -85,7 +84,7 @@ $categories = $this->data->categories;  ?>
 
 </div>
 <script>
-  (_ => $(document).ready(() => {
+  (_ => {
     $('#<?= $tblID ?>')
       .on('update-line-numbers', function(e) {
         $('> tbody > tr:not(.d-none) >td[line-number]', this).each((i, e) => {
@@ -105,7 +104,10 @@ $categories = $this->data->categories;  ?>
               _me.trigger('edit-primary-contact');
 
             }))
-            .then(d => d.on('success', () => window.location.reload()))
+            .then(d => d.on('success', (e, d) => {
+              _.nav('<?= $this->route ?>/contractors?idx=' + d.id);
+
+            }))
             .then(d => d.on('send-sms', () => _.ask.warning({
               'title': 'not implemented',
               'text': 'Feature not implented'
@@ -165,36 +167,62 @@ $categories = $this->data->categories;  ?>
     });
 
     let srchidx = 0;
-    $('#<?= $srch ?>').on('keyup', function(e) {
-      let idx = ++srchidx;
-      let txt = this.value;
+    $('#<?= $srch ?>')
+      .on('keyup', function(e) {
+        let idx = ++srchidx;
+        let txt = this.value;
 
-      $('#<?= $tblID ?> > tbody > tr').each((i, tr) => {
-        if (idx != srchidx) return false;
+        $('#<?= $tblID ?> > tbody > tr').each((i, tr) => {
+          if (idx != srchidx) return false;
 
-        let _tr = $(tr);
-        if ('' == txt.trim()) {
-          _tr.removeClass('d-none');
-
-        } else {
-          let str = _tr.text()
-          if (str.match(new RegExp(txt, 'gi'))) {
+          let _tr = $(tr);
+          if ('' == txt.trim()) {
             _tr.removeClass('d-none');
 
           } else {
-            _tr.addClass('d-none');
+            let str = _tr.text()
+            if (str.match(new RegExp(txt, 'gi'))) {
+              _tr.removeClass('d-none');
+
+            } else {
+              _tr.addClass('d-none');
+
+            }
 
           }
 
-        }
+        });
+
+        $('#<?= $tblID ?>').trigger('update-line-numbers');
 
       });
 
-      $('#<?= $tblID ?>').trigger('update-line-numbers');
+    $(document)
+      .ready(() => {
+        <?php if ($this->data->idx) {  ?>
+          let tr = $('#<?= $tblID ?> > tbody > tr[data-id="<?= $this->data->idx ?>"]');
+          if (tr.length > 0) {
+            tr[0].scrollIntoView({
+              block: "center"
+            });
 
-    });
+            tr.addClass('bg-light');
+            setTimeout(() => tr.removeClass('bg-light'), 3000);
 
-    $('#<?= $tblID ?>').trigger('update-line-numbers');
+            history.pushState({}, '', '<?= $this->route ?>/contractor');
 
-  }))(_brayworth_);
+          }
+
+        <?php }  ?>
+
+        $('#<?= $tblID ?>')
+          .addClass('show')
+          .trigger('update-line-numbers');
+
+        $('#<?= $srch ?>row')
+          .addClass('show');
+
+      });
+
+  })(_brayworth_);
 </script>

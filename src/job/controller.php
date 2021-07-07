@@ -82,11 +82,11 @@ class controller extends \Controller {
       $dao = new dao\job_contractors;
       if ($id) {
         $dao->UpdateByID($a, $id);
-        Json::ack($action);
       } else {
-        $dao->Insert($a);
-        Json::ack($action);
+        $id = $dao->Insert($a);
       }
+      Json::ack($action)
+        ->add('id', $id);
     } elseif ('create-workorder' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job;
@@ -510,7 +510,8 @@ class controller extends \Controller {
     $dao = new dao\job_contractors;
     $this->data = (object)[
       'res' => $dao->getReportSet(),
-      'categories' => dao\job_categories::getCategorySet()
+      'categories' => dao\job_categories::getCategorySet(),
+      'idx' => $this->getParam('idx'),
 
     ];
 

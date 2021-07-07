@@ -371,55 +371,56 @@ $categories = $this->data->categories;  ?>
 
       });
 
-      $('#<?= $_btnAddService ?>').on('click', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
+      $('#<?= $_btnAddService ?>')
+        .on('click', function(e) {
+          e.stopPropagation();
+          e.preventDefault();
 
-        let _me = $(this);
-        let _data = _me.data();
+          let _me = $(this);
+          let _data = _me.data();
 
-        let ctrl = $('<select class="form-control mt-2"></select>');
-        $('option', ctrl).each((i, o) => $(o).remove());
-        ctrl.append('<option>select service</option>');
-        let services = String($('#<?= $_form ?> input[name="services"]').val()).split(',');
-        $.each(_.catSort(_data.categories), (i, c) => {
-          if (services.indexOf(i) < 0) {
-            ctrl.append('<option value="' + c[0] + '">' + c[1] + '</option>')
+          let ctrl = $('<select class="form-control mt-2"></select>');
+          $('option', ctrl).each((i, o) => $(o).remove());
+          ctrl.append('<option>select service</option>');
+          let services = String($('#<?= $_form ?> input[name="services"]').val()).split(',');
+          $.each(_.catSort(_data.categories), (i, c) => {
+            if (services.indexOf(i) < 0) {
+              ctrl.append('<option value="' + c[0] + '">' + c[1] + '</option>')
 
-          }
-
-        });
-
-        ctrl.on('change', function(e) {
-
-          let id = Math.random().toString(36).slice(2);
-
-          // console.log(this.value, this.options[this.selectedIndex].text);
-
-          let chk = $('<input type="checkbox" class="form-check-input" checked data-role="service" value="' + this.value + '" id="' + id + '">');
-          chk.on('change', function(e) {
-            let _me = $(this);
-            _me.parent().remove();
-
-            $('#<?= $_form ?>').trigger('check-services');
+            }
 
           });
 
-          $('<div class="form-check"></div>')
-            .append(chk)
-            .append('<label class="form-check-label" for="' + id + '">' + this.options[this.selectedIndex].text + '</labellabel>')
-            .insertBefore(this);
+          ctrl.on('change', function(e) {
 
-          $('#<?= $_form ?>').trigger('check-services');
-          $(this).remove();
-          _me.removeClass('d-none');
+            let id = Math.random().toString(36).slice(2);
+
+            // console.log(this.value, this.options[this.selectedIndex].text);
+
+            let chk = $('<input type="checkbox" class="form-check-input" checked data-role="service" value="' + this.value + '" id="' + id + '">');
+            chk.on('change', function(e) {
+              let _me = $(this);
+              _me.parent().remove();
+
+              $('#<?= $_form ?>').trigger('check-services');
+
+            });
+
+            $('<div class="form-check"></div>')
+              .append(chk)
+              .append('<label class="form-check-label" for="' + id + '">' + this.options[this.selectedIndex].text + '</labellabel>')
+              .insertBefore(this);
+
+            $('#<?= $_form ?>').trigger('check-services');
+            $(this).remove();
+            _me.removeClass('d-none');
+
+          });
+
+          $(this).addClass('d-none');
+          ctrl.insertBefore(this);
 
         });
-
-        $(this).addClass('d-none');
-        ctrl.insertBefore(this);
-
-      });
 
       $('#<?= $_form ?>')
         .on('abn-search', function(e) {
@@ -451,13 +452,12 @@ $categories = $this->data->categories;  ?>
             data: _data,
 
           }).then(d => {
+            $('#<?= $_modal ?>').modal('hide');
             _.growl(d);
             if ('ack' == d.response) {
-              $('#<?= $_modal ?>').trigger('success');
+              $('#<?= $_modal ?>').trigger('success', d);
 
             }
-
-            $('#<?= $_modal ?>').modal('hide');
 
           });
 

@@ -251,19 +251,20 @@ use currentUser, strings;  ?>
   </li>
   <script>
     (_ => {
-      $('a[data-role="template-editor"]', '#<?= $_nav ?>').on('click', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
+      $('a[data-role="template-editor"]', '#<?= $_nav ?>')
+        .on('click', function(e) {
+          e.stopPropagation();
+          e.preventDefault();
 
-        let _me = $(this);
-        let _data = _me.data();
+          let _me = $(this);
+          let _data = _me.data();
 
-        _me.prop('disabled', true);
+          _me.prop('disabled', true);
 
-        _.get.modal(_.url('<?= $this->route ?>/templateeditor/?t=' + encodeURIComponent(_data.template)))
-          .then(m => _me.prop('disabled', false));
+          _.get.modal(_.url('<?= $this->route ?>/templateeditor/?t=' + encodeURIComponent(_data.template)))
+            .then(m => _me.prop('disabled', false));
 
-      });
+        });
 
     })(_brayworth_);
   </script>
