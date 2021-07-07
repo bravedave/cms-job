@@ -160,6 +160,7 @@ class job extends _dao {
             $job->property_manager_id = $user->id;
             $job->property_manager_email = $user->email;
             $job->property_manager_mobile = $user->mobile;
+            $job->property_manager_telephone = $user->telephone??'';
           } else {
             \sys::logger(sprintf('<property manager not found %s> %s', $prop->property_manager, __METHOD__));
           }
@@ -174,7 +175,7 @@ class job extends _dao {
               if ($cprop->PropertyManager) {
                 $sql = sprintf(
                   'SELECT
-                    `id`, `name`, `email`, `mobile`
+                    `id`, `name`, `email`, `mobile`, `telephone`
                   FROM
                     `users`
                   WHERE
@@ -189,18 +190,19 @@ class job extends _dao {
                     $job->property_manager_id = $user->id;
                     $job->property_manager_email = $user->email;
                     $job->property_manager_mobile = $user->mobile;
+                    $job->property_manager_telephone = $user->telephone ?? '';
                   } else {
                     \sys::logger(sprintf('<property manager (console) not found %s> %s', $cprop->PropertyManager, __METHOD__));
                   }
                 }
               } else {
-                \sys::logger(sprintf('<property manager (console) not specifed %s> %s', __METHOD__));
+                \sys::logger(sprintf('<property manager (console) not specifed> %s', __METHOD__));
               }
             } else {
-              \sys::logger(sprintf('<property (console) not found %s> %s', __METHOD__));
+              \sys::logger(sprintf('<property (console) not found> %s', __METHOD__));
             }
           } else {
-            \sys::logger(sprintf('<property manager not specifed %s> %s', __METHOD__));
+            \sys::logger(sprintf('<property manager not specifed> %s', __METHOD__));
           }
         }
       }

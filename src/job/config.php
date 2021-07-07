@@ -12,7 +12,7 @@
 namespace cms\job;
 
 class config extends \config {
-	const cms_job_db_version = 1.1;
+	const cms_job_db_version = 1.2;
 
 	const label = 'JOB';
 	const label_contractor_add = 'New Contractor';
@@ -35,6 +35,8 @@ class config extends \config {
 	const label_job_viewworkorder = 'View Workorder';
 	const label_matrix = 'JOB Matrix';
 
+	const label_template_workorder = 'JOB Order';
+
 	const PDF_title_workorder = 'JOB Order';
 	const PDF_title_recurring_workorder = 'Recurring JOB Order';
 	const PDF_title_quote = 'JOB Quote Request';
@@ -42,6 +44,13 @@ class config extends \config {
 	const job_type_order = 0;
 	const job_type_recurring = 1;
 	const job_type_quote = 2;
+
+	const job_types = [
+		0 => 'Order',
+		1 => 'Recurring',
+		2 => 'Quote'
+
+	];
 
 	const job_payment_owner = 0;
 	const job_payment_tenant = 1;
@@ -56,6 +65,11 @@ class config extends \config {
 	const job_status_new = 0;
 	const job_status_quote = 5;
 	const job_status_assigned = 10;
+
+	const job_templates = [
+		'template-workorder-send'
+
+	];
 
 	static $CONSOLE_FALLBACK = true;
 
@@ -141,7 +155,7 @@ class config extends \config {
 		}
 	}
 
-	static function cms_job_status_verbatim( int $status): string {
+	static function cms_job_status_verbatim(int $status): string {
 		if (config::job_status_new == $status) {
 			return 'new';
 		} elseif (config::job_status_quote == $status) {
@@ -169,6 +183,35 @@ class config extends \config {
 		}
 
 		return $path;
+	}
+
+	static function cms_job_template(string $template, string $text = null): string {
+		$ret = '';
+		if (\in_array($template, self::job_templates)) {
+			$path = implode(DIRECTORY_SEPARATOR, [
+				self::cms_job_store(),
+				$template . '.text'
+
+			]);
+
+			if (file_exists($path)) {
+				$ret = \file_get_contents($path);
+			}
+
+			if (!\is_null($text)) {
+				file_put_contents($path, $text);
+			}
+		}
+
+		return $ret;
+	}
+
+	static function cms_job_type_verbatim(int $type): string {
+		if (in_array($type, [0, 1, 2])) {
+			return self::job_types[$type];
+		}
+
+		return self::job_types[0];
 	}
 }
 

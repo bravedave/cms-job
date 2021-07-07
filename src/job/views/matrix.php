@@ -374,15 +374,16 @@ use strings;  ?>
               _.post({
                 url: _.url('<?= $this->route ?>'),
                 data: {
-                  action: 'get-workorder-as-attachment',
+                  action: 'get-workorder-and-attachment',
                   id: _data.id
                 },
 
               }).then(d => {
                 if ('ack' == d.response) {
                   o.tmpDir = d.tmpdir;
+                  o.message = d.text;
                   if (!!window.EmailClass) {
-                    _.email.activate(mailer);
+                    _.email.activate(o);
                   } else {
                     console.log(o);
                     console.log('no email program');
@@ -516,7 +517,8 @@ use strings;  ?>
           _.get
             .modal(_.url('<?= $this->route ?>/workorder/' + _data.id))
             .then(m => m.on('refresh-workorder', e => _tr.trigger('create-workorder')))
-            .then(m => m.on('email-workorder', e => _tr.trigger('email-workorder')));
+            .then(m => m.on('email-workorder', e => _tr.trigger('email-workorder')))
+            .then(m => m.on('edit-workorder', e => _tr.trigger('edit')));
 
         });
 

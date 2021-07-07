@@ -11,7 +11,7 @@
 namespace cms\job;
 
 use Dompdf\Dompdf;
-use strings;
+use currentUser, strings;
 
 abstract class workorder {
   protected static function getImagePath($path) {
@@ -34,10 +34,13 @@ abstract class workorder {
 
     if (config::job_type_recurring == $dto->job_type) {
       $t->replace('title', config::PDF_title_recurring_workorder);
+      $t->replace('reference', 'DEA' . str_pad($dto->id, 6, '0', STR_PAD_LEFT));
     } elseif (config::job_type_quote == $dto->job_type) {
       $t->replace('title', config::PDF_title_quote);
+      $t->replace('reference', 'DEA' . str_pad($dto->id, 6, '0', STR_PAD_LEFT));
     } else {
       $t->replace('title', config::PDF_title_workorder);
+      $t->replace('reference', 'DEA' . str_pad($dto->id, 6, '0', STR_PAD_LEFT));
     }
 
     $t->replace(
@@ -171,13 +174,13 @@ abstract class workorder {
     if ($dto->property_manager_mobile) {
 
       $includeMobile = true;
-      if ($dto->property_manager_id) {
-        $dao = new dao\users;
-        if ($uDto = $dao->getByID($dto->property_manager_id)) {
-          $options = $dao->options($uDto);
-          $includeMobile = 'yes' != $options->get('mobile-exclude-from-footer');
-        }
-      }
+      // if ($dto->property_manager_id) {
+      //   $dao = new dao\users;
+      //   if ($uDto = $dao->getByID($dto->property_manager_id)) {
+      //     $options = $dao->options($uDto);
+      //     $includeMobile = 'yes' != $options->get('mobile-exclude-from-footer');
+      //   }
+      // }
 
       if ($includeMobile) {
         $pm[] = sprintf(
@@ -244,5 +247,48 @@ abstract class workorder {
     unset($dompdf);
 
     return true;
+  }
+
+  static function expand_template( dao\dto\job $dto, string $text) : string {
+    $search = [];
+    $replace = [];
+
+    $search[] = '@{myname}@';
+    $replace[] = currentUser::name();
+
+    $search[] = '@{myfirstname}@';
+    $replace[] = strings::FirstWord( currentUser::name());
+
+    $search[] = '@{address}@';
+    $replace[] = $dto->address_street;
+
+    $search[] = '@{type}@';
+    $replace[] = config::cms_job_type_verbatim($dto->job_type);
+
+    $search[] = '@{contact}@';
+    $replace[] = strings::asLocalDate($dto->on_site_contact);
+
+    $search[] = '@{duedate}@';
+    $replace[] = strings::asLocalDate($dto->due);
+
+    $search[] = '@{PMname}@';
+    $replace[] = $dto->property_manager;
+
+    $search[] = '@{PMfirstname}@';
+    $replace[] = strings::FirstWord( $dto->property_manager);
+
+    $search[] = '@{PMemail}@';
+    $replace[] = strings::FirstWord( $dto->property_manager_email);
+
+    $search[] = '@{PMmobile}@';
+    $replace[] = strings::FirstWord( $dto->property_manager_mobile);
+
+    // <strong class="user-select-all">{PMphone}</strong><br>
+
+    $_replace = array_map(function ($s) {
+      return str_replace('$', '\$', $s);
+    }, $replace);
+    return preg_replace($search, $_replace, $text);
+
   }
 }

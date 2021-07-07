@@ -48,9 +48,9 @@ $_modal = strings::rand();
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" id="<?= $_RefreshWorkOrder = strings::rand() ?>">refresh order</button>
-          <button type="button" class="btn btn-outline-secondary mr-auto" id="<?= $_EmailOrder = strings::rand() ?>"><i class="bi bi-cursor"></i> email order</button>
-          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">close</button>
-          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-outline-secondary" id="<?= $_EmailOrder = strings::rand() ?>"><i class="bi bi-cursor"></i> email order</button>
+          <button type="button" class="btn btn-outline-secondary" id="<?= $_gotoJob = strings::rand() ?>">edit</button>
+          <button type="button" class="btn btn-outline-secondary ml-auto" data-dismiss="modal">close</button>
         </div>
       </div>
     </div>
@@ -73,6 +73,16 @@ $_modal = strings::rand();
 
           $('#<?= $_modal ?>')
             .trigger('email-workorder')
+            .modal('hide');
+
+        });
+
+      $('#<?= $_gotoJob ?>')
+        .on('click', function(e) {
+          e.stopPropagation();
+
+          $('#<?= $_modal ?>')
+            .trigger('edit-workorder')
             .modal('hide');
 
         });

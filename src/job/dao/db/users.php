@@ -10,8 +10,8 @@
 
 namespace cms\job\dao\db;
 
-$dbc = \sys::dbCheck( 'job_categories' );
+$dbc = \sys::dbCheck('users');
 
-$dbc->defineField( 'category', 'varchar');
+$dbc->defineField('telephone', 'varchar');
 
 $dbc->check();

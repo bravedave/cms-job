@@ -221,12 +221,15 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
-    } elseif ('get-workorder-as-attachment' == $action) {
+    } elseif ('get-workorder-and-attachment' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job;
         if ($dto = $dao->getByID($id)) {
 
           if (file_exists($src = $dao->getWorkOrderPath($dto))) {
+
+            $dto = $dao->getRichData($dto);
+
             if (!($tmpdir = $this->getPost('tmpdir'))) {
               $tmpdir = strings::rand('email_') . '_' . time();
             }
@@ -241,10 +244,43 @@ class controller extends \Controller {
             copy($src, $target);
 
             Json::ack($action)
-              ->add('tmpdir', $tmpdir);
+              ->add('tmpdir', $tmpdir)
+              ->add('text', workorder::expand_template($dto, config::cms_job_template('template-workorder-send')));
           } else {
             Json::nak(sprintf('%s - not found', $action));
           }
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak(sprintf('%s - missing id', $action));
+      }
+    } elseif ('get-workorder-text' == $action) {
+      /*
+        (_ => {
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'get-workorder-text',
+              id : 3
+
+            },
+
+          }).then(d => console.log('ack' == d.response ? d.text : d));
+
+        })(_brayworth_);
+      */
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+
+          $dto = $dao->getRichData($dto);
+
+          Json::ack($action)
+            ->add(
+              'text',
+              workorder::expand_template($dto, config::cms_job_template('template-workorder-send'))
+            );
         } else {
           Json::nak(sprintf('%s - not found', $action));
         }
@@ -388,6 +424,15 @@ class controller extends \Controller {
           'primary_contact' => (int)$this->getPost('people_id')
         ], $id);
 
+        Json::ack($action);
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('template-save' == $action) {
+      $template = $this->getPost('template');
+      if (\in_array($template, config::job_templates)) {
+        $text = $this->getPost('text');
+        config::cms_job_template($template, $text);
         Json::ack($action);
       } else {
         Json::nak($action);
@@ -641,14 +686,37 @@ class controller extends \Controller {
     }
   }
 
+  public function templateeditor() {
+    $template = $this->getParam('t');
+    if (\in_array($template, config::job_templates)) {
+      $this->data = (object)[
+        'template' => $template,
+        'text' => config::cms_job_template($template)
+
+      ];
+
+      $this->load('template-editor');
+    } else {
+      $this->load('template-invalid');
+    }
+  }
+
   public function workorder($id = 0) {
     if ($id = (int)$id) {
       $dao = new dao\job;
       if ($dto = $dao->getByID($id)) {
         $dto = $dao->getRichData($dto);
 
+        if (config::job_type_recurring == $dto->job_type) {
+          $this->title = config::PDF_title_recurring_workorder;
+        } elseif (config::job_type_quote == $dto->job_type) {
+          $this->title = config::PDF_title_quote;
+        } else {
+          $this->title = config::PDF_title_workorder;
+        }
+
         $this->data = (object)[
-          'title' => $this->title = config::label_job_viewworkorder,
+          'title' => $this->title,
           'dto' => $dto,
 
         ];

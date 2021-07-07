@@ -12,7 +12,7 @@ namespace cms\job;
 
 use currentUser, strings;  ?>
 
-<ul class="nav flex-column">
+<ul class="nav flex-column" id="<?= $_nav = strings::rand() ?>">
   <li class="nav-item h6">
     <a href="<?= strings::url(sprintf('%s', $this->route)) ?>">
       <?= config::label ?>
@@ -233,6 +233,37 @@ use currentUser, strings;  ?>
           _.get.modal(_.url('<?= $this->route ?>/invoiceto_edit'));
 
         });
+
+    })(_brayworth_);
+  </script>
+
+  <li class="nav-item h6 pt-3 pl-3">
+    Templates
+
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link pl-4" href="#" data-role="template-editor" data-template="template-workorder-send">
+      <i class="bi bi-pencil"></i> <?= config::label_template_workorder ?>
+
+    </a>
+
+  </li>
+  <script>
+    (_ => {
+      $('a[data-role="template-editor"]', '#<?= $_nav ?>').on('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        let _me = $(this);
+        let _data = _me.data();
+
+        _me.prop('disabled', true);
+
+        _.get.modal(_.url('<?= $this->route ?>/templateeditor/?t=' + encodeURIComponent(_data.template)))
+          .then(m => _me.prop('disabled', false));
+
+      });
 
     })(_brayworth_);
   </script>

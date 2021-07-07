@@ -35,6 +35,7 @@ class job extends _dto {
   public $property_manager_id = 0;
   public $property_manager_email = '';
   public $property_manager_mobile = '';
+  public $property_manager_telephone = '';
   public $owner_name = '';
 
   public $keys = [];

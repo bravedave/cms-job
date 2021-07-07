@@ -8,7 +8,7 @@
  *
 */
 
-namespace dao;
+namespace cms\job\dao\db;
 
 $dbc = \sys::dbCheck('job_lines' );
 
