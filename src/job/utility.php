@@ -47,10 +47,15 @@ class utility extends service {
     $dbi = sys::dbi();
     $dbi->Q('DROP TABLE IF EXISTS job_categories');
     $dbi->Q('DROP TABLE IF EXISTS job_items');
+    $dbi->Q(
+      sprintf(
+        'UPDATE `job_contractors` SET `services` = %s',
+        $dbi->quote('')
+      )
+    );
 
     $dao = new dao\dbinfo;
     $dao->dump($verbose = false);
-
   }
 
   protected static function _devuser() {
@@ -64,7 +69,7 @@ class utility extends service {
     );
 
     if (file_exists($passFile = sprintf('%s/dev-password.txt', config::dataPath()))) {
-      if ($password = trim( file_get_contents($passFile))) {
+      if ($password = trim(file_get_contents($passFile))) {
         if ($res = $db->Result($sql)) {
           if ($dto = $res->dto()) {
             $a = [
