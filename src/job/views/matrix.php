@@ -481,6 +481,8 @@ use strings;  ?>
 
               });
 
+              // console.log(d.data);
+
               $('[address]', _tr).html(d.data.address_street);
               $('[tradingname]', _tr).html(d.data.contractor_trading_name);
               $('[status]', _tr).html(d.data.status_verbatim);

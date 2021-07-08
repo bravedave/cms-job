@@ -133,6 +133,7 @@ class job extends _dao {
 
         $contractor = $dao->getRichData($contractor);
 
+        $job->contractor_trading_name = $contractor->trading_name;
         $job->contractor_primary_contact_name = $contractor->primary_contact_name;
       }
     }

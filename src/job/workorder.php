@@ -53,6 +53,11 @@ abstract class workorder {
 
     ];
 
+    if ( $dto->contractor_primary_contact_name) {
+      $contractor[] = $dto->contractor_primary_contact_name;
+
+    }
+
     $t->replace('contractor', implode('<br>', $contractor));
 
     $address = [
