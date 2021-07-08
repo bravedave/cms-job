@@ -140,7 +140,7 @@ use strings;  ?>
 
           </td>
 
-          <td class="text-center" status><?= strings::initials( config::cms_job_type_verbatim($dto->status)) ?></td>
+          <td class="text-center" type><?= strings::initials(config::cms_job_type_verbatim($dto->status)) ?></td>
 
           <td class="text-center" status><?= config::cms_job_status_verbatim($dto->status) ?></td>
 
@@ -484,11 +484,12 @@ use strings;  ?>
 
               });
 
-              // console.log(d.data);
+              console.log(d.data);
 
               $('[address]', _tr).html(d.data.address_street);
               $('[tradingname]', _tr).html(d.data.contractor_trading_name);
               $('[status]', _tr).html(d.data.status_verbatim);
+              $('[type]', _tr).html(String(d.data.type_verbatim).initials());
               $('[pm]', _tr).html(pm);
 
               if (d.data.lines.length > 0) {

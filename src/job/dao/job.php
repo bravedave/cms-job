@@ -224,6 +224,7 @@ class job extends _dao {
 
     $job->brief = strings::brief($job->description);
     $job->status_verbatim = config::cms_job_status_verbatim($job->status);
+    $job->type_verbatim = config::cms_job_type_verbatim($job->job_type);
 
     return $job;
   }
