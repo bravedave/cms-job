@@ -92,13 +92,13 @@ $categories = $this->data->categories;  ?>
 
                 <div class="col">
                   <div class="input-group">
-                    <input name="due" class="form-control" type="date" id="<?= $_uid = strings::rand() ?>" value="<?php if (strtotime($dto->due) > 0) print $dto->due; ?>">
+                    <input name="due" class="form-control" type="date" required id="<?= $_uid = strings::rand() ?>" value="<?php if (strtotime($dto->due) > 0) print $dto->due; ?>">
 
-                    <div class="input-group-append">
+                    <div class="input-group-append d-none">
                       <button type="button" class="btn input-group-text" id="<?= $_uid ?>7">7</button>
                     </div>
 
-                    <div class="input-group-append">
+                    <div class="input-group-append d-none">
                       <button type="button" class="btn input-group-text" id="<?= $_uid ?>14">14</button>
                     </div>
 

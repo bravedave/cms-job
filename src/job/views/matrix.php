@@ -76,6 +76,7 @@ use strings;  ?>
         <td class="constrain">Property</td>
         <td class="d-none d-md-table-cell constrain">Contractor</td>
         <td class="d-none d-md-table-cell">Items</td>
+        <td class="text-center" title="Order/Recurring/Quote">Type</td>
         <td class="text-center">Status</td>
         <td class="text-center">PM</td>
 
@@ -138,6 +139,8 @@ use strings;  ?>
             } ?>
 
           </td>
+
+          <td class="text-center" status><?= strings::initials( config::cms_job_type_verbatim($dto->status)) ?></td>
 
           <td class="text-center" status><?= config::cms_job_status_verbatim($dto->status) ?></td>
 
