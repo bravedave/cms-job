@@ -46,11 +46,10 @@ use currentUser, strings;  ?>
 
         print '<td line-number class="small"></td>';
 
-        printf( '<td>%s</td>', $dto->category);
+        printf('<td>%s</td>', $dto->category);
         printf('<td class="text-center">%s</td>', $dto->items);
 
         print '</tr>';
-
       } ?>
 
     </tbody>
@@ -68,126 +67,126 @@ use currentUser, strings;  ?>
 
       });
 
-    $('#<?= $tblID ?> > tbody > tr').each((i, tr) => {
-      let _tr = $(tr)
-      _tr
-        .on('delete', function(e) {
-          let _tr = $(this);
+    <?php if (currentUser::restriction('can-add-job-categories')) { ?>
+      $('#<?= $tblID ?> > tbody > tr')
+        .each((i, tr) => {
+          let _tr = $(tr)
+          _tr
+            .on('delete', function(e) {
+              let _tr = $(this);
 
-          _.ask.alert({
-            text: 'Are you sure ?',
-            title: 'Confirm Delete',
-            buttons: {
-              yes: function(e) {
+              _.ask.alert({
+                text: 'Are you sure ?',
+                title: 'Confirm Delete',
+                buttons: {
+                  yes: function(e) {
 
-                $(this).modal('hide');
-                _tr.trigger('delete-confirmed');
+                    $(this).modal('hide');
+                    _tr.trigger('delete-confirmed');
 
-              }
+                  }
 
-            }
+                }
 
-          });
+              });
 
-        })
-        .on('delete-confirmed', function(e) {
-          let _tr = $(this);
-          let _data = _tr.data();
+            })
+            .on('delete-confirmed', function(e) {
+              let _tr = $(this);
+              let _data = _tr.data();
 
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: {
-              action: 'category-delete',
-              id: _data.id
+              _.post({
+                url: _.url('<?= $this->route ?>'),
+                data: {
+                  action: 'category-delete',
+                  id: _data.id
 
-            },
+                },
 
-          }).then(d => {
-            if ('ack' == d.response) {
-              _tr.remove();
-              $('#<?= $tblID ?>').trigger('update-line-numbers');
+              }).then(d => {
+                if ('ack' == d.response) {
+                  _tr.remove();
+                  $('#<?= $tblID ?>').trigger('update-line-numbers');
 
-            } else {
-              _.growl(d);
+                } else {
+                  _.growl(d);
 
-            }
+                }
 
-          });
+              });
 
-        })
-        .on('edit', function(e) {
-          let _me = $(this);
-          let _data = _me.data();
+            })
+            .on('edit', function(e) {
+              let _me = $(this);
+              let _data = _me.data();
 
-          _.get.modal(_.url('<?= $this->route ?>/category_edit/' + _data.id))
-            .then(d => d.on('success', () => window.location.reload()));
+              _.get.modal(_.url('<?= $this->route ?>/category_edit/' + _data.id))
+                .then(d => d.on('success', () => window.location.reload()));
 
-        })
-        .on(_.browser.isMobileDevice ? 'click' : 'contextmenu', function(e) {
-          if (e.shiftKey)
-            return;
+            })
+            .on(_.browser.isMobileDevice ? 'click' : 'contextmenu', function(e) {
+              if (e.shiftKey)
+                return;
 
-          e.stopPropagation();
-          e.preventDefault();
-
-          _.hideContexts();
-
-          let _context = _.context();
-          let _tr = $(this);
-          let _data = _tr.data();
-
-          _context.append(
-            $('<a href="#"><i class="bi bi-pencil"></i>edit</a>').on('click', function(e) {
               e.stopPropagation();
               e.preventDefault();
 
-              _context.close()
-              _tr.trigger('edit');
+              _.hideContexts();
 
-            })
+              let _context = _.context();
+              let _tr = $(this);
+              let _data = _tr.data();
 
-          );
-
-          <?php if (currentUser::restriction('can-add-job-categories')) { ?>
-            if ( Number( _data.items) < 1) {
               _context.append(
-                $('<a href="#"><i class="bi bi-trash"></i>delete</a>').on('click', function(e) {
+                $('<a href="#"><i class="bi bi-pencil"></i>edit</a>').on('click', function(e) {
                   e.stopPropagation();
                   e.preventDefault();
 
                   _context.close()
-                  _tr.trigger('delete');
+                  _tr.trigger('edit');
 
                 })
 
               );
 
-            }
+              if (Number(_data.items) < 1) {
+                _context.append(
+                  $('<a href="#"><i class="bi bi-trash"></i>delete</a>').on('click', function(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
 
-          <?php } ?>
+                    _context.close()
+                    _tr.trigger('delete');
 
-          _context
-            .addClose()
-            .open(e);
+                  })
+
+                );
+
+              }
+
+              _context
+                .addClose()
+                .open(e);
+
+            });
+
+          if (_.browser.isMobileDevice) {
+
+            _tr
+              .addClass('pointer')
+              .on('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                _.hideContexts();
+                $(this).trigger('edit');
+
+              });
+
+          }
 
         });
-
-      if (_.browser.isMobileDevice) {
-
-        _tr
-          .addClass('pointer')
-          .on('click', function(e) {
-            e.stopPropagation();
-            e.preventDefault();
-
-            _.hideContexts();
-            $(this).trigger('edit');
-
-          });
-
-      }
-
-    });
+    <?php } ?>
 
     let srchidx = 0;
     $('#<?= $srch ?>').on('keyup', function(e) {
