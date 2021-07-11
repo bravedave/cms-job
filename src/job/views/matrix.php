@@ -68,6 +68,16 @@ use strings;  ?>
   }
 </style>
 
+<h1 class="d-none d-print-block"><?= $this->title ?></h1>
+<div class="form-row mb-2 d-print-none">
+  <div class="col">
+    <input type="search" class="form-control" autofocus id="<?= $srch = strings::rand() ?>" />
+
+
+  </div>
+
+</div>
+
 <div class="table-responsive">
   <table class="table table-sm fade" id="<?= $tblID = strings::rand() ?>">
     <thead class="small">
@@ -542,6 +552,36 @@ use strings;  ?>
           });
 
       }
+
+    });
+
+    let srchidx = 0;
+    $('#<?= $srch ?>').on('keyup', function(e) {
+      let idx = ++srchidx;
+      let txt = this.value;
+
+      $('#<?= $tblID ?> > tbody > tr').each((i, tr) => {
+        if (idx != srchidx) return false;
+
+        let _tr = $(tr);
+        if ('' == txt.trim()) {
+          _tr.removeClass('d-none');
+
+        } else {
+          let str = _tr.text()
+          if (str.match(new RegExp(txt, 'gi'))) {
+            _tr.removeClass('d-none');
+
+          } else {
+            _tr.addClass('d-none');
+
+          }
+
+        }
+
+      });
+
+      $('#<?= $tblID ?>').trigger('update-line-numbers');
 
     });
 

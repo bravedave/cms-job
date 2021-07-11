@@ -17,5 +17,6 @@ class job_items extends _dto {
   public $job_categories_id = '';
   public $item = '';
   public $description = '';
+  public $inactive = 0;
 
 }

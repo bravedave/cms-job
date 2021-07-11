@@ -12,7 +12,7 @@
 namespace cms\job;
 
 class config extends \config {
-	const cms_job_db_version = 1.2;
+	const cms_job_db_version = 1.3;
 
 	const label = 'JOB';
 	const label_contractor_add = 'New Contractor';

@@ -32,7 +32,15 @@ class job_items extends _dao {
   public function getItemsForCategory(int $category, bool $distinct = false, string $item = '') {
     if ($distinct) {
       $sql = sprintf(
-        'SELECT DISTINCT `item` FROM `job_items` WHERE `job_categories_id` = %d ORDER BY `item` ASC',
+        'SELECT
+          DISTINCT `item`
+        FROM
+          `job_items`
+        WHERE
+          `inactive` = 0
+            AND `job_categories_id` = %d
+        ORDER BY
+          `item` ASC',
         $category
 
       );
@@ -40,8 +48,11 @@ class job_items extends _dao {
       $sql = sprintf(
         'SELECT
           *
-          FROM `job_items`
-          WHERE `job_categories_id` = %d
+        FROM
+          `job_items`
+        WHERE
+          `inactive` = 0
+            AND `job_categories_id` = %d
             AND item = %s
           ORDER BY
             `item` ASC, `description` ASC',
@@ -51,7 +62,15 @@ class job_items extends _dao {
       );
     } else {
       $sql = sprintf(
-        'SELECT * FROM `job_items` WHERE `job_categories_id` = %d ORDER BY `item` ASC, `description` ASC',
+        'SELECT
+          *
+        FROM
+          `job_items`
+        WHERE
+          `inactive` = 0
+            AND `job_categories_id` = %d
+        ORDER BY
+          `item` ASC, `description` ASC',
         $category
 
       );

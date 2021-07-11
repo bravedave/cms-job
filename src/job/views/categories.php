@@ -170,7 +170,7 @@ use currentUser, strings;  ?>
 
             });
 
-          if (_.browser.isMobileDevice) {
+          if (!_.browser.isMobileDevice) {
 
             _tr
               .addClass('pointer')

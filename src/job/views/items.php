@@ -30,22 +30,33 @@ use currentUser, strings;  ?>
         <td>category</td>
         <td>item</td>
         <td>description</td>
+        <td class="text-center">active</td>
 
       </tr>
 
     </thead>
 
     <tbody>
-      <?php while ($dto = $this->data->res->dto()) {  ?>
-        <tr data-id="<?= $dto->id ?>">
-          <td line-number class="small"></td>
-          <td><?= $dto->category ?></td>
-          <td><?= $dto->item ?></td>
-          <td><?= $dto->description ?></td>
+      <?php
+      while ($dto = $this->data->res->dto()) {
+        printf(
+          '<tr data-id="%s" data-active="%s">',
+          $dto->id,
+          $dto->inactive ? 'no' : 'yes'
 
-        </tr>
+        );
 
-      <?php } ?>
+        print '<td line-number class="small"></td>';
+        printf('<td>%s</td>', $dto->category);
+        printf('<td>%s</td>', $dto->item);
+        printf('<td>%s</td>', $dto->description);
+        printf(
+          '<td class="text-center" active>%s</td>',
+          $dto->inactive ? '&times' : '&check;'
+        );
+
+        print '</tr>';
+      } ?>
     </tbody>
 
   </table>
@@ -61,7 +72,9 @@ use currentUser, strings;  ?>
       });
 
     $('#<?= $tblID ?> > tbody > tr').each((i, tr) => {
-      $(tr)
+      let _tr = $(tr);
+
+      _tr
         .on('edit', function(e) {
           let _me = $(this);
           let _data = _me.data();
@@ -114,16 +127,7 @@ use currentUser, strings;  ?>
           });
 
         })
-        .addClass('pointer')
-        .on('click', function(e) {
-          e.stopPropagation();
-          e.preventDefault();
-
-          _.hideContexts();
-          $(this).trigger('edit');
-
-        })
-        .on('contextmenu', function(e) {
+        .on(_.browser.isMobileDevice ? 'click' : 'contextmenu', function(e) {
           if (e.shiftKey)
             return;
 
@@ -136,35 +140,124 @@ use currentUser, strings;  ?>
           let _tr = $(this);
           let _data = _tr.data();
 
-          _context.append.a()
-            .html('<i class="bi bi-pencil"></i>edit')
-            .on('click', function(e) {
+          _context.append(
+            $('<a href="#"><i class="bi bi-pencil"></i>edit</a>')
+            .on('click', e => {
               e.stopPropagation();
 
               _context.close();
               _tr.trigger('edit');
 
-            });
+            })
+
+          );
 
           <?php if (currentUser::restriction('can-add-job-items')) { ?>
 
-            _context.append.a()
-              .html('<i class="bi bi-trash"></i>delete')
-              .on('click', function(e) {
+            _context.append(
+              $('<a href="#"><i class="bi bi-trash"></i>delete</a>')
+              .on('click', e => {
                 e.stopPropagation();
 
                 _context.close();
                 _tr.trigger('delete');
 
-              });
+              })
+
+            );
 
           <?php } ?>
+
+          _context.append(
+            $('<a href="#">active</a>')
+            .on('click', e => {
+              e.stopPropagation();
+
+              _context.close();
+              _tr.trigger('yes' == _data.active ? 'mark-inactive' : 'mark-active');
+
+            })
+            .on('reconcile', function(e) {
+              let _me = $(this);
+              if ('yes' == _data.active) {
+                _me.prepend('<i class="bi bi-check"></i>');
+
+              }
+
+            })
+            .trigger('reconcile')
+
+          );
 
           _context
             .addClose()
             .open(e);
 
-        });;
+        })
+        .on('mark-active', function(e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'item-mark-active',
+              id: _data.id
+
+            },
+
+          }).then(d => {
+            if ('ack' == d.response) {
+              _tr.data('active','yes');
+              $('td[active]', _tr).html('&check;');
+
+            } else {
+              _.growl(d);
+
+            }
+
+          });
+
+        })
+        .on('mark-inactive', function(e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'item-mark-inactive',
+              id: _data.id
+
+            },
+
+          }).then(d => {
+            if ('ack' == d.response) {
+              _tr.data('active','no');
+              $('td[active]', _tr).html('&times;');
+
+            } else {
+              _.growl(d);
+
+            }
+
+          });
+
+        });
+
+      if (!_.browser.isMobileDevice) {
+        _tr
+          .addClass('pointer')
+          .on('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            _.hideContexts();
+            $(this).trigger('edit');
+
+          });
+
+      }
 
     });
 

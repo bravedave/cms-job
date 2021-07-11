@@ -315,13 +315,38 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
+    } elseif ('item-mark-active' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job_items;
+        if ($dto = $dao->getByID($id)) {
+          $dao->UpdateByID(['inactive' => 0], $id);
+          Json::ack($action);
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('item-mark-inactive' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job_items;
+        if ($dto = $dao->getByID($id)) {
+          $dao->UpdateByID(['inactive' => 1], $id);
+          Json::ack($action);
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak($action);
+      }
     } elseif ('item-save' == $action) {
 
       if ($description = $this->getPost('description')) {
         $a = [
           'description' => $description,
           'item' => $this->getPost('item'),
-          'job_categories_id' => $this->getPost('job_categories_id')
+          'job_categories_id' => $this->getPost('job_categories_id'),
+          'inactive' => 'yes' != $this->getPost('active') ? 1 : 0
 
         ];
 
@@ -622,6 +647,11 @@ class controller extends \Controller {
     $this->render([
       'primary' => 'matrix',
       'secondary' => 'index',
+      'data' => (object)[
+        'searchFocus' => false,
+        'pageUrl' => strings::url(sprintf('%s/matrix', $this->route))
+
+      ],
 
     ]);
   }

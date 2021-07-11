@@ -71,6 +71,19 @@ $dto = $this->data->dto;  ?>
 
           </div>
 
+          <div class="form-row mb-2">
+            <div class="offset-md-3 col">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" name="active" value="yes" id="<?= $uid = strings::rand() ?>" <?= $dto->inactive ? '' : 'checked' ?>>
+
+                <label class="form-check-label" for="<?= $uid ?>">Active</label>
+
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
 
         <div class="modal-footer">
