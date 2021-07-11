@@ -12,7 +12,7 @@
 namespace cms\job;
 
 class config extends \config {
-	const cms_job_db_version = 1.3;
+	const cms_job_db_version = 1.4;
 
 	const label = 'JOB';
 	const label_contractor_add = 'New Contractor';
@@ -60,13 +60,15 @@ class config extends \config {
 	const job_payment_tenant = 1;
 
 	const job_status = [
-		0 => 'new',
+		0 => 'draft',
+		2 => 'sent',
 		5 => 'quote',
 		10 => 'assigned',
 
 	];
 
 	const job_status_new = 0;
+	const job_status_sent = 2;
 	const job_status_quote = 5;
 	const job_status_assigned = 10;
 
@@ -161,7 +163,9 @@ class config extends \config {
 
 	static function cms_job_status_verbatim(int $status): string {
 		if (config::job_status_new == $status) {
-			return 'new';
+			return 'draft';
+		} elseif (config::job_status_sent == $status) {
+			return 'sent';
 		} elseif (config::job_status_quote == $status) {
 			return 'quote';
 		} elseif (config::job_status_assigned == $status) {

@@ -22,6 +22,17 @@ class job extends _dao {
   protected $_db_name = 'job';
   protected $template = __NAMESPACE__ . '\dto\job';
 
+  public function getByID($id) {
+    if ($dto = parent::getByID($id)) {
+      if ($dto->status < config::job_status_sent) {
+        if (strtotime($dto->email_sent) > 0) {
+          $dto->status = config::job_status_sent; // auto advance status
+        }
+      }
+    }
+    return $dto;
+  }
+
   public function getMatrix() {
     $sql = sprintf(
       'SELECT
@@ -164,7 +175,7 @@ class job extends _dao {
             $job->property_manager_id = $user->id;
             $job->property_manager_email = $user->email;
             $job->property_manager_mobile = $user->mobile;
-            $job->property_manager_telephone = $user->telephone??'';
+            $job->property_manager_telephone = $user->telephone ?? '';
           } else {
             \sys::logger(sprintf('<property manager not found %s> %s', $prop->property_manager, __METHOD__));
           }

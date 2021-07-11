@@ -10,6 +10,7 @@
 
 namespace cms\job;
 
+use currentuser;
 use FilesystemIterator;
 use MatthiasMullie;
 use Json, Response, strings, sys, cms\leasing;
@@ -357,6 +358,36 @@ class controller extends \Controller {
         } else {
           $dao->Insert($a);
           Json::ack($action);
+        }
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('mark-sent' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          $dao->UpdateByID([
+            'email_sent' => \db::dbTimeStamp(),
+            'email_sent_by' => currentuser::id()
+          ], $id);
+          Json::ack($action);
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('mark-sent-undo' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          $dao->UpdateByID([
+            'email_sent' => '',
+            'email_sent_by' => 0
+          ], $id);
+          Json::ack($action);
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
         }
       } else {
         Json::nak($action);

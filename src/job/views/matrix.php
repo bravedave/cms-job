@@ -12,6 +12,10 @@ namespace cms\job;
 
 use strings;  ?>
 <style>
+  .icon-width {
+    width: 1.8em;
+  }
+
   @media (max-width: 768px) {
     .constrain {
       width: 208px;
@@ -87,6 +91,7 @@ use strings;  ?>
         <td class="d-none d-md-table-cell constrain">Contractor</td>
         <td class="d-none d-md-table-cell">Items</td>
         <td class="text-center" title="Order/Recurring/Quote">Type</td>
+        <td class="text-center class=" icon-width"><i class="bi bi-cursor"></i></td>
         <td class="text-center">Status</td>
         <td class="text-center">PM</td>
 
@@ -98,67 +103,83 @@ use strings;  ?>
       <?php while ($dto = $this->data->res->dto()) {
         $lines = json_decode($dto->lines) ?? [];
         $pm = strings::initials($dto->pm);
+
+        printf(
+          '<tr data-id="%s" data-properties_id="%s" data-address_street="%s" data-line_count="%s" data-contractor="%s" data-pm="%s" data-email_sent="%s">',
+          $dto->id,
+          $dto->properties_id,
+          htmlentities($dto->address_street),
+          count($lines),
+          $dto->contractor_id,
+          $pm,
+          strtotime($dto->email_sent) > 0 ? 'yes' : 'no'
+
+        );
       ?>
-        <tr <?php
+        <td class="small" line-number></td>
+        <td class="constrain">
+          <div class="constrained text-truncate" address>
+            <?= $dto->address_street ?>
+
+          </div>
+          <div class="d-md-none constrained text-truncate" tradingname>
+            <?= $dto->contractor_trading_name ?>
+
+          </div>
+
+        </td>
+
+        <td class="d-none d-md-table-cell constrain">
+          <div class="constrained text-truncate" tradingname>
+            <?= $dto->contractor_trading_name ?>
+
+          </div>
+
+        </td>
+
+        <td class="d-none d-md-table-cell" lines>
+          <?php
+          if ($lines) {
+            foreach ($lines as $line) {
+              // \sys::logger( sprintf('<%s> %s', print_r( $line, true), __METHOD__));
+              printf(
+                '<div class="form-row mb-1"><div class="col-4 col-md-3 text-truncate">%s</div><div class="col text-truncate">%s</div></div>',
+                $line->item,
+                $line->description
+
+              );
+            }
+          } else {
+            print strings::brief($dto->description);
+          } ?>
+
+        </td>
+
+        <td class="text-center" type><?= strings::initials(config::cms_job_type_verbatim($dto->status)) ?></td>
+
+        <td class="text-center icon-width" email-sent>
+          <?php
+          if (strtotime($dto->email_sent) > 0) {
             printf(
-              'data-id="%s" data-properties_id="%s" data-address_street="%s" data-line_count="%s" data-contractor="%s" data-pm="%s"',
-              $dto->id,
-              $dto->properties_id,
-              htmlentities($dto->address_street),
-              count($lines),
-              $dto->contractor_id,
-              $pm
-
+              '<i class="bi bi-cursor" title="%s"></i>',
+              strings::asLocalDate($dto->email_sent)
             );
-            ?>>
-          <td class="small" line-number></td>
-          <td class="constrain">
-            <div class="constrained text-truncate" address>
-              <?= $dto->address_street ?>
 
-            </div>
-            <div class="d-md-none constrained text-truncate" tradingname>
-              <?= $dto->contractor_trading_name ?>
+            if ($dto->status < config::job_status_sent) {
+              $dto->status = config::job_status_sent; // auto advance status
+            }
+          } else {
+            print '&nbsp;';
+          }
+          ?>
+        </td>
+        <td class="text-center" status><?= config::cms_job_status_verbatim($dto->status) ?></td>
 
-            </div>
+        <td class="text-center" pm><?= $pm ?></td>
 
-          </td>
-
-          <td class="d-none d-md-table-cell constrain">
-            <div class="constrained text-truncate" tradingname>
-              <?= $dto->contractor_trading_name ?>
-
-            </div>
-
-          </td>
-
-          <td class="d-none d-md-table-cell" lines>
-            <?php
-            if ($lines) {
-              foreach ($lines as $line) {
-                // \sys::logger( sprintf('<%s> %s', print_r( $line, true), __METHOD__));
-                printf(
-                  '<div class="form-row mb-1"><div class="col-4 col-md-3 text-truncate">%s</div><div class="col text-truncate">%s</div></div>',
-                  $line->item,
-                  $line->description
-
-                );
-              }
-            } else {
-              print strings::brief($dto->description);
-            } ?>
-
-          </td>
-
-          <td class="text-center" type><?= strings::initials(config::cms_job_type_verbatim($dto->status)) ?></td>
-
-          <td class="text-center" status><?= config::cms_job_status_verbatim($dto->status) ?></td>
-
-          <td class="text-center" pm><?= $pm ?></td>
-
-        </tr>
-
-      <?php } ?>
+      <?php
+        print '</tr>';
+      } ?>
 
     </tbody>
 
@@ -293,14 +314,44 @@ use strings;  ?>
           }
 
           if (Number(_data.properties_id) > 0) {
-            _context.append.a()
-              .attr('target', '_blank')
+            _context.append(
+              $('<a href="#" target="_blank"></a>')
               .html('goto ' + _data.address_street)
               .prepend('<i class="bi bi-box-arrow-up-right"></i>')
               .attr('href', _.url('property/view/' + _data.properties_id))
-              .on('click', e => _context.close());
+              .on('click', e => _context.close())
+
+            );
 
           }
+
+          _context.append(
+            $('<a href="#">email sent</a>')
+            .on('click', e => {
+              e.stopPropagation();
+              _tr.trigger('yes' == _data.email_sent ? 'mark-sent-undo' : 'mark-sent');
+              _context.close();
+            })
+            .on('reconcile', function(e) {
+              if ('yes' == _data.email_sent) {
+                $(this).prepend('<i class="bi bi-check"></i>')
+
+              }
+
+            })
+            .trigger('reconcile')
+
+          );
+
+          _context.append(
+            $('<a href="#"><i class="bi bi-arrow-repeat"></i>refresh</a>')
+            .on('click', e => {
+              e.stopPropagation();
+              _tr.trigger('refresh');
+              _context.close();
+            })
+
+          );
 
           _context
             .addClose()
@@ -416,7 +467,8 @@ use strings;  ?>
             // console.log('email-workorder');
             // console.log(_data);
             let mailer = _.email.mailer({
-              subject: _data.address_street + ' workorder'
+              subject: _data.address_street + ' workorder',
+              onSend: d => _tr.trigger('mark-sent')
             });
 
             if (Number(_data.contractor) > 0) {
@@ -467,6 +519,56 @@ use strings;  ?>
           }
 
         })
+        .on('mark-sent', function(e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'mark-sent',
+              id: _data.id
+            },
+
+          }).then(d => {
+            if ('ack' == d.response) {
+              _tr
+                .data('email_sent', 'yes')
+                .trigger('refresh');
+
+            } else {
+              _.growl(d);
+
+            }
+
+          });
+
+        })
+        .on('mark-sent-undo', function(e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'mark-sent-undo',
+              id: _data.id
+            },
+
+          }).then(d => {
+            if ('ack' == d.response) {
+              _tr
+                .data('email_sent', 'no')
+                .trigger('refresh');
+
+            } else {
+              _.growl(d);
+
+            }
+
+          });
+
+        })
         .on('refresh', function(e) {
           let _tr = $(this);
           let _data = _tr.data();
@@ -494,13 +596,32 @@ use strings;  ?>
 
               });
 
-              console.log(d.data);
+              // console.log(d.data);
 
               $('[address]', _tr).html(d.data.address_street);
               $('[tradingname]', _tr).html(d.data.contractor_trading_name);
               $('[status]', _tr).html(d.data.status_verbatim);
               $('[type]', _tr).html(String(d.data.type_verbatim).initials());
               $('[pm]', _tr).html(pm);
+
+              if (!!d.data.email_sent) {
+                let dateSent = _.dayjs(d.data.email_sent);
+                if (dateSent.isValid() && dateSent.unix() > 0) {
+                  $('[email-sent]', _tr)
+                    .html('')
+                    .append(
+                      $('<i class="bi bi-cursor"></i>')
+                      .attr('title', dateSent.format('L'))
+                    );
+
+                } else {
+                  $('[email-sent]', _tr).html('&nbsp;');
+                }
+
+              } else {
+                $('[email-sent]', _tr).html('&nbsp;');
+
+              }
 
               if (d.data.lines.length > 0) {
                 $('[lines]', _tr).html('');
