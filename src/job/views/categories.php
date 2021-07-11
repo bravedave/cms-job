@@ -28,20 +28,30 @@ use currentUser, strings;  ?>
       <tr>
         <td>#</td>
         <td>Category</td>
+        <td class="text-center">Items</td>
 
       </tr>
 
     </thead>
 
     <tbody>
-      <?php while ($dto = $this->data->res->dto()) { ?>
-        <tr data-id="<?= $dto->id ?>">
-          <td line-number class="small"></td>
-          <td><?= $dto->category ?></td>
+      <?php
+      while ($dto = $this->data->res->dto()) {
+        printf(
+          '<tr data-id="%s" data-items="%s">',
+          $dto->id,
+          $dto->items
 
-        </tr>
+        );
 
-      <?php } ?>
+        print '<td line-number class="small"></td>';
+
+        printf( '<td>%s</td>', $dto->category);
+        printf('<td class="text-center">%s</td>', $dto->items);
+
+        print '</tr>';
+
+      } ?>
 
     </tbody>
 
@@ -123,6 +133,8 @@ use currentUser, strings;  ?>
           _.hideContexts();
 
           let _context = _.context();
+          let _tr = $(this);
+          let _data = _tr.data();
 
           _context.append(
             $('<a href="#"><i class="bi bi-pencil"></i>edit</a>').on('click', function(e) {
@@ -137,17 +149,20 @@ use currentUser, strings;  ?>
           );
 
           <?php if (currentUser::restriction('can-add-job-categories')) { ?>
-            _context.append(
-              $('<a href="#"><i class="bi bi-trash"></i>delete</a>').on('click', function(e) {
-                e.stopPropagation();
-                e.preventDefault();
+            if ( Number( _data.items) < 1) {
+              _context.append(
+                $('<a href="#"><i class="bi bi-trash"></i>delete</a>').on('click', function(e) {
+                  e.stopPropagation();
+                  e.preventDefault();
 
-                _context.close()
-                _tr.trigger('delete');
+                  _context.close()
+                  _tr.trigger('delete');
 
-              })
+                })
 
-            );
+              );
+
+            }
 
           <?php } ?>
 
