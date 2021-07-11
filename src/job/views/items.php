@@ -10,7 +10,7 @@
 
 namespace cms\job;
 
-use strings;  ?>
+use currentUser, strings;  ?>
 
 <h1 class="d-none d-print-block"><?= $this->title ?></h1>
 <div class="form-row mb-2 d-print-none">
@@ -137,14 +137,28 @@ use strings;  ?>
           let _data = _tr.data();
 
           _context.append.a()
-            .html('<i class="bi bi-trash"></i>delete')
+            .html('<i class="bi bi-pencil"></i>edit')
             .on('click', function(e) {
               e.stopPropagation();
 
               _context.close();
-              _tr.trigger('delete');
+              _tr.trigger('edit');
 
             });
+
+          <?php if (currentUser::restriction('can-add-job-items')) { ?>
+
+            _context.append.a()
+              .html('<i class="bi bi-trash"></i>delete')
+              .on('click', function(e) {
+                e.stopPropagation();
+
+                _context.close();
+                _tr.trigger('delete');
+
+              });
+
+          <?php } ?>
 
           _context
             .addClose()

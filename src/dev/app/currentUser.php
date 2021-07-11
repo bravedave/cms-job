@@ -12,6 +12,10 @@ class currentuser extends dvc\currentUser {
 	static function restriction($key) {
 		if ('open-user' == $key) {
 			return true;
+		} elseif ('can-add-job-categories' == $key) {
+			// return false;
+			return true;
+
 		} elseif ('can-add-job-items' == $key) {
 			return false;
 			// return true;

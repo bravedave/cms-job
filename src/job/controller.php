@@ -54,6 +54,15 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
+    } elseif ('category-delete' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job_categories;
+        $dao->delete($id);
+
+        Json::ack($action);
+      } else {
+        Json::nak($action);
+      }
     } elseif ('check-has-workorder' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job;

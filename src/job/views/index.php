@@ -140,7 +140,7 @@ use currentUser, strings;  ?>
 
   </li>
 
-  <?php if (currentUser::restriction('can-add-job-items')) { ?>
+  <?php if (currentUser::restriction('can-add-job-categories')) { ?>
     <li class="nav-item">
       <a class="nav-link pl-4" href="#" id="<?= $_uid = strings::rand() ?>">
         <i class="bi bi-plus"></i> New <?= config::label_category ?>
