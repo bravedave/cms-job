@@ -445,7 +445,7 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
-    } elseif ('job-duplicate' == $action) {
+    } elseif ('job-duplicate' == $action || 'job-invoke-order' == $action) {
 
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job;
@@ -453,7 +453,7 @@ class controller extends \Controller {
           $a = [
             'contractor_id' => $dto->contractor_id,
             'properties_id' => $dto->properties_id,
-            'job_type' => $dto->job_type,
+            'job_type' => 'job-invoke-order' == $action ? config::job_type_order : $dto->job_type,
             'status' => config::job_status_new,
             'due' => $dto->due,
             'job_payment' => $dto->job_payment,
@@ -478,6 +478,15 @@ class controller extends \Controller {
               $a['updated'] = $a['created'] = \db::dbTimeStamp();
               $dao->Insert($a);
             }
+          }
+
+          if ('job-invoke-order' == $action) {
+            $dao = new dao\job;
+            $dao->UpdateByID([
+              'archived' => \db::dbTimeStamp()
+
+            ], $dto->id);
+
           }
 
           Json::ack($action)

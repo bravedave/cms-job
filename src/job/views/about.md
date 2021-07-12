@@ -4,7 +4,12 @@
 
 **Archive Job** - Available via the Matrix lines Context Menu
 
-**Duplicate Job** - Available via the Matrix lines Context Menu - suggested use - use to duplicate quotes to get 3 quotes
+**Duplicate Job** - Available via the Matrix lines Context Menu
+> suggested use - use to duplicate quotes to get 3 quotes
+
+**Invoke Order** - Available via the Matrix lines Context Menu
+
+> this is like the **Duplicate Job**, it does that **plus** marks the deplicate as an order and archives the job
 
 **Email Sent** - Jobs that have been **Sent** are *readonly*, Jobs get marked as *Sent* by:
 

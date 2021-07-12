@@ -449,15 +449,33 @@ use strings;  ?>
 
           );
 
-          _context.append(
-            $('<a href="#"><i class="bi bi-files"></i>duplicate</a>')
-            .on('click', e => {
-              e.stopPropagation();
-              _tr.trigger('duplicate');
-              _context.close();
-            })
+          if (0 < Number(_data.line_count)) {
+            _context.append(
+              $('<a href="#"><i class="bi bi-files"></i>duplicate</a>')
+              .on('click', e => {
+                e.stopPropagation();
+                _tr.trigger('duplicate');
+                _context.close();
+              })
 
-          );
+            );
+
+            if (<?= config::job_type_quote ?> == _data.job_type) {
+              // console.log( _data);
+
+              _context.append(
+                $('<a href="#" title="duplicate, mark as order and archive"><i class="bi bi-ui-checks"></i>invoke order</a>')
+                .on('click', e => {
+                  e.stopPropagation();
+                  _tr.trigger('invoke-order');
+                  _context.close();
+                })
+
+              );
+
+            }
+
+          }
 
           _context.append(
             $('<a href="#"><i class="bi bi-arrow-repeat"></i>refresh</a>')
@@ -588,7 +606,7 @@ use strings;  ?>
           let _tr = $(this);
           let _data = _tr.data();
 
-          _tr.addClass('text-muted');
+          _.hourglass.on();
 
           _.post({
             url: _.url('<?= $this->route ?>'),
@@ -601,8 +619,10 @@ use strings;  ?>
           }).then(d => {
             _.growl(d);
             if ('ack' == d.response) {
-              _.hourglass.on();
               _.nav('<?= $this->route ?>/matrix/?v=view&idx=' + d.id);
+
+            } else {
+              _.hourglass.off();
 
             }
 
@@ -697,6 +717,32 @@ use strings;  ?>
             console.log('no email program');
 
           }
+
+        })
+        .on('invoke-order', function(e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _.hourglass.on();
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'job-invoke-order',
+              id: _data.id
+
+            },
+
+          }).then(d => {
+            _.growl(d);
+            if ('ack' == d.response) {
+              _.nav('<?= $this->route ?>/matrix/?v=view&idx=' + d.id);
+
+            } else {
+              _.hourglass.off();
+
+            }
+
+          });
 
         })
         .on('mark-sent', function(e) {
