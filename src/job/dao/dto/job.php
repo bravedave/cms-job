@@ -22,6 +22,7 @@ class job extends _dto {
   public $status_verbatim = '';
   public $due = '';
   public $job_payment = 0;
+  public $archived = '';
 
   public $contractor_id = 0;
   public $contractor_trading_name = '';

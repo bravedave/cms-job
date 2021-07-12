@@ -98,7 +98,7 @@ class job extends _dao {
       );
     }
 
-    \sys::logSQL(sprintf('<%s> %s', $sql, __METHOD__));
+    // \sys::logSQL(sprintf('<%s> %s', $sql, __METHOD__));
 
     $this->Q(
       sprintf(
