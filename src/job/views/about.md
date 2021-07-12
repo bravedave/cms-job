@@ -19,3 +19,8 @@
 **Valid Job Status** - Currently just *Draft* and *Sent* (to be expanded)
 
 **Matrix Seach** - Matrix now has search which filters the lines by matching text on the line with text in the search box (same as other areas of program)
+
+**Restrictions** - see Jess if you need it these privileges
+
+* **Categories** - Adding/deleting - can only be done with users who have the privilege
+* **Items** - Adding/deleting - can only be done with users who have the privilege
