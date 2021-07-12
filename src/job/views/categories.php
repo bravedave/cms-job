@@ -15,7 +15,7 @@ use currentUser, strings;  ?>
 <h1 class="d-none d-print-block"><?= $this->title ?></h1>
 <div class="form-row mb-2 d-print-none">
   <div class="col">
-    <input type="search" class="form-control" autofocus id="<?= $srch = strings::rand() ?>" />
+    <input type="search" class="form-control" autofocus id="<?= $srch = strings::rand() ?>">
 
 
   </div>

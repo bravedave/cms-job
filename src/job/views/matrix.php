@@ -75,8 +75,49 @@ use strings;  ?>
 <h1 class="d-none d-print-block"><?= $this->title ?></h1>
 <div class="form-row mb-2 d-print-none">
   <div class="col">
-    <input type="search" class="form-control" autofocus id="<?= $srch = strings::rand() ?>" />
+    <input type="search" class="form-control" autofocus id="<?= $srch = strings::rand() ?>">
 
+  </div>
+
+  <div class="col-auto pt-2">
+    <div class="form-check">
+      <input type="checkbox" class="form-check-input" id="<?= $_uidArchived = strings::rand() ?>" <?= $this->data->archived ? 'checked' : '' ?>>
+
+      <label class="form-check-label" for="<?= $_uidArchived ?>">
+        archived
+      </label>
+
+    </div>
+
+    <script>
+      (_ => {
+        $('#<?= $_uidArchived ?>').on('change', function(e) {
+          let _me = $(this);
+
+          _.hourglass.on();
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: _me.prop('checked') ? 'matrix-include-archives' : 'matrix-include-archives-undo'
+            },
+
+          }).then(d => {
+            _.growl(d);
+            if ('ack' == d.response) {
+              window.location.reload();
+
+            } else {
+              _.hourglass.off();
+
+            }
+
+          });
+
+
+        });
+
+      })(_brayworth_);
+    </script>
 
   </div>
 
@@ -105,14 +146,27 @@ use strings;  ?>
         $pm = strings::initials($dto->pm);
 
         printf(
-          '<tr data-id="%s" data-properties_id="%s" data-address_street="%s" data-line_count="%s" data-contractor="%s" data-pm="%s" data-email_sent="%s">',
+          '<tr
+            class="%s"
+            data-id="%s"
+            data-properties_id="%s"
+            data-address_street="%s"
+            data-line_count="%s"
+            data-contractor="%s"
+            data-pm="%s"
+            data-email_sent="%s"
+            data-job_type="%s"
+            data-archived="%s">',
+          strtotime($dto->archived) > 0 ? 'text-muted' : '',
           $dto->id,
           $dto->properties_id,
           htmlentities($dto->address_street),
           count($lines),
           $dto->contractor_id,
           $pm,
-          strtotime($dto->email_sent) > 0 ? 'yes' : 'no'
+          strtotime($dto->email_sent) > 0 ? 'yes' : 'no',
+          $dto->job_type,
+          strtotime($dto->archived) > 0 ? 'yes' : 'no'
 
         );
       ?>
@@ -155,7 +209,7 @@ use strings;  ?>
 
         </td>
 
-        <td class="text-center" type><?= strings::initials(config::cms_job_type_verbatim($dto->status)) ?></td>
+        <td class="text-center" type><?= strings::initials(config::cms_job_type_verbatim($dto->job_type)) ?></td>
 
         <td class="text-center icon-width" email-sent>
           <?php
@@ -199,6 +253,61 @@ use strings;  ?>
     $('#<?= $tblID ?> > tbody > tr').each((i, tr) => {
       let _tr = $(tr);
       _tr
+        .on('archive', function(e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'job-archive',
+              id: _data.id
+
+            },
+
+          }).then(d => {
+            _.growl(d);
+            if ('ack' == d.response) {
+              if ($('#<?= $_uidArchived ?>').prop('checked')) {
+                _tr
+                  .data('archived', 'yes')
+                  .addClass('text-muted');
+              } else {
+                _tr
+                  .remove();
+
+              }
+
+            }
+
+          });
+
+        })
+        .on('archive-undo', function(e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'job-archive-undo',
+              id: _data.id
+
+            },
+
+          }).then(d => {
+            _.growl(d);
+            if ('ack' == d.response) {
+              _tr
+                .data('archived', 'no')
+                .removeClass('text-muted');
+
+
+            }
+
+          });
+
+        })
         .on('edit', function(e) {
           let _tr = $(this);
           let _data = _tr.data();
@@ -247,33 +356,22 @@ use strings;  ?>
           let _tr = $(this);
           let _data = _tr.data();
 
-          _context
-            .append.a()
-            .html('<i class="bi bi-pencil"></i>edit')
+          _context.append(
+            $('<a href="#"><i class="bi bi-pencil"></i>edit</a>')
             .on('click', e => {
               e.stopPropagation();
+
               _tr.trigger('edit');
               _context.close();
 
-            });
+            })
 
-          if (0 == Number(_data.line_count)) {
+          );
 
-            _context
-              .append.a()
-              .html('<i class="bi bi-trash"></i>delete')
-              .on('click', e => {
-                e.stopPropagation();
-                _tr.trigger('delete');
-                _context.close();
+          if (0 < Number(_data.line_count)) {
 
-              });
-
-          } else {
-
-            _context
-              .append.a()
-              .html('<div class="text-muted">workorder ...</div>')
+            _context.append(
+              $('<a href="#"><div class="text-muted">workorder ...</div></a>')
               .on('reconcile', function(e) {
                 let _me = $(this);
 
@@ -315,7 +413,9 @@ use strings;  ?>
                 });
 
               })
-              .trigger('reconcile');
+              .trigger('reconcile')
+
+            );
 
           }
 
@@ -350,6 +450,16 @@ use strings;  ?>
           );
 
           _context.append(
+            $('<a href="#"><i class="bi bi-files"></i>duplicate</a>')
+            .on('click', e => {
+              e.stopPropagation();
+              _tr.trigger('duplicate');
+              _context.close();
+            })
+
+          );
+
+          _context.append(
             $('<a href="#"><i class="bi bi-arrow-repeat"></i>refresh</a>')
             .on('click', e => {
               e.stopPropagation();
@@ -358,6 +468,45 @@ use strings;  ?>
             })
 
           );
+
+          if (0 == Number(_data.line_count)) {
+
+            _context.append(
+              $('<a href="#"><i class="bi bi-trash"></i>delete</a>')
+              .on('click', e => {
+                e.stopPropagation();
+                _tr.trigger('delete');
+                _context.close();
+
+              })
+
+            );
+
+          } else if ('yes' == _data.archived) {
+            _context.append(
+              $('<a href="#"><i class="bi bi-archive-fill"></i>archived</a>')
+              .on('click', e => {
+                e.stopPropagation();
+                _tr.trigger('archive-undo');
+                _context.close();
+
+              })
+
+            );
+
+          } else {
+            _context.append(
+              $('<a href="#"><i class="bi bi-archive"></i>archive</a>')
+              .on('click', e => {
+                e.stopPropagation();
+                _tr.trigger('archive');
+                _context.close();
+
+              })
+
+            );
+
+          }
 
           _context
             .addClose()
@@ -429,6 +578,31 @@ use strings;  ?>
             _.growl(d);
             if ('ack' == d.response) {
               _tr.remove();
+
+            }
+
+          });
+
+        })
+        .on('duplicate', function(e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _tr.addClass('text-muted');
+
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'job-duplicate',
+              id: _data.id
+
+            },
+
+          }).then(d => {
+            _.growl(d);
+            if ('ack' == d.response) {
+              _.hourglass.on();
+              _.nav('<?= $this->route ?>/matrix/?v=view&idx=' + d.id);
 
             }
 
@@ -598,7 +772,8 @@ use strings;  ?>
                 address_street: d.data.address_street,
                 line_count: d.data.lines.length,
                 contractor: d.data.contractor_id,
-                pm: pm
+                pm: pm,
+                job_type: d.data.job_type
 
               });
 
@@ -724,6 +899,8 @@ use strings;  ?>
 
             <?php if ('workorder' == $this->data->trigger) {  ?>
               tr.trigger('view-workorder');
+            <?php } elseif ('view' == $this->data->trigger) {  ?>
+              tr.trigger('edit');
             <?php } else {  ?>
               tr.addClass('bg-light');
               setTimeout(() => tr.removeClass('bg-light'), 3000);

@@ -33,7 +33,22 @@ class job extends _dao {
     return $dto;
   }
 
-  public function getMatrix() {
+  public function getMatrix(bool $archived = false) {
+    $where = [];
+    if (!$archived) {
+      $where[] = sprintf(
+        'job.`archived` IS NULL OR DATE( job.archived) <= %s',
+        $this->quote('0000-00-00')
+      );
+    }
+
+    if ($where) {
+      $where = sprintf('WHERE %s', implode(' AND ', $where));
+    }
+    else {
+      $where = '';
+    }
+
     $sql = sprintf(
       'SELECT
         job.*,
@@ -48,9 +63,11 @@ class job extends _dao {
         `job`
         LEFT JOIN `properties` p on p.id = job.properties_id
         LEFT JOIN `job_contractors` c on c.id = job.contractor_id
-        LEFT JOIN `users` u ON u.id = p.property_manager',
+        LEFT JOIN `users` u ON u.id = p.property_manager
+      %s',
       $this->quote(''),
-      $this->quote('')
+      $this->quote(''),
+      $where
 
     );
 
@@ -72,14 +89,16 @@ class job extends _dao {
           LEFT JOIN `job_contractors` c on c.id = job.contractor_id
           LEFT JOIN `console_properties` cp on cp.properties_id = p.id
           LEFT JOIN `users` u ON u.id = p.property_manager
-          LEFT JOIN `users` uc ON uc.console_code = cp.PropertyManager',
+          LEFT JOIN `users` uc ON uc.console_code = cp.PropertyManager
+        %s',
         $this->quote(''),
-        $this->quote('')
+        $this->quote(''),
+        $where
 
       );
     }
 
-    // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
+    \sys::logSQL(sprintf('<%s> %s', $sql, __METHOD__));
 
     $this->Q(
       sprintf(

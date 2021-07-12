@@ -20,8 +20,10 @@ $dbc->defineField('on_site_contact', 'varchar', 100);
 $dbc->defineField('status', 'int');
 $dbc->defineField('due', 'date');
 $dbc->defineField('job_payment', 'int');
+$dbc->defineField('source_job', 'int');
 $dbc->defineField('email_sent', 'datetime');
 $dbc->defineField('email_sent_by', 'bigint');
+$dbc->defineField('archived', 'datetime');
 $dbc->defineField('updated', 'datetime');
 $dbc->defineField('created', 'datetime');
 

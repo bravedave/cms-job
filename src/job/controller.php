@@ -13,7 +13,7 @@ namespace cms\job;
 use currentuser;
 use FilesystemIterator;
 use MatthiasMullie;
-use Json, Response, strings, sys, cms\leasing;
+use Json, Response, dvc\session, strings, sys, cms\leasing;
 
 use green\{
   people\dao\people as dao_people,
@@ -27,7 +27,7 @@ class controller extends \Controller {
   protected function _index() {
     $this->render([
       'title' => $this->title = $this->label,
-      'primary' => 'blank',
+      'primary' => 'about',
       'secondary' => 'index'
 
     ]);
@@ -392,6 +392,12 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
+    } elseif ('matrix-include-archives' == $action || 'matrix-include-archives-undo' == $action) {
+      session::edit();
+      session::set('job-matrix-archived', 'matrix-include-archives' == $action ? 'yes' : null);
+      session::close();
+
+      Json::ack($action);
     } elseif ('matrix-refresh-row' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job;
@@ -401,6 +407,22 @@ class controller extends \Controller {
             ->add('data', $dto);
         } else {
           Json::nak($action);
+        }
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('job-archive' == $action || 'job-archive-undo' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          $dao->UpdateByID([
+            'archived' => 'job-archive-undo' == $action ? '' : \db::dbTimeStamp()
+
+          ], $id);
+
+          Json::ack($action);
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
         }
       } else {
         Json::nak($action);
@@ -420,6 +442,49 @@ class controller extends \Controller {
         $dao->delete($id);
 
         Json::ack($action);
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('job-duplicate' == $action) {
+
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          $a = [
+            'contractor_id' => $dto->contractor_id,
+            'properties_id' => $dto->properties_id,
+            'job_type' => $dto->job_type,
+            'status' => config::job_status_new,
+            'due' => $dto->due,
+            'job_payment' => $dto->job_payment,
+            'description' => $dto->description,
+            'on_site_contact' => $dto->on_site_contact,
+            'source_job' => $dto->id
+
+          ];
+
+          $a['updated'] = $a['created'] = \db::dbTimeStamp();
+          $newID = $dao->Insert($a);
+
+          $dao = new dao\job_lines;
+          if ($lines = $dao->getLinesOfJobID($dto->id)) {
+            foreach ($lines as $line) {
+              $a = [
+                'item_id' => $line->item_id,
+                'job_id' => $newID,
+
+              ];
+
+              $a['updated'] = $a['created'] = \db::dbTimeStamp();
+              $dao->Insert($a);
+            }
+          }
+
+          Json::ack($action)
+            ->add('id', $newID);
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
       } else {
         Json::nak($action);
       }
@@ -669,12 +734,15 @@ class controller extends \Controller {
   }
 
   public function matrix() {
+    $archived = 'yes' == session::get('job-matrix-archived');
+
     $dao = new dao\job;
     $this->data = (object)[
       'title' => $this->title = config::label_matrix,
-      'res' => $dao->getMatrix(),
+      'res' => $dao->getMatrix($archived),
       'idx' => $this->getParam('idx'),
       'trigger' => $this->getParam('v'),
+      'archived' => $archived
     ];
 
     $this->render([

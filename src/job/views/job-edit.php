@@ -15,7 +15,8 @@ use theme;
 
 $dto = $this->data->dto;
 $categories = $this->data->categories;
-$readonly = $dto->status > 0;  ?>
+$readonly = $dto->status > 0 || strtotime( $dto->archived) > 0;
+?>
 
 <form id="<?= $_form = strings::rand() ?>" autocomplete="off">
   <input type="hidden" name="action" value="job-save">
@@ -687,12 +688,15 @@ $readonly = $dto->status > 0;  ?>
                   $.each(d.data, (i, sched) => {
                     let row = $('<div class="form-row"></div>');
 
-                    let type = $('<div class="form-control form-control-sm bg-light"></div>').html(sched.Type);
-                    let limit = $('<div class="form-control form-control-sm bg-light text-right"></div>').html(sched.Limit);
-                    let notes = $('<div class="form-control form-control-sm bg-light h-auto"></div>').html(sched.Notes);
+                    let type = $('<div class="form-control form-control-sm" readonly></div>')
+                      .html(sched.Type);
+                    let limit = $('<div class="form-control form-control-sm text-right" readonly></div>')
+                      .html(sched.Limit);
+                    let notes = $('<div class="form-control form-control-sm h-auto" readonly></div>')
+                      .html(sched.Notes);
 
-                    let fglimit = $('<div class="input-group input-group-sm"><div class="input-group-prepend"><div class="input-group-text">limit</div></div></div>');
-                    fglimit.append(limit);
+                    let fglimit = $('<div class="input-group input-group-sm"><div class="input-group-prepend"><div class="input-group-text">limit</div></div></div>')
+                      .append(limit);
 
                     $('<div class="col-6 col-md-2 mb-1"></div>')
                       .append(type)
@@ -704,7 +708,8 @@ $readonly = $dto->status > 0;  ?>
                       .append(notes)
                       .appendTo(row);
 
-                    col.append(row);
+                    col
+                      .append(row);
 
                   });
 
@@ -749,7 +754,7 @@ $readonly = $dto->status > 0;  ?>
                   let row = $('<div class="form-row"></div>').appendTo('#<?= $_uidTenants ?>');
                   $('<div class="col-md-2 mb-1"></div>')
                     .append(
-                      $('<div class="form-control form-control-sm bg-light"></div>')
+                      $('<div class="form-control form-control-sm" readonly></div>')
                       .html(t.name)
                     )
                     .appendTo(row);
@@ -938,7 +943,7 @@ $readonly = $dto->status > 0;  ?>
                     if (Number(d.data.primary_contact) > 0) {
                       let ig = $('<div class="input-group"></div>');
 
-                      $('<div class="form-control text-truncate bg-light"></div>')
+                      $('<div class="form-control text-truncate" readonly></div>')
                         .html(d.data.primary_contact_name)
                         .appendTo(ig)
 
