@@ -269,6 +269,7 @@ use currentUser, strings;  ?>
     })(_brayworth_);
   </script>
 
+<?php	if ( 'yes' == currentUser::option('google-sharer')) {	?>
   <li class="nav-item h6 pt-3 pl-3">
     Reference Documents
 
@@ -297,5 +298,6 @@ use currentUser, strings;  ?>
     </a>
 
   </li>
+<?php	}	?>
 
 </ul>

@@ -683,34 +683,35 @@ use strings;  ?>
     });
 
     let srchidx = 0;
-    $('#<?= $srch ?>').on('keyup', function(e) {
-      let idx = ++srchidx;
-      let txt = this.value;
+    $('#<?= $srch ?>')
+      .on('keyup', function(e) {
+        let idx = ++srchidx;
+        let txt = this.value;
 
-      $('#<?= $tblID ?> > tbody > tr').each((i, tr) => {
-        if (idx != srchidx) return false;
+        $('#<?= $tblID ?> > tbody > tr').each((i, tr) => {
+          if (idx != srchidx) return false;
 
-        let _tr = $(tr);
-        if ('' == txt.trim()) {
-          _tr.removeClass('d-none');
-
-        } else {
-          let str = _tr.text()
-          if (str.match(new RegExp(txt, 'gi'))) {
+          let _tr = $(tr);
+          if ('' == txt.trim()) {
             _tr.removeClass('d-none');
 
           } else {
-            _tr.addClass('d-none');
+            let str = _tr.text()
+            if (str.match(new RegExp(txt, 'gi'))) {
+              _tr.removeClass('d-none');
+
+            } else {
+              _tr.addClass('d-none');
+
+            }
 
           }
 
-        }
+        });
+
+        $('#<?= $tblID ?>').trigger('update-line-numbers');
 
       });
-
-      $('#<?= $tblID ?>').trigger('update-line-numbers');
-
-    });
 
     $(document)
       .ready(() => {
