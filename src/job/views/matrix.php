@@ -217,6 +217,12 @@ use strings;  ?>
                 .trigger('create-workorder');
 
             }))
+            .then(d => d.on('view-workorder', e => {
+              e.stopPropagation();
+              _tr
+                .trigger('view-workorder');
+
+            }))
             .then(m => m.on('hidden.bs.modal', d => {
               _tr[0].scrollIntoView({
                 behavior: "smooth",

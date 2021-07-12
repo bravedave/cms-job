@@ -641,7 +641,8 @@ class controller extends \Controller {
         $this->data = (object)[
           'title' => $this->title = config::label_job_edit,
           'dto' => $dto,
-          'categories' => dao\job_categories::getCategorySet()
+          'categories' => dao\job_categories::getCategorySet(),
+          'hasWorkorder' => file_exists($path = $dao->getWorkOrderPath($dto))
 
         ];
 
@@ -653,7 +654,8 @@ class controller extends \Controller {
       $this->data = (object)[
         'title' => $this->title = config::label_job_add,
         'dto' => new dao\dto\job,
-        'categories' => dao\job_categories::getCategorySet()
+        'categories' => dao\job_categories::getCategorySet(),
+        'hasWorkorder' => false
 
       ];
 

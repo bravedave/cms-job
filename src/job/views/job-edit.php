@@ -14,7 +14,8 @@ use strings;
 use theme;
 
 $dto = $this->data->dto;
-$categories = $this->data->categories;  ?>
+$categories = $this->data->categories;
+$readonly = $dto->status > 0;  ?>
 
 <form id="<?= $_form = strings::rand() ?>" autocomplete="off">
   <input type="hidden" name="action" value="job-save">
@@ -65,12 +66,13 @@ $categories = $this->data->categories;  ?>
 
           <?php }  ?>
 
-          <!-- --[status]-- -->
+          <!-- --[status/due]-- -->
           <div class="form-row">
             <div class="col-md-3 col-xl-2 col-form-label">status</div>
 
+            <!-- --[status]-- -->
             <div class="col mb-2">
-              <select name="status" class="form-control">
+              <select name="status" class="form-control" <?= $readonly ? 'disabled' : '' ?>>
                 <?php
                 foreach (config::job_status as $k => $label) {
                   printf(
@@ -86,36 +88,39 @@ $categories = $this->data->categories;  ?>
 
             </div>
 
+            <!-- --[due]-- -->
             <div class="col-lg-6 mb-2">
               <div class="form-row">
                 <div class="col-lg-auto col-form-label">due</div>
 
                 <div class="col">
                   <div class="input-group">
-                    <input name="due" class="form-control" type="date" required id="<?= $_uid = strings::rand() ?>" value="<?php if (strtotime($dto->due) > 0) print $dto->due; ?>">
+                    <input name="due" class="form-control" type="date" <?= $readonly ? 'disabled' : 'required' ?> id="<?= $_uid = strings::rand() ?>" value="<?php if (strtotime($dto->due) > 0) print $dto->due; ?>">
 
-                    <div class="input-group-append d-none">
-                      <button type="button" class="btn input-group-text" id="<?= $_uid ?>7">7</button>
-                    </div>
+                    <?php if (!$readonly) { ?>
+                      <div class="input-group-append d-none">
+                        <button type="button" class="btn input-group-text" id="<?= $_uid ?>7">7</button>
+                      </div>
 
-                    <div class="input-group-append d-none">
-                      <button type="button" class="btn input-group-text" id="<?= $_uid ?>14">14</button>
-                    </div>
+                      <div class="input-group-append d-none">
+                        <button type="button" class="btn input-group-text" id="<?= $_uid ?>14">14</button>
+                      </div>
 
-                    <div class="input-group-append">
-                      <button type="button" class="btn input-group-text" id="<?= $_uid ?>28">28</button>
-                    </div>
+                      <div class="input-group-append">
+                        <button type="button" class="btn input-group-text" id="<?= $_uid ?>28">28</button>
+                      </div>
+
+                      <script>
+                        (_ => {
+                          $('#<?= $_uid ?>7').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+7 days')) ?>'));
+                          $('#<?= $_uid ?>14').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+14 days')) ?>'));
+                          $('#<?= $_uid ?>28').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+28 days')) ?>'));
+
+                        })(_brayworth_);
+                      </script>
+                    <?php } ?>
 
                   </div>
-
-                  <script>
-                    (_ => {
-                      $('#<?= $_uid ?>7').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+7 days')) ?>'));
-                      $('#<?= $_uid ?>14').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+14 days')) ?>'));
-                      $('#<?= $_uid ?>28').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+28 days')) ?>'));
-
-                    })(_brayworth_);
-                  </script>
 
                 </div>
 
@@ -131,7 +136,7 @@ $categories = $this->data->categories;  ?>
 
             <div class="col pt-md-2">
               <div class="form-check form-check-inline">
-                <input type="radio" class="form-check-input" name="job_type" value="<?= config::job_type_order ?>" id="<?= $_uid = strings::rand() ?>" <?php if (config::job_type_order == $dto->job_type) print 'checked'; ?>>
+                <input type="radio" class="form-check-input" name="job_type" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_type_order ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_type_order == $dto->job_type ? 'checked' : ''; ?>>
 
                 <label class="form-check-label" for="<?= $_uid ?>">
                   Order
@@ -141,7 +146,7 @@ $categories = $this->data->categories;  ?>
               </div>
 
               <div class="form-check form-check-inline">
-                <input type="radio" class="form-check-input" name="job_type" value="<?= config::job_type_recurring ?>" id="<?= $_uid = strings::rand() ?>" <?php if (config::job_type_recurring == $dto->job_type) print 'checked'; ?>>
+                <input type="radio" class="form-check-input" name="job_type" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_type_recurring ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_type_recurring == $dto->job_type ? 'checked' : ''; ?>>
 
                 <label class="form-check-label" for="<?= $_uid ?>">
                   Recurring
@@ -151,7 +156,7 @@ $categories = $this->data->categories;  ?>
               </div>
 
               <div class="form-check form-check-inline">
-                <input type="radio" class="form-check-input" name="job_type" value="<?= config::job_type_quote ?>" id="<?= $_uid = strings::rand() ?>" <?php if (config::job_type_quote == $dto->job_type) print 'checked'; ?>>
+                <input type="radio" class="form-check-input" name="job_type" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_type_quote ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_type_quote == $dto->job_type ? 'checked' : ''; ?>>
 
                 <label class="form-check-label" for="<?= $_uid ?>">
                   Quote
@@ -170,7 +175,7 @@ $categories = $this->data->categories;  ?>
 
             <div class="col pt-md-2">
               <div class="form-check form-check-inline">
-                <input type="radio" class="form-check-input" name="job_payment" value="<?= config::job_payment_owner ?>" id="<?= $_uid = strings::rand() ?>" <?php if (config::job_payment_owner == $dto->job_payment) print 'checked'; ?>>
+                <input type="radio" class="form-check-input" name="job_payment" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_payment_owner ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_payment_owner == $dto->job_payment ? 'checked' : ''; ?>>
 
                 <label class="form-check-label" for="<?= $_uid ?>">
                   Owner
@@ -180,7 +185,7 @@ $categories = $this->data->categories;  ?>
               </div>
 
               <div class="form-check form-check-inline">
-                <input type="radio" class="form-check-input" name="job_payment" value="<?= config::job_payment_tenant ?>" id="<?= $_uid = strings::rand() ?>" <?php if (config::job_payment_tenant == $dto->job_payment) print 'checked'; ?>>
+                <input type="radio" class="form-check-input" name="job_payment" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_payment_tenant ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_payment_tenant == $dto->job_payment ? 'checked' : ''; ?>>
 
                 <label class="form-check-label" for="<?= $_uid ?>">
                   Tenant
@@ -200,15 +205,15 @@ $categories = $this->data->categories;  ?>
             <div class="col">
               <div class="form-row">
                 <div class="col-md mb-2">
-                  <input type="text" class="form-control" value="<?= $dto->address_street ?>" id="<?= $_uidAddress = strings::rand() ?>">
+                  <input type="text" class="form-control" value="<?= $dto->address_street ?>" id="<?= $_uidAddress = strings::rand() ?>" <?= $readonly ? 'disabled' : '' ?>>
 
                 </div>
 
                 <div class="col col-md-auto mb-2 d-none" id="<?= $_uidAddress ?>suburb_div">
-                  <div class="form-control" id="<?= $_uidAddress ?>suburb"><?= $dto->address_suburb ?></div>
+                  <div class="form-control" id="<?= $_uidAddress ?>suburb" <?= $readonly ? 'readonly' : '' ?>><?= $dto->address_suburb ?></div>
                 </div>
                 <div class="col-auto mb-2 d-none" id="<?= $_uidAddress ?>postcode_div">
-                  <div class="form-control" id="<?= $_uidAddress ?>postcode"><?= $dto->address_postcode ?></div>
+                  <div class="form-control" id="<?= $_uidAddress ?>postcode" <?= $readonly ? 'readonly' : '' ?>><?= $dto->address_postcode ?></div>
                 </div>
                 <div class="col-auto mb-2 d-none" id="<?= $_uidKeyCell = strings::rand() ?>"></div>
                 <script>
@@ -255,7 +260,7 @@ $categories = $this->data->categories;  ?>
             <div class="col">
               <div class="form-row">
                 <div class="col-md mb-2">
-                  <input type="text" class="form-control" name="on_site_contact" value="<?= $dto->on_site_contact ?>" maxlength="100" id="<?= $_uid = strings::rand() ?>">
+                  <input type="text" class="form-control" name="on_site_contact" <?= $readonly ? 'disabled' : '' ?> value="<?= $dto->on_site_contact ?>" maxlength="100" id="<?= $_uid = strings::rand() ?>">
 
                 </div>
 
@@ -270,7 +275,7 @@ $categories = $this->data->categories;  ?>
             <div class="col-md-3 col-xl-2 col-form-label">description</div>
 
             <div class="col-md mb-2">
-              <textarea class="form-control" name="description" placeholder="describe the need for this job ..." required id="<?= $_uid = strings::rand() ?>"><?= $dto->description ?></textarea>
+              <textarea class="form-control" name="description" placeholder="describe the need for this job ..." <?= $readonly ? 'disabled' : 'required' ?> id="<?= $_uid = strings::rand() ?>"><?= $dto->description ?></textarea>
 
             </div>
             <script>
@@ -292,7 +297,7 @@ $categories = $this->data->categories;  ?>
             <div class="col-md-3 col-xl-2 col-form-label"><?= strtolower(config::label_contractor) ?></div>
 
             <div class="col-md mb-2">
-              <input type="text" class="form-control" value="<?= $dto->contractor_trading_name ?>" id="<?= $_uidContractorTradingName = strings::rand() ?>">
+              <input type="text" class="form-control" value="<?= $dto->contractor_trading_name ?>" id="<?= $_uidContractorTradingName = strings::rand() ?>" <?= $readonly ? 'disabled' : '' ?>>
               <div id="<?= $_missingServices = strings::rand() ?>"></div>
 
             </div>
@@ -344,15 +349,33 @@ $categories = $this->data->categories;  ?>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" accesskey="I" id="<?= $_btnAddItem = strings::rand() ?>">
-            <i class="bi bi-plus"></i> <span style="text-decoration: underline;">I</span>tem
-          </button>
+          <?php if (!$readonly) { ?>
+            <button type="button" class="btn btn-outline-secondary" accesskey="I" id="<?= $_btnAddItem = strings::rand() ?>">
+              <i class="bi bi-plus"></i> <span style="text-decoration: underline;">I</span>tem
+            </button>
+            <script>
+              $('#<?= $_btnAddItem ?>').on('click', e => $('#<?= $_form ?>').trigger('item-add'));
+            </script>
+          <?php } ?>
           <button type="button" class="btn btn-outline-secondary" accesskey="T" id="<?= $_btnTenants = strings::rand() ?>">
             <i class="bi bi-people"></i> <span style="text-decoration: underline;">T</span>enants
           </button>
 
-          <button type="submit" class="btn btn-primary ml-auto" accesskey="S"><span style="text-decoration: underline;">S</span>ave</button>
-          <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_btnSaveAndWorkOrder = strings::rand() ?>"><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
+          <?php if ($readonly) { ?>
+            <button type="button" class="btn btn-outline-secondary ml-auto" data-dismiss="modal">close</button>
+            <?php if ($this->data->hasWorkorder) { ?>
+              <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
+              <script>
+                $('#<?= $_uid ?>').on('click', e => $('#<?= $_form ?>').trigger('view-workorder'));
+              </script>
+            <?php } ?>
+          <?php } else { ?>
+            <button type="submit" class="btn btn-primary ml-auto" accesskey="S"><span style="text-decoration: underline;">S</span>ave</button>
+            <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
+            <script>
+              $('#<?= $_uid ?>').on('click', e => $('#<?= $_form ?>').trigger('submit-and-workorder'));
+            </script>
+          <?php } ?>
 
         </div>
 
@@ -363,9 +386,7 @@ $categories = $this->data->categories;  ?>
   </div>
 
   <script>
-    (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
-      $('#<?= $_btnAddItem ?>').on('click', e => $('#<?= $_form ?>').trigger('item-add'));
-
+    (_ => {
       let cats = <?= json_encode($categories) ?>;
 
       let newRow = () => {
@@ -384,12 +405,14 @@ $categories = $this->data->categories;  ?>
         itemSub.append('<option value="">select item</option>');
         itemSub.on('change', e => row.trigger('item-sub-change'));
 
-        $('<div class="col mb-2" item></div>').append(itemSub).appendTo(row);
+        $('<div class="col mb-2"></div>').append(itemSub).appendTo(row);
 
         let item = $('<select name="item_id[]" class="form-control" disabled></select>');
         item.append('<option value="">select issue</option>');
 
-        $('<div class="col mb-2" item></div>').append(item).appendTo(row);
+        $('<div class="col mb-2" item></div>')
+          .append(item)
+          .appendTo(row);
 
         let btnDelete = $('<div class="btn btn-light" type="button"><i class="bi bi-dash-circle-dotted text-danger"></i></div>');
         btnDelete.on('click', function(e) {
@@ -398,7 +421,9 @@ $categories = $this->data->categories;  ?>
 
         });
 
-        $('<div class="col-auto mb-2" item></div>').append(btnDelete).appendTo(row);
+        $('<div class="col-auto mb-2" delete></div>')
+          .append(btnDelete)
+          .appendTo(row);
 
         row
           .on('category-change', function(e, callback) {
@@ -557,11 +582,23 @@ $categories = $this->data->categories;  ?>
 
             }
 
+          })
+          .on('read-only', function(e) {
+
+            $('div[delete]', this).remove();
+            [
+              'select[name="item_job_categories_id\[\]"]',
+              'select[name="item_sub\[\]"]',
+              'select[name="item_id\[\]"]'
+            ].forEach(element => $(element, this).prop('disabled', true));
+
           });
 
-        row.appendTo('#<?= $_uidItemContainer ?>');
+        row
+          .appendTo('#<?= $_uidItemContainer ?>');
 
-        $('> div[caption]', '#<?= $_uidItemContainer ?>').removeClass('d-none');
+        $('> div[caption]', '#<?= $_uidItemContainer ?>')
+          .removeClass('d-none');
 
         return row;
 
@@ -569,6 +606,8 @@ $categories = $this->data->categories;  ?>
 
       $('#<?= $_form ?>')
         .on('get-keyset', function(e) {
+          e.stopPropagation();
+
           let _form = $(this);
           let _data = _form.serializeFormJSON();
 
@@ -596,7 +635,7 @@ $categories = $this->data->categories;  ?>
                 let ig = $('<div class="input-group"></div>');
                 ig.append('<div class="input-group-prepend"><div class="input-group-text"><i class="bi bi-key"></i></div></div>');
 
-                $('<div class="form-control bg-light"></div>')
+                $('<div class="form-control" readonly></div>')
                   .html(keyset.keyset)
                   .appendTo(ig);
 
@@ -617,6 +656,8 @@ $categories = $this->data->categories;  ?>
 
         })
         .on('get-maintenance', function(e) {
+          e.stopPropagation();
+
           let _form = $(this);
           let _data = _form.serializeFormJSON();
 
@@ -685,6 +726,8 @@ $categories = $this->data->categories;  ?>
 
         })
         .on('get-tenants', function(e) {
+          e.stopPropagation();
+
           let _form = $(this);
           let _data = _form.serializeFormJSON();
 
@@ -814,11 +857,15 @@ $categories = $this->data->categories;  ?>
 
         })
         .on('item-add', e => {
+          e.stopPropagation();
+
           let row = newRow();
           $('select[name="item_job_categories_id\[\]"]', row).focus();
 
         })
         .one('items-init', function(e) {
+          e.stopPropagation();
+
           let initItems = <?= json_encode($dto->lines) ?>;
           // console.log(initItems);
 
@@ -831,14 +878,21 @@ $categories = $this->data->categories;  ?>
 
             jobline.val(_item.id);
             cat.val(_item.job_categories_id);
-            row.trigger('category-change', () => {
-              itemSub.val(_item.item);
-              row.trigger('item-sub-change', () => {
-                item.val(_item.item_id);
+            row
+              .trigger('category-change', () => {
+                itemSub.val(_item.item);
+                row
+                  .trigger('item-sub-change', () => {
+                    item.val(_item.item_id);
 
-              })
+                    <?php if ($readonly) { ?>
+                      row.trigger('read-only');
 
-            });
+                    <?php } ?>
+
+                  });
+
+              });
 
           });
 
@@ -952,6 +1006,8 @@ $categories = $this->data->categories;  ?>
 
         })
         .on('submit-and-workorder', function(e) {
+          e.stopPropagation();
+
           let _form = $(this);
           let _data = _form.serializeFormJSON();
 
@@ -1008,6 +1064,8 @@ $categories = $this->data->categories;  ?>
 
         })
         .on('submit', function(e) {
+          e.stopPropagation();
+
           let _form = $(this);
           let _data = _form.serializeFormJSON();
 
@@ -1047,7 +1105,15 @@ $categories = $this->data->categories;  ?>
           return false;
 
         })
+        .on('view-workorder', function(e) {
+          e.stopPropagation();
+
+          $('#<?= $_modal ?>').modal('hide');
+          $('#<?= $_modal ?>').trigger('view-workorder');
+
+        })
         .on('update-required-services', function(e) {
+          e.stopPropagation();
 
           let services = [];
           $('select[name="item_job_categories_id\[\]"]', this).each((i, el) => {
@@ -1061,17 +1127,17 @@ $categories = $this->data->categories;  ?>
       $('#<?= $_btnTenants ?>')
         .on('click', e => $('#<?= $_form ?>').trigger('get-tenants'));
 
-      $('#<?= $_btnSaveAndWorkOrder ?>')
-        .on('click', e => $('#<?= $_form ?>').trigger('submit-and-workorder'));
+      $('#<?= $_modal ?>').on('shown.bs.modal', () => {
 
-      $('#<?= $_form ?>')
-        .trigger('get-keyset')
-        .trigger('get-maintenance')
-        .trigger('items-init');
+        $('#<?= $_form ?>')
+          .trigger('get-keyset')
+          .trigger('get-maintenance')
+          .trigger('items-init');
 
-      $('select[name="status"]', '#<?= $_form ?>').focus();
+        $('select[name="status"]', '#<?= $_form ?>').focus();
 
-    }))(_brayworth_);
+      })
+    })(_brayworth_);
   </script>
 
 </form>
