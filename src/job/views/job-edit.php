@@ -328,6 +328,7 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
                     $('input[name="contractor_id"]', '#<?= $_form ?>')
                       .val(o.id);
                     $('#<?= $_form ?>')
+                      .trigger('validate-order-button')
                       .trigger('qualify-contractor');
 
                   },
@@ -367,16 +368,20 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
           <?php if ($readonly) { ?>
             <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">close</button>
             <?php if ($this->data->hasWorkorder) { ?>
-              <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
+              <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>" disabled order-button><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
               <script>
                 $('#<?= $_uid ?>').on('click', e => $('#<?= $_form ?>').trigger('view-workorder'));
               </script>
             <?php } ?>
           <?php } else { ?>
             <button type="submit" class="btn btn-primary" accesskey="S"><span style="text-decoration: underline;">S</span>ave</button>
-            <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
+            <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>" disabled order-button><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
             <script>
-              $('#<?= $_uid ?>').on('click', e => $('#<?= $_form ?>').trigger('submit-and-workorder'));
+              $('#<?= $_uid ?>')
+                .on('click', e =>
+                  $('#<?= $_form ?>')
+                  .trigger('submit-and-workorder')
+                );
             </script>
           <?php } ?>
 
@@ -396,7 +401,7 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
         let row = $('<div class="form-row" item-row></div>');
         $('<input type="hidden" name="job_line_id[]" value="0">').appendTo(row);
 
-        let cat = $('<select name="item_job_categories_id[]" class="form-control"></select>');
+        let cat = $('<select name="item_job_categories_id[]" class="form-control" required></select>');
         cat.append('<option value="">select category</option>');
 
         $.each(_.catSort(cats), (i, c) => $('<option></option>').val(c[0]).html(c[1]).appendTo(cat));
@@ -469,7 +474,9 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
 
                   });
 
-                  itemSub.prop('disabled', false);
+                  itemSub
+                    .prop('disabled', false)
+                    .prop('required', true);
                   if ('function' == typeof callback) callback();
 
                 } else {
@@ -524,7 +531,9 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
 
                   });
 
-                  item.prop('disabled', false);
+                  item
+                    .prop('disabled', false)
+                    .prop('required', true);
                   if ('function' == typeof callback) callback();
 
                 } else {
@@ -571,7 +580,9 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
               }).then(d => {
                 if ('ack' == d.response) {
                   $(this).remove();
-                  $('#<?= $_form ?>').trigger('update-required-services');
+                  $('#<?= $_form ?>')
+                    .trigger('update-required-services')
+                    .trigger('validate-order-button');
 
                 } else {
                   _.growl(d);
@@ -593,7 +604,7 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
               'select[name="item_job_categories_id\[\]"]',
               'select[name="item_sub\[\]"]',
               'select[name="item_id\[\]"]'
-            ].forEach(element => $(element, this).prop('disabled', true));
+            ].forEach(element => $(element, this).prop('disabled', true).prop('required', false));
 
           });
 
@@ -876,11 +887,15 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
           $('#<?= $_modal ?>').trigger('invoice-upload');
 
         })
-        .on('item-add', e => {
+        .on('item-add', function(e) {
           e.stopPropagation();
 
           let row = newRow();
-          $('select[name="item_job_categories_id\[\]"]', row).focus();
+          $('select[name="item_job_categories_id\[\]"]', row)
+            .focus();
+
+          $(this)
+            .trigger('validate-order-button');
 
         })
         .one('items-init', function(e) {
@@ -1021,8 +1036,14 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
 
               }
 
+              $('#<?= $_form ?>')
+                .trigger('validate-order-button');
+
             })
             .trigger('qualify-contractor');
+
+          $('#<?= $_uidInvoice ?>')
+            .trigger('reconcile');
 
         })
         .on('submit-and-workorder', function(e) {
@@ -1132,6 +1153,25 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
           $('#<?= $_modal ?>').trigger('edit-workorder');
 
         })
+        .on('validate-order-button', function(e) {
+          let i = $('select[name="item_id\[\]"]', this).length;
+
+          if (i > 0) {
+            let el = $('input[name="contractor_id"]', this);
+            if (Number(el.val()) > 0) {
+              $('button[order-button]', this).prop('disabled', false);
+
+            } else {
+              $('button[order-button]', this).prop('disabled', true);
+
+            }
+
+          } else {
+            $('button[order-button]', this).prop('disabled', true);
+
+          }
+
+        })
         .on('view-workorder', function(e) {
           e.stopPropagation();
 
@@ -1239,51 +1279,65 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
                 );
 
             <?php } else { ?>
+              if ($('select[name="item_id\[\]"]', '#<?= $_form ?>').length > 0) {
+                let el = $('input[name="contractor_id"]', this);
+                if (Number(el.val()) > 0) {
+                  (c => {
 
-                (c => {
+                    $('#<?= $_uidInvoice ?>')
+                      .html('')
+                      .append(c);
 
-                  $('#<?= $_uidInvoice ?>')
-                    .html('')
-                    .append(c);
+                    _.fileDragDropHandler.call(c, {
+                      url: _.url('<?= $this->route ?>'),
+                      queue: false,
+                      multiple: false,
+                      postData: {
+                        action: 'upload-invoice',
+                        id: <?= $dto->id ?>
+                      },
+                      onError: d => {
 
-                  _.fileDragDropHandler.call(c, {
-                    url: _.url('<?= $this->route ?>'),
-                    queue: false,
-                    multiple: false,
-                    postData: {
-                      action: 'upload-invoice',
-                      id: <?= $dto->id ?>
-                    },
-                    onError: d => {
+                        $('#<?= $_uidInvoice ?>')
+                          .html('');
 
-                      $('#<?= $_uidInvoice ?>')
-                        .html('');
+                        $('<div class="alert alert-danger m-1"></div>')
+                          .html(d.description)
+                          .appendTo('#<?= $_uidInvoice ?>');
 
-                      $('<div class="alert alert-danger m-1"></div>')
-                        .html(d.description)
-                        .appendTo('#<?= $_uidInvoice ?>');
+                      },
+                      onUpload: d => {
+                        if ('ack' == d.response) {
+                          $('#<?= $_form ?>')
+                            .trigger('invoice-view')
+                            .trigger('invoice-upload');
 
-                    },
-                    onUpload: d => {
-                      if ('ack' == d.response) {
-                        $('#<?= $_form ?>')
-                          .trigger('invoice-view')
-                          .trigger('invoice-upload');
+                        } else {
+                          console.log(d);
 
-                      } else {
-                        console.log(d);
+                        }
 
                       }
 
-                    }
+                    });
 
-                  });
+                  })(_.fileDragDropContainer({
+                    fileControl: true,
+                    accept: 'image/jpeg,image/png,application/pdf'
 
-                })(_.fileDragDropContainer({
-                  fileControl: true,
-                  accept: 'image/jpeg,image/png,application/pdf'
+                  }));
 
-                }));
+                } else {
+                  $('#<?= $_uidInvoice ?>')
+                    .html('');
+
+                }
+
+              } else {
+                $('#<?= $_uidInvoice ?>')
+                  .html('');
+
+              }
 
             <?php } ?>
 
@@ -1299,9 +1353,6 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
           .trigger('get-keyset')
           .trigger('get-maintenance')
           .trigger('items-init');
-
-        $('#<?= $_uidInvoice ?>')
-          .trigger('reconcile');
 
         $('select[name="status"]', '#<?= $_form ?>')
           .focus();

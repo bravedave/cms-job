@@ -475,46 +475,50 @@ use strings;  ?>
               );
 
               _context.append(
-                $('<a href="#"><div class="text-muted">workorder ...</div></a>')
+                $('<a href="#" class="d-none"></a>')
                 .on('reconcile', function(e) {
                   let _me = $(this);
+                  let _data = _me.data();
 
-                  _.post({
-                    url: _.url('<?= $this->route ?>'),
-                    data: {
-                      action: 'check-has-workorder',
-                      id: _data.id
-                    },
+                  if ( Number( _data.contractor) > 0) {
+                    _.post({
+                      url: _.url('<?= $this->route ?>'),
+                      data: {
+                        action: 'check-has-workorder',
+                        id: _data.id
+                      },
 
-                  }).then(d => {
-                    if ('ack' == d.response) {
-                      if ('yes' == d.workorder) {
-                        _me
-                          .html('<i class="bi bi-file-pdf text-danger"></i>view workorder')
-                          .on('click', e => {
-                            e.stopPropagation();
-                            _tr.trigger('view-workorder');
-                            _context.close();
+                    }).then(d => {
+                      if ('ack' == d.response) {
+                        if ('yes' == d.workorder) {
+                          _me
+                            .html('<i class="bi bi-file-pdf text-danger"></i>view workorder')
+                            .on('click', e => {
+                              e.stopPropagation();
+                              _tr.trigger('view-workorder');
+                              _context.close();
 
-                          });
+                            });
 
+                        } else {
+                          _me
+                            .html('create workorder')
+                            .on('click', e => {
+                              e.stopPropagation();
+                              _tr.trigger('create-workorder');
+                              _context.close();
+
+                            });
+
+                        }
                       } else {
-                        _me
-                          .html('create workorder')
-                          .on('click', e => {
-                            e.stopPropagation();
-                            _tr.trigger('create-workorder');
-                            _context.close();
-
-                          });
+                        _.growl(d);
 
                       }
-                    } else {
-                      _.growl(d);
 
-                    }
+                    });
 
-                  });
+                  }
 
                 })
                 .trigger('reconcile')

@@ -13,6 +13,16 @@
 * Like *Email Sent*, uploading an invoice advances the job's status to invoiced automatically and the job becomes readonly
 * **Valid Job Status** - expands to include *invoiced* - now *Draft, Sent & Invoiced*
 
+#### Restictions
+
+* Job Edit Screen
+  * Order button is disabled until
+    1. there is a valid contractor
+    2. there are lines on the order
+  * Invoice Upload is disabled until
+    1. there is a valid contractor
+    2. there are lines on the order
+
 #### Tweaks
 
 * **New Button** Go to Menu - It is difficult to get to the side index menu on mobiles - a down arrow adjacent the search box is visible on small interfaces.

@@ -49,7 +49,7 @@ $_modal = strings::rand();
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" id="<?= $_RefreshWorkOrder = strings::rand() ?>">refresh order</button>
           <button type="button" class="btn btn-outline-secondary" id="<?= $_EmailOrder = strings::rand() ?>"><i class="bi bi-cursor"></i> email order</button>
-          <button type="button" class="btn btn-outline-secondary" id="<?= $_gotoJob = strings::rand() ?>"><?= config::label_job_edit ?></button>
+          <button type="button" class="btn btn-outline-secondary" id="<?= $_gotoJob = strings::rand() ?>"><?= config::label_job_view ?></button>
           <button type="button" class="btn btn-outline-secondary ml-auto" data-dismiss="modal">close</button>
         </div>
       </div>
