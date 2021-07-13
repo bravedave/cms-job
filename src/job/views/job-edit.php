@@ -31,7 +31,7 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
     }
 
     .upload-invoice {
-      margin: -10px 4px !important;
+      margin: -3px 4px !important;
     }
 
     .upload-invoice .has-advanced-upload::before {
