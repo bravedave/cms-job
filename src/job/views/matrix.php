@@ -159,7 +159,7 @@ use strings;  ?>
         <td class="text-center icon-width"><i class="bi bi-cursor"></i></td>
         <td class="text-center" title="has invoice"><i class="bi bi-info-circle"></i></td>
         <td class="text-center">Status</td>
-        <td class="text-center">PM</td>
+        <td class="text-center" PM>PM</td>
 
       </tr>
 
@@ -281,117 +281,783 @@ use strings;  ?>
         });
       })
 
-    $('#<?= $tblID ?> > tbody > tr').each((i, tr) => {
-      let _tr = $(tr);
-      _tr
-        .on('archive', function(e) {
-          let _tr = $(this);
-          let _data = _tr.data();
+    let pms = [];
+    $('#<?= $tblID ?> > tbody > tr')
+      .each((i, tr) => {
+        let _tr = $(tr);
+        let _data = _tr.data();
 
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: {
-              action: 'job-archive',
-              id: _data.id
+        if ('' != String(_data.pm)) {
+          if (pms.indexOf(String(_data.pm)) < 0) {
+            pms.push(String(_data.pm));
 
-            },
+          }
 
-          }).then(d => {
-            _.growl(d);
-            if ('ack' == d.response) {
-              if ($('#<?= $_uidArchived ?>').prop('checked')) {
+        }
+
+        _tr
+          .on('archive', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'job-archive',
+                id: _data.id
+
+              },
+
+            }).then(d => {
+              _.growl(d);
+              if ('ack' == d.response) {
+                if ($('#<?= $_uidArchived ?>').prop('checked')) {
+                  _tr
+                    .data('archived', 'yes')
+                    .addClass('text-muted');
+                } else {
+                  _tr
+                    .remove();
+
+                }
+
+              }
+
+            });
+
+          })
+          .on('archive-undo', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'job-archive-undo',
+                id: _data.id
+
+              },
+
+            }).then(d => {
+              _.growl(d);
+              if ('ack' == d.response) {
                 _tr
-                  .data('archived', 'yes')
-                  .addClass('text-muted');
-              } else {
+                  .data('archived', 'no')
+                  .removeClass('text-muted');
+
+
+              }
+
+            });
+
+          })
+          .on('edit', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _tr.addClass('bg-info');
+
+            _.get.modal(_.url('<?= $this->route ?>/job_edit/' + _data.id))
+              .then(d => d.on('success', () => {
                 _tr
-                  .remove();
+                  .trigger('refresh');
+
+              }))
+              .then(d => d.on('success-and-workorder', () => {
+                _tr
+                  .trigger('refresh')
+                  .trigger('create-workorder');
+
+              }))
+              .then(m => m.on('edit-workorder', e => {
+                e.stopPropagation();
+                _tr
+                  .trigger('edit');
+
+              }))
+              .then(d => d.on('invoice-view', e => {
+                e.stopPropagation();
+                _tr
+                  .trigger('invoice-view');
+
+              }))
+              .then(d => d.on('invoice-upload', e => {
+                e.stopPropagation();
+                _tr
+                  .trigger('refresh');
+
+              }))
+              .then(d => d.on('view-workorder', e => {
+                e.stopPropagation();
+                _tr
+                  .trigger('view-workorder');
+
+              }))
+              .then(m => m.on('hidden.bs.modal', d => {
+                _tr[0].scrollIntoView({
+                  behavior: "smooth",
+                  block: "center"
+                }); // Object parameter
+
+                setTimeout(() => _tr.removeClass('bg-info'), 1000);
+
+              }));
+
+          })
+          .on(_.browser.isMobileDevice ? 'click' : 'contextmenu', function(e) {
+            if (e.shiftKey)
+              return;
+
+            e.stopPropagation();
+            e.preventDefault();
+
+            _.hideContexts();
+
+            let _context = _.context();
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _context.append(
+              $('<a href="#"><i class="bi bi-pencil"></i>edit</a>')
+              .on('click', e => {
+                e.stopPropagation();
+
+                _tr.trigger('edit');
+                _context.close();
+
+              })
+
+            );
+
+            if (0 < Number(_data.line_count)) {
+
+              _context.append(
+                $('<a href="#" class="d-none"></a>')
+                .on('reconcile', function(e) {
+                  let _me = $(this);
+
+                  _.post({
+                    url: _.url('<?= $this->route ?>'),
+                    data: {
+                      action: 'check-has-invoice',
+                      id: _data.id
+                    },
+
+                  }).then(d => {
+                    if ('ack' == d.response) {
+                      if ('yes' == d.invoice) {
+                        _me
+                          .html('view invoice')
+                          .removeClass('d-none')
+                          .on('click', e => {
+                            e.stopPropagation();
+                            _tr.trigger('invoice-view');
+                            _context.close();
+
+                          });
+
+                      }
+                    } else {
+                      _.growl(d);
+
+                    }
+
+                  });
+
+                })
+                .trigger('reconcile')
+
+              );
+
+              _context.append(
+                $('<a href="#"><div class="text-muted">workorder ...</div></a>')
+                .on('reconcile', function(e) {
+                  let _me = $(this);
+
+                  _.post({
+                    url: _.url('<?= $this->route ?>'),
+                    data: {
+                      action: 'check-has-workorder',
+                      id: _data.id
+                    },
+
+                  }).then(d => {
+                    if ('ack' == d.response) {
+                      if ('yes' == d.workorder) {
+                        _me
+                          .html('<i class="bi bi-file-pdf text-danger"></i>view workorder')
+                          .on('click', e => {
+                            e.stopPropagation();
+                            _tr.trigger('view-workorder');
+                            _context.close();
+
+                          });
+
+                      } else {
+                        _me
+                          .html('create workorder')
+                          .on('click', e => {
+                            e.stopPropagation();
+                            _tr.trigger('create-workorder');
+                            _context.close();
+
+                          });
+
+                      }
+                    } else {
+                      _.growl(d);
+
+                    }
+
+                  });
+
+                })
+                .trigger('reconcile')
+
+              );
+
+            }
+
+            if (Number(_data.properties_id) > 0) {
+              _context.append(
+                $('<a href="#" target="_blank"></a>')
+                .html('goto ' + _data.address_street)
+                .prepend('<i class="bi bi-box-arrow-up-right"></i>')
+                .attr('href', _.url('property/view/' + _data.properties_id))
+                .on('click', e => _context.close())
+
+              );
+
+            }
+
+            _context.append(
+              $('<a href="#">email sent</a>')
+              .on('click', e => {
+                e.stopPropagation();
+                _tr.trigger('yes' == _data.email_sent ? 'mark-sent-undo' : 'mark-sent');
+                _context.close();
+              })
+              .on('reconcile', function(e) {
+                if ('yes' == _data.email_sent) {
+                  $(this).prepend('<i class="bi bi-check"></i>')
+
+                }
+
+              })
+              .trigger('reconcile')
+
+            );
+
+            if (0 < Number(_data.line_count)) {
+              _context.append(
+                $('<a href="#"><i class="bi bi-files"></i>duplicate</a>')
+                .on('click', e => {
+                  e.stopPropagation();
+                  _tr.trigger('duplicate');
+                  _context.close();
+                })
+
+              );
+
+              if (<?= config::job_type_quote ?> == _data.job_type) {
+                // console.log( _data);
+
+                _context.append(
+                  $('<a href="#" title="duplicate, mark as order and archive"><i class="bi bi-ui-checks"></i>invoke order</a>')
+                  .on('click', e => {
+                    e.stopPropagation();
+                    _tr.trigger('invoke-order');
+                    _context.close();
+                  })
+
+                );
 
               }
 
             }
 
-          });
+            _context.append(
+              $('<a href="#"><i class="bi bi-arrow-repeat"></i>refresh</a>')
+              .on('click', e => {
+                e.stopPropagation();
+                _tr.trigger('refresh');
+                _context.close();
+              })
 
-        })
-        .on('archive-undo', function(e) {
-          let _tr = $(this);
-          let _data = _tr.data();
+            );
 
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: {
-              action: 'job-archive-undo',
-              id: _data.id
+            if (0 == Number(_data.line_count)) {
 
-            },
+              _context.append(
+                $('<a href="#"><i class="bi bi-trash"></i>delete</a>')
+                .on('click', e => {
+                  e.stopPropagation();
+                  _tr.trigger('delete');
+                  _context.close();
 
-          }).then(d => {
-            _.growl(d);
-            if ('ack' == d.response) {
-              _tr
-                .data('archived', 'no')
-                .removeClass('text-muted');
+                })
 
+              );
+
+            } else if ('yes' == _data.archived) {
+              _context.append(
+                $('<a href="#"><i class="bi bi-archive-fill"></i>archived</a>')
+                .on('click', e => {
+                  e.stopPropagation();
+                  _tr.trigger('archive-undo');
+                  _context.close();
+
+                })
+
+              );
+
+            } else {
+              _context.append(
+                $('<a href="#"><i class="bi bi-archive"></i>archive</a>')
+                .on('click', e => {
+                  e.stopPropagation();
+                  _tr.trigger('archive');
+                  _context.close();
+
+                })
+
+              );
 
             }
 
+            _context
+              .addClose()
+              .open(e);
+
+          })
+          .on('create-workorder', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.hourglass.on();
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'create-workorder',
+                id: _data.id
+
+              },
+
+            }).then(d => {
+              _.hourglass.off();
+              _.growl(d);
+              if ('ack' == d.response) {
+                _tr.trigger('view-workorder');
+
+              } else {
+                _.ask.alert({
+                  text: d.description
+
+                });
+              }
+
+            });
+
+          })
+          .on('delete', function(e) {
+            let _tr = $(this);
+
+            _.ask.alert({
+              title: 'confirm delete',
+              text: 'Are you Sure ?',
+              buttons: {
+                yes: function(e) {
+                  _tr.trigger('delete-confirmed');
+                  $(this).modal('hide');
+
+                }
+
+              }
+
+            });
+
+          })
+          .on('delete-confirmed', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _tr.addClass('text-muted');
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'job-delete',
+                id: _data.id
+
+              },
+
+            }).then(d => {
+              _.growl(d);
+              if ('ack' == d.response) {
+                _tr.remove();
+
+              }
+
+            });
+
+          })
+          .on('delete-invoice', function(e) {
+            let _tr = $(this);
+
+            _.ask.alert({
+              title: 'delete invoice',
+              text: 'Are you Sure ?',
+              buttons: {
+                yes: function(e) {
+                  _tr.trigger('delete-invoice-confirmed');
+                  $(this).modal('hide');
+
+                }
+
+              }
+
+            });
+
+          })
+          .on('delete-invoice-confirmed', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'job-invoice-delete',
+                id: _data.id
+
+              },
+
+            }).then(d => {
+              _.growl(d);
+              if ('ack' == d.response) {
+                _tr
+                  .trigger('refresh');
+
+              }
+
+            });
+
+          })
+          .on('duplicate', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.hourglass.on();
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'job-duplicate',
+                id: _data.id
+
+              },
+
+            }).then(d => {
+              _.growl(d);
+              if ('ack' == d.response) {
+                _.nav('<?= $this->route ?>/matrix/?v=view&idx=' + d.id);
+
+              } else {
+                _.hourglass.off();
+
+              }
+
+            });
+
+          })
+          .on('email-workorder', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            if (!!window.EmailClass) {
+              let f = o => {
+                _.post({
+                  url: _.url('<?= $this->route ?>'),
+                  data: {
+                    action: 'get-workorder-and-attachment',
+                    id: _data.id
+                  },
+
+                }).then(d => {
+                  if ('ack' == d.response) {
+                    o.tmpDir = d.tmpdir;
+                    o.subject = String(d.subject);
+                    o.message = String(d.text).toHtml();
+                    if (!!window.EmailClass) {
+                      _.email.activate(o);
+                    } else {
+                      console.log(o);
+                      console.log('no email program');
+
+                    }
+
+                  } else {
+                    _.growl(d);
+
+                  }
+
+                });
+
+              }
+
+              // console.log('email-workorder');
+              // console.log(_data);
+              let mailer = _.email.mailer({
+                subject: _data.address_street + ' workorder',
+                onSend: d => _tr.trigger('mark-sent')
+              });
+
+              if (Number(_data.contractor) > 0) {
+                _.post({
+                  url: _.url('<?= $this->route ?>'),
+                  data: {
+                    action: 'get-contractor-by-id',
+                    id: _data.contractor
+
+                  },
+
+                }).then(d => {
+                  if ('ack' == d.response) {
+                    if (String(d.data.primary_contact_email).isEmail()) {
+                      mailer.to = _.email.rfc922({
+                        name: d.data.primary_contact_name,
+                        email: d.data.primary_contact_email
+
+                      });
+
+                      if (String(d.data.primary_contact_phone).IsMobilePhone()) {
+                        mailer.ccSMSPush({
+                          'name': d.data.primary_contact_name,
+                          'mobile': d.data.primary_contact_phone
+                        });
+
+                      }
+                    }
+
+                    f(mailer);
+
+                  } else {
+                    _.growl(d);
+
+                  }
+
+                });
+
+              } else {
+                f(mailer);
+
+              }
+
+            } else {
+              console.log(o);
+              console.log('no email program');
+
+            }
+
+          })
+          .on('invoke-order', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.hourglass.on();
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'job-invoke-order',
+                id: _data.id
+
+              },
+
+            }).then(d => {
+              _.growl(d);
+              if ('ack' == d.response) {
+                _.nav('<?= $this->route ?>/matrix/?v=view&idx=' + d.id);
+
+              } else {
+                _.hourglass.off();
+
+              }
+
+            });
+
+          })
+          .on('invoice-view', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.get
+              .modal(_.url('<?= $this->route ?>/invoice/' + _data.id))
+              .then(m => m.on('delete-invoice', e => _tr.trigger('delete-invoice')))
+              .then(m => m.on('edit-workorder', e => _tr.trigger('edit')));
+
+          })
+          .on('mark-sent', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'mark-sent',
+                id: _data.id
+              },
+
+            }).then(d => {
+              if ('ack' == d.response) {
+                _tr
+                  .data('email_sent', 'yes')
+                  .trigger('refresh');
+
+              } else {
+                _.growl(d);
+
+              }
+
+            });
+
+          })
+          .on('mark-sent-undo', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'mark-sent-undo',
+                id: _data.id
+              },
+
+            }).then(d => {
+              if ('ack' == d.response) {
+                _tr
+                  .data('email_sent', 'no')
+                  .trigger('refresh');
+
+              } else {
+                _.growl(d);
+
+              }
+
+            });
+
+          })
+          .on('refresh', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'matrix-refresh-row',
+                id: _data.id
+
+              },
+
+            }).then(d => {
+              if ('ack' == d.response) {
+                // console.log('matrix-refresh-row');
+                // console.log(d.data);
+
+                let pm = String(d.data.property_manager).initials();
+                _tr.data({
+                  properties_id: d.data.properties_id,
+                  address_street: d.data.address_street,
+                  line_count: d.data.lines.length,
+                  contractor: d.data.contractor_id,
+                  pm: pm,
+                  job_type: d.data.job_type,
+                  invoice: 1 == Number(d.data.has_invoice)
+
+                });
+
+                // console.log(d.data);
+
+                $('[address]', _tr).html(d.data.address_street);
+                $('[tradingname]', _tr).html(d.data.contractor_trading_name);
+                $('[status]', _tr).html(d.data.status_verbatim);
+                $('[invoiced]', _tr).html(1 == Number(d.data.has_invoice) ? '&check;' : '');
+                $('[type]', _tr).html(String(d.data.type_verbatim).initials());
+                $('[pm]', _tr).html(pm);
+
+                if (!!d.data.email_sent) {
+                  let dateSent = _.dayjs(d.data.email_sent);
+                  if (dateSent.isValid() && dateSent.unix() > 0) {
+                    $('[email-sent]', _tr)
+                      .html('')
+                      .append(
+                        $('<i class="bi bi-cursor"></i>')
+                        .attr('title', dateSent.format('L'))
+                      );
+
+                  } else {
+                    $('[email-sent]', _tr).html('&nbsp;');
+                  }
+
+                } else {
+                  $('[email-sent]', _tr).html('&nbsp;');
+
+                }
+
+                if (d.data.lines.length > 0) {
+                  $('[lines]', _tr).html('');
+                  $.each(d.data.lines, (i, line) => {
+                    let row = $('<div class="form-row mb-1"></div>');
+
+                    $('<div class="col-4 col-md-3 text-truncate"></div>').html(line.item).appendTo(row);
+                    $('<div class="col text-truncate"></div>').html(line.description).appendTo(row);
+
+                    $('[lines]', _tr).append(row);
+
+                  });
+
+                } else {
+                  $('[lines]', _tr).html(d.data.brief);
+
+                }
+
+              } else {
+                _.growl(d);
+
+              }
+
+            });
+
+          })
+          .on('view-workorder', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.get
+              .modal(_.url('<?= $this->route ?>/workorder/' + _data.id))
+              .then(m => m.on('refresh-workorder', e => _tr.trigger('create-workorder')))
+              .then(m => m.on('email-workorder', e => _tr.trigger('email-workorder')))
+              .then(m => m.on('edit-workorder', e => _tr.trigger('edit')));
+
           });
 
-        })
-        .on('edit', function(e) {
-          let _tr = $(this);
-          let _data = _tr.data();
-
-          _tr.addClass('bg-info');
-
-          _.get.modal(_.url('<?= $this->route ?>/job_edit/' + _data.id))
-            .then(d => d.on('success', () => {
-              _tr
-                .trigger('refresh');
-
-            }))
-            .then(d => d.on('success-and-workorder', () => {
-              _tr
-                .trigger('refresh')
-                .trigger('create-workorder');
-
-            }))
-            .then(m => m.on('edit-workorder', e => {
+        if (!_.browser.isMobileDevice) {
+          _tr
+            .addClass('pointer')
+            .on('click', function(e) {
               e.stopPropagation();
-              _tr
-                .trigger('edit');
+              e.preventDefault();
 
-            }))
-            .then(d => d.on('invoice-view', e => {
-              e.stopPropagation();
-              _tr
-                .trigger('invoice-view');
+              _.hideContexts();
+              $(this).trigger('edit');
 
-            }))
-            .then(d => d.on('invoice-upload', e => {
-              e.stopPropagation();
-              _tr
-                .trigger('refresh');
+            });
 
-            }))
-            .then(d => d.on('view-workorder', e => {
-              e.stopPropagation();
-              _tr
-                .trigger('view-workorder');
+        }
 
-            }))
-            .then(m => m.on('hidden.bs.modal', d => {
-              _tr[0].scrollIntoView({
-                behavior: "smooth",
-                block: "center"
-              }); // Object parameter
+      });
 
-              setTimeout(() => _tr.removeClass('bg-info'), 1000);
-
-            }));
-
-        })
+    let filterPM = '';
+    if (pms.length > 0) {
+      $('#<?= $tblID ?> > thead > tr > td[PM]')
         .on(_.browser.isMobileDevice ? 'click' : 'contextmenu', function(e) {
           if (e.shiftKey)
             return;
@@ -402,650 +1068,86 @@ use strings;  ?>
           _.hideContexts();
 
           let _context = _.context();
-          let _tr = $(this);
-          let _data = _tr.data();
+          let _me = $(this);
 
-          _context.append(
-            $('<a href="#"><i class="bi bi-pencil"></i>edit</a>')
-            .on('click', e => {
-              e.stopPropagation();
-
-              _tr.trigger('edit');
-              _context.close();
-
-            })
-
-          );
-
-          if (0 < Number(_data.line_count)) {
-
+          $.each(pms, (i, pm) => {
             _context.append(
-              $('<a href="#" class="d-none"></a>')
-              .on('reconcile', function(e) {
-                let _me = $(this);
+              $('<a href="#"></a>')
+              .html(pm)
+              .on('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                _context.close();
 
-                _.post({
-                  url: _.url('<?= $this->route ?>'),
-                  data: {
-                    action: 'check-has-invoice',
-                    id: _data.id
-                  },
+                filterPM = $(this).html();
+                _me
+                  .html('')
+                  .append($('<div class="badge badge-primary"></div>').html(filterPM));
 
-                }).then(d => {
-                  if ('ack' == d.response) {
-                    if ('yes' == d.invoice) {
-                      _me
-                        .html('view invoice')
-                        .removeClass('d-none')
-                        .on('click', e => {
-                          e.stopPropagation();
-                          _tr.trigger('invoice-view');
-                          _context.close();
+                $('#<?= $srch ?>').trigger('search');
+                localStorage.setItem('job-matrix-filter-pm', filterPM);
 
-                        });
-
-                    }
-                  } else {
-                    _.growl(d);
-
-                  }
-
-                });
+              })
+              .on('reconcile', function() {
+                if (pm == filterPM) $(this).prepend('<i class="bi bi-check"></i>')
 
               })
               .trigger('reconcile')
 
             );
 
-            _context.append(
-              $('<a href="#"><div class="text-muted">workorder ...</div></a>')
-              .on('reconcile', function(e) {
-                let _me = $(this);
+          });
 
-                _.post({
-                  url: _.url('<?= $this->route ?>'),
-                  data: {
-                    action: 'check-has-workorder',
-                    id: _data.id
-                  },
-
-                }).then(d => {
-                  if ('ack' == d.response) {
-                    if ('yes' == d.workorder) {
-                      _me
-                        .html('<i class="bi bi-file-pdf text-danger"></i>view workorder')
-                        .on('click', e => {
-                          e.stopPropagation();
-                          _tr.trigger('view-workorder');
-                          _context.close();
-
-                        });
-
-                    } else {
-                      _me
-                        .html('create workorder')
-                        .on('click', e => {
-                          e.stopPropagation();
-                          _tr.trigger('create-workorder');
-                          _context.close();
-
-                        });
-
-                    }
-                  } else {
-                    _.growl(d);
-
-                  }
-
-                });
-
-              })
-              .trigger('reconcile')
-
-            );
-
-          }
-
-          if (Number(_data.properties_id) > 0) {
-            _context.append(
-              $('<a href="#" target="_blank"></a>')
-              .html('goto ' + _data.address_street)
-              .prepend('<i class="bi bi-box-arrow-up-right"></i>')
-              .attr('href', _.url('property/view/' + _data.properties_id))
-              .on('click', e => _context.close())
-
-            );
-
-          }
-
+          _context.append('<hr>');
           _context.append(
-            $('<a href="#">email sent</a>')
-            .on('click', e => {
+            $('<a href="#">clear</a>').on('click', function(e) {
               e.stopPropagation();
-              _tr.trigger('yes' == _data.email_sent ? 'mark-sent-undo' : 'mark-sent');
+              e.preventDefault();
               _context.close();
+
+              filterPM = '';
+              _me.html('PM');
+              $('#<?= $srch ?>')
+                .trigger('search');
+
+              localStorage.removeItem('job-matrix-filter-pm');
+
             })
-            .on('reconcile', function(e) {
-              if ('yes' == _data.email_sent) {
-                $(this).prepend('<i class="bi bi-check"></i>')
-
-              }
-
-            })
-            .trigger('reconcile')
-
           );
 
-          if (0 < Number(_data.line_count)) {
-            _context.append(
-              $('<a href="#"><i class="bi bi-files"></i>duplicate</a>')
-              .on('click', e => {
-                e.stopPropagation();
-                _tr.trigger('duplicate');
-                _context.close();
-              })
-
-            );
-
-            if (<?= config::job_type_quote ?> == _data.job_type) {
-              // console.log( _data);
-
-              _context.append(
-                $('<a href="#" title="duplicate, mark as order and archive"><i class="bi bi-ui-checks"></i>invoke order</a>')
-                .on('click', e => {
-                  e.stopPropagation();
-                  _tr.trigger('invoke-order');
-                  _context.close();
-                })
-
-              );
-
-            }
-
-          }
-
-          _context.append(
-            $('<a href="#"><i class="bi bi-arrow-repeat"></i>refresh</a>')
-            .on('click', e => {
-              e.stopPropagation();
-              _tr.trigger('refresh');
-              _context.close();
-            })
-
-          );
-
-          if (0 == Number(_data.line_count)) {
-
-            _context.append(
-              $('<a href="#"><i class="bi bi-trash"></i>delete</a>')
-              .on('click', e => {
-                e.stopPropagation();
-                _tr.trigger('delete');
-                _context.close();
-
-              })
-
-            );
-
-          } else if ('yes' == _data.archived) {
-            _context.append(
-              $('<a href="#"><i class="bi bi-archive-fill"></i>archived</a>')
-              .on('click', e => {
-                e.stopPropagation();
-                _tr.trigger('archive-undo');
-                _context.close();
-
-              })
-
-            );
-
-          } else {
-            _context.append(
-              $('<a href="#"><i class="bi bi-archive"></i>archive</a>')
-              .on('click', e => {
-                e.stopPropagation();
-                _tr.trigger('archive');
-                _context.close();
-
-              })
-
-            );
-
-          }
-
-          _context
-            .addClose()
-            .open(e);
-
-        })
-        .on('create-workorder', function(e) {
-          let _tr = $(this);
-          let _data = _tr.data();
-
-          _.hourglass.on();
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: {
-              action: 'create-workorder',
-              id: _data.id
-
-            },
-
-          }).then(d => {
-            _.hourglass.off();
-            _.growl(d);
-            if ('ack' == d.response) {
-              _tr.trigger('view-workorder');
-
-            } else {
-              _.ask.alert({
-                text: d.description
-
-              });
-            }
-
-          });
-
-        })
-        .on('delete', function(e) {
-          let _tr = $(this);
-
-          _.ask.alert({
-            title: 'confirm delete',
-            text: 'Are you Sure ?',
-            buttons: {
-              yes: function(e) {
-                _tr.trigger('delete-confirmed');
-                $(this).modal('hide');
-
-              }
-
-            }
-
-          });
-
-        })
-        .on('delete-confirmed', function(e) {
-          let _tr = $(this);
-          let _data = _tr.data();
-
-          _tr.addClass('text-muted');
-
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: {
-              action: 'job-delete',
-              id: _data.id
-
-            },
-
-          }).then(d => {
-            _.growl(d);
-            if ('ack' == d.response) {
-              _tr.remove();
-
-            }
-
-          });
-
-        })
-        .on('delete-invoice', function(e) {
-          let _tr = $(this);
-
-          _.ask.alert({
-            title: 'delete invoice',
-            text: 'Are you Sure ?',
-            buttons: {
-              yes: function(e) {
-                _tr.trigger('delete-invoice-confirmed');
-                $(this).modal('hide');
-
-              }
-
-            }
-
-          });
-
-        })
-        .on('delete-invoice-confirmed', function(e) {
-          let _tr = $(this);
-          let _data = _tr.data();
-
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: {
-              action: 'job-invoice-delete',
-              id: _data.id
-
-            },
-
-          }).then(d => {
-            _.growl(d);
-            if ('ack' == d.response) {
-              _tr
-                .trigger('refresh');
-
-            }
-
-          });
-
-        })
-        .on('duplicate', function(e) {
-          let _tr = $(this);
-          let _data = _tr.data();
-
-          _.hourglass.on();
-
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: {
-              action: 'job-duplicate',
-              id: _data.id
-
-            },
-
-          }).then(d => {
-            _.growl(d);
-            if ('ack' == d.response) {
-              _.nav('<?= $this->route ?>/matrix/?v=view&idx=' + d.id);
-
-            } else {
-              _.hourglass.off();
-
-            }
-
-          });
-
-        })
-        .on('email-workorder', function(e) {
-          let _tr = $(this);
-          let _data = _tr.data();
-
-          if (!!window.EmailClass) {
-            let f = o => {
-              _.post({
-                url: _.url('<?= $this->route ?>'),
-                data: {
-                  action: 'get-workorder-and-attachment',
-                  id: _data.id
-                },
-
-              }).then(d => {
-                if ('ack' == d.response) {
-                  o.tmpDir = d.tmpdir;
-                  o.subject = String(d.subject);
-                  o.message = String(d.text).toHtml();
-                  if (!!window.EmailClass) {
-                    _.email.activate(o);
-                  } else {
-                    console.log(o);
-                    console.log('no email program');
-
-                  }
-
-                } else {
-                  _.growl(d);
-
-                }
-
-              });
-
-            }
-
-            // console.log('email-workorder');
-            // console.log(_data);
-            let mailer = _.email.mailer({
-              subject: _data.address_street + ' workorder',
-              onSend: d => _tr.trigger('mark-sent')
-            });
-
-            if (Number(_data.contractor) > 0) {
-              _.post({
-                url: _.url('<?= $this->route ?>'),
-                data: {
-                  action: 'get-contractor-by-id',
-                  id: _data.contractor
-
-                },
-
-              }).then(d => {
-                if ('ack' == d.response) {
-                  if (String(d.data.primary_contact_email).isEmail()) {
-                    mailer.to = _.email.rfc922({
-                      name: d.data.primary_contact_name,
-                      email: d.data.primary_contact_email
-
-                    });
-
-                    if (String(d.data.primary_contact_phone).IsMobilePhone()) {
-                      mailer.ccSMSPush({
-                        'name': d.data.primary_contact_name,
-                        'mobile': d.data.primary_contact_phone
-                      });
-
-                    }
-                  }
-
-                  f(mailer);
-
-                } else {
-                  _.growl(d);
-
-                }
-
-              });
-
-            } else {
-              f(mailer);
-
-            }
-
-          } else {
-            console.log(o);
-            console.log('no email program');
-
-          }
-
-        })
-        .on('invoke-order', function(e) {
-          let _tr = $(this);
-          let _data = _tr.data();
-
-          _.hourglass.on();
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: {
-              action: 'job-invoke-order',
-              id: _data.id
-
-            },
-
-          }).then(d => {
-            _.growl(d);
-            if ('ack' == d.response) {
-              _.nav('<?= $this->route ?>/matrix/?v=view&idx=' + d.id);
-
-            } else {
-              _.hourglass.off();
-
-            }
-
-          });
-
-        })
-        .on('invoice-view', function(e) {
-          let _tr = $(this);
-          let _data = _tr.data();
-
-          _.get
-            .modal(_.url('<?= $this->route ?>/invoice/' + _data.id))
-            .then(m => m.on('delete-invoice', e => _tr.trigger('delete-invoice')))
-            .then(m => m.on('edit-workorder', e => _tr.trigger('edit')));
-
-        })
-        .on('mark-sent', function(e) {
-          let _tr = $(this);
-          let _data = _tr.data();
-
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: {
-              action: 'mark-sent',
-              id: _data.id
-            },
-
-          }).then(d => {
-            if ('ack' == d.response) {
-              _tr
-                .data('email_sent', 'yes')
-                .trigger('refresh');
-
-            } else {
-              _.growl(d);
-
-            }
-
-          });
-
-        })
-        .on('mark-sent-undo', function(e) {
-          let _tr = $(this);
-          let _data = _tr.data();
-
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: {
-              action: 'mark-sent-undo',
-              id: _data.id
-            },
-
-          }).then(d => {
-            if ('ack' == d.response) {
-              _tr
-                .data('email_sent', 'no')
-                .trigger('refresh');
-
-            } else {
-              _.growl(d);
-
-            }
-
-          });
-
-        })
-        .on('refresh', function(e) {
-          let _tr = $(this);
-          let _data = _tr.data();
-
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: {
-              action: 'matrix-refresh-row',
-              id: _data.id
-
-            },
-
-          }).then(d => {
-            if ('ack' == d.response) {
-              // console.log('matrix-refresh-row');
-              // console.log(d.data);
-
-              let pm = String(d.data.property_manager).initials();
-              _tr.data({
-                properties_id: d.data.properties_id,
-                address_street: d.data.address_street,
-                line_count: d.data.lines.length,
-                contractor: d.data.contractor_id,
-                pm: pm,
-                job_type: d.data.job_type,
-                invoice: 1 == Number(d.data.has_invoice)
-
-              });
-
-              // console.log(d.data);
-
-              $('[address]', _tr).html(d.data.address_street);
-              $('[tradingname]', _tr).html(d.data.contractor_trading_name);
-              $('[status]', _tr).html(d.data.status_verbatim);
-              $('[invoiced]', _tr).html(1 == Number(d.data.has_invoice) ? '&check;' : '');
-              $('[type]', _tr).html(String(d.data.type_verbatim).initials());
-              $('[pm]', _tr).html(pm);
-
-              if (!!d.data.email_sent) {
-                let dateSent = _.dayjs(d.data.email_sent);
-                if (dateSent.isValid() && dateSent.unix() > 0) {
-                  $('[email-sent]', _tr)
-                    .html('')
-                    .append(
-                      $('<i class="bi bi-cursor"></i>')
-                      .attr('title', dateSent.format('L'))
-                    );
-
-                } else {
-                  $('[email-sent]', _tr).html('&nbsp;');
-                }
-
-              } else {
-                $('[email-sent]', _tr).html('&nbsp;');
-
-              }
-
-              if (d.data.lines.length > 0) {
-                $('[lines]', _tr).html('');
-                $.each(d.data.lines, (i, line) => {
-                  let row = $('<div class="form-row mb-1"></div>');
-
-                  $('<div class="col-4 col-md-3 text-truncate"></div>').html(line.item).appendTo(row);
-                  $('<div class="col text-truncate"></div>').html(line.description).appendTo(row);
-
-                  $('[lines]', _tr).append(row);
-
-                });
-
-              } else {
-                $('[lines]', _tr).html(d.data.brief);
-
-              }
-
-            } else {
-              _.growl(d);
-
-            }
-
-          });
-
-        })
-        .on('view-workorder', function(e) {
-          let _tr = $(this);
-          let _data = _tr.data();
-
-          _.get
-            .modal(_.url('<?= $this->route ?>/workorder/' + _data.id))
-            .then(m => m.on('refresh-workorder', e => _tr.trigger('create-workorder')))
-            .then(m => m.on('email-workorder', e => _tr.trigger('email-workorder')))
-            .then(m => m.on('edit-workorder', e => _tr.trigger('edit')));
+          _context.open(e);
 
         });
 
-      if (!_.browser.isMobileDevice) {
-        _tr
-          .addClass('pointer')
-          .on('click', function(e) {
-            e.stopPropagation();
-            e.preventDefault();
+    }
 
-            _.hideContexts();
-            $(this).trigger('edit');
+    $('#<?= $tblID ?>')
+      .on('restore-filter', function(e) {
 
-          });
+        let pmFilter = localStorage.getItem('job-matrix-filter-pm');
+        if (!!pmFilter) {
+          filterPM = pmFilter;
+          $('#<?= $tblID ?> > thead > tr > td[PM]')
+            .html(pmFilter);
 
-      }
+          $('#<?= $srch ?>')
+            .trigger('search');
+        } else {
+          $('#<?= $tblID ?>')
+            .trigger('update-line-numbers');
 
-    });
+        }
+
+        $('#<?= $tblID ?>')
+          .addClass('show');
+
+        // console.log('restore-filter');
+
+      });
 
     let srchidx = 0;
     $('#<?= $srch ?>')
-      .on('keyup', function(e) {
+      .on('search', function(e) {
         let idx = ++srchidx;
         let txt = this.value;
 
@@ -1053,7 +1155,12 @@ use strings;  ?>
           if (idx != srchidx) return false;
 
           let _tr = $(tr);
-          if ('' == txt.trim()) {
+          let _data = _tr.data();
+
+          if (filterPM != '' && _data.pm != filterPM) {
+            _tr.addClass('d-none');
+
+          } else if ('' == txt.trim()) {
             _tr.removeClass('d-none');
 
           } else {
@@ -1072,6 +1179,9 @@ use strings;  ?>
 
         $('#<?= $tblID ?>').trigger('update-line-numbers');
 
+      })
+      .on('keyup', function(e) {
+        $(this).trigger('search')
       });
 
     $(document)
@@ -1099,8 +1209,7 @@ use strings;  ?>
         <?php }  ?>
 
         $('#<?= $tblID ?>')
-          .addClass('show')
-          .trigger('update-line-numbers');
+          .trigger('restore-filter');
 
       });
 

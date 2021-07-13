@@ -4,6 +4,8 @@
 
 ### 13 July, 2021
 
+* **Filter by PM** as with other matrices, right click the property manager and set the filter - in this case it is persistent, so it will remember your setting.
+
 #### Invoices
 
 * A invoice can now be uploaded to the job, and the context menu have additional options where an invoice is detected - including delete and view the invoice
