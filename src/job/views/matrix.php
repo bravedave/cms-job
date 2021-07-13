@@ -478,7 +478,9 @@ use strings;  ?>
                 $('<a href="#" class="d-none"></a>')
                 .on('reconcile', function(e) {
                   let _me = $(this);
-                  let _data = _me.data();
+
+                  // _data is from _tr
+                  // console.log( _data);
 
                   if (Number(_data.contractor) > 0) {
                     _.post({
