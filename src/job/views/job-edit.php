@@ -1280,8 +1280,9 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
 
             <?php } else { ?>
               if ($('select[name="item_id\[\]"]', '#<?= $_form ?>').length > 0) {
-                let el = $('input[name="contractor_id"]', this);
+                let el = $('input[name="contractor_id"]', '#<?= $_form ?>');
                 if (Number(el.val()) > 0) {
+                  // console.log('lines + contractor - so invoice upload ...');
                   (c => {
 
                     $('#<?= $_uidInvoice ?>')
@@ -1328,12 +1329,14 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
                   }));
 
                 } else {
+                  // console.log('there is no contractor - so no invoice upload ...');
                   $('#<?= $_uidInvoice ?>')
                     .html('');
 
                 }
 
               } else {
+                // console.log('there are no lines - so no invoice upload ...');
                 $('#<?= $_uidInvoice ?>')
                   .html('');
 
