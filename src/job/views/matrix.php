@@ -151,7 +151,7 @@ use strings;  ?>
   <table class="table table-sm fade" id="<?= $tblID = strings::rand() ?>">
     <thead class="small">
       <tr>
-        <td>#</td>
+        <td line-number>#</td>
         <td class="constrain">Property</td>
         <td class="d-none d-md-table-cell constrain">Contractor</td>
         <td class="d-none d-md-table-cell">Items</td>
@@ -276,10 +276,15 @@ use strings;  ?>
   (_ => {
     $('#<?= $tblID ?>')
       .on('update-line-numbers', function(e) {
+        let tot = 0;
         $('> tbody > tr:not(.d-none) >td[line-number]', this).each((i, e) => {
           $(e).data('line', i + 1).html(i + 1);
+          tot++;
         });
-      })
+
+        $('> thead > tr >td[line-number]', this).html(tot);
+
+      });
 
     let pms = [];
     $('#<?= $tblID ?> > tbody > tr')

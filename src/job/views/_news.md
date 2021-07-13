@@ -16,6 +16,7 @@
 #### Tweaks
 
 * **New Button** Go to Menu - It is difficult to get to the side index menu on mobiles - a down arrow adjacent the search box is visible on small interfaces.
+* **Total Lines** has been added to the report
 
 ### 12 July, 2021
 
