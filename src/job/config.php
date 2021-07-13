@@ -60,10 +60,10 @@ class config extends \config {
 	const job_payment_owner = 0;
 	const job_payment_tenant = 1;
 
+	// 5 => 'quote',
 	const job_status = [
 		0 => 'draft',
 		2 => 'sent',
-		5 => 'quote',
 		10 => 'assigned',
 		15 => 'invoiced',
 
@@ -71,7 +71,7 @@ class config extends \config {
 
 	const job_status_new = 0;
 	const job_status_sent = 2;
-	const job_status_quote = 5;
+	// const job_status_quote = 5;
 	const job_status_assigned = 10;
 	const job_status_invoiced = 15;
 
@@ -169,8 +169,8 @@ class config extends \config {
 			return 'draft';
 		} elseif (config::job_status_sent == $status) {
 			return 'sent';
-		} elseif (config::job_status_quote == $status) {
-			return 'quote';
+		// } elseif (config::job_status_quote == $status) {
+		// 	return 'quote';
 		} elseif (config::job_status_assigned == $status) {
 			return 'assigned';
 		} elseif (config::job_status_invoiced == $status) {

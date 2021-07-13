@@ -12,7 +12,10 @@ namespace cms\job\dao;
 
 use cms\job\config;
 use dao\_dao;
-use dao\properties, dao\people;
+use dao\{
+  properties,
+  people
+};
 
 // use green;
 use strings;
@@ -58,6 +61,11 @@ class job extends _dao {
   public function getByID($id) {
     if ($dto = parent::getByID($id)) {
       $dto->has_invoice = file_exists($this->getInvoicePath($dto)) ? 1 : 0;
+
+      if ( !isset( config::job_status[$dto->status])) {
+        $dto->status = 0;
+
+      }
 
       if (1 == $dto->has_invoice && $dto->status < config::job_status_invoiced) {
         $dto->status = config::job_status_invoiced; // auto advance status
@@ -162,13 +170,12 @@ class job extends _dao {
           ];
 
           if ($dto->status < config::job_status_invoiced) {
-            $set[] = sprintf( '`status` = %s', config::job_status_invoiced);
-
+            $set[] = sprintf('`status` = %s', config::job_status_invoiced);
           }
 
           $sql = sprintf(
             'UPDATE `matrix` SET %s  WHERE `id` = %d',
-            implode( ',', $set),
+            implode(',', $set),
             $dto->id
 
           );
