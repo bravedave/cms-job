@@ -480,7 +480,7 @@ use strings;  ?>
                   let _me = $(this);
                   let _data = _me.data();
 
-                  if ( Number( _data.contractor) > 0) {
+                  if (Number(_data.contractor) > 0) {
                     _.post({
                       url: _.url('<?= $this->route ?>'),
                       data: {
@@ -493,6 +493,7 @@ use strings;  ?>
                         if ('yes' == d.workorder) {
                           _me
                             .html('<i class="bi bi-file-pdf text-danger"></i>view workorder')
+                            .removeClass('d-none')
                             .on('click', e => {
                               e.stopPropagation();
                               _tr.trigger('view-workorder');
@@ -503,6 +504,7 @@ use strings;  ?>
                         } else {
                           _me
                             .html('create workorder')
+                            .removeClass('d-none')
                             .on('click', e => {
                               e.stopPropagation();
                               _tr.trigger('create-workorder');
