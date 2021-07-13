@@ -33,6 +33,7 @@ class config extends \config {
 	const label_job = 'Job';
 	const label_job_add = 'New Job';
 	const label_job_edit = 'Edit Job';
+	const label_job_view = 'View Job';
 	const label_job_viewworkorder = 'View Workorder';
 	const label_matrix = 'JOB Matrix';
 
@@ -64,6 +65,7 @@ class config extends \config {
 		2 => 'sent',
 		5 => 'quote',
 		10 => 'assigned',
+		15 => 'invoiced',
 
 	];
 
@@ -71,6 +73,7 @@ class config extends \config {
 	const job_status_sent = 2;
 	const job_status_quote = 5;
 	const job_status_assigned = 10;
+	const job_status_invoiced = 15;
 
 	const job_templates = [
 		'template-workorder-send'
@@ -170,6 +173,8 @@ class config extends \config {
 			return 'quote';
 		} elseif (config::job_status_assigned == $status) {
 			return 'assigned';
+		} elseif (config::job_status_invoiced == $status) {
+			return 'invoiced';
 		}
 
 		return (string)$status;

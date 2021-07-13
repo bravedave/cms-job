@@ -121,6 +121,30 @@ use strings;  ?>
 
   </div>
 
+  <div class="col-auto d-md-none">
+    <button type="button" class="btn btn-light" id="<?= $_uidMenu = strings::rand() ?>"><i class="bi bi-arrow-down"></i></button>
+    <script>
+      (_ => {
+        $('#<?= $_uidMenu ?>').on('click', e => {
+          e.stopPropagation();
+
+          let el = $('#<?= $_uidMenu ?>-target');
+          // console.log(el);
+          if (el.length > 0) {
+            el[0].scrollIntoView({
+              behavior: "smooth",
+              block: "center"
+            }); // Object parameter
+
+          }
+
+        });
+
+      })(_brayworth_);
+    </script>
+
+  </div>
+
 </div>
 
 <div class="table-responsive">
@@ -132,7 +156,8 @@ use strings;  ?>
         <td class="d-none d-md-table-cell constrain">Contractor</td>
         <td class="d-none d-md-table-cell">Items</td>
         <td class="text-center" title="Order/Recurring/Quote">Type</td>
-        <td class="text-center class=" icon-width"><i class="bi bi-cursor"></i></td>
+        <td class="text-center icon-width"><i class="bi bi-cursor"></i></td>
+        <td class="text-center" title="has invoice"><i class="bi bi-info-circle"></i></td>
         <td class="text-center">Status</td>
         <td class="text-center">PM</td>
 
@@ -145,6 +170,7 @@ use strings;  ?>
         $lines = json_decode($dto->lines) ?? [];
         $pm = strings::initials($dto->pm);
 
+
         printf(
           '<tr
             class="%s"
@@ -156,7 +182,8 @@ use strings;  ?>
             data-pm="%s"
             data-email_sent="%s"
             data-job_type="%s"
-            data-archived="%s">',
+            data-archived="%s",
+            data-invoiced="%s">',
           strtotime($dto->archived) > 0 ? 'text-muted' : '',
           $dto->id,
           $dto->properties_id,
@@ -166,7 +193,8 @@ use strings;  ?>
           $pm,
           strtotime($dto->email_sent) > 0 ? 'yes' : 'no',
           $dto->job_type,
-          strtotime($dto->archived) > 0 ? 'yes' : 'no'
+          strtotime($dto->archived) > 0 ? 'yes' : 'no',
+          1 == (int)$dto->has_invoice ? 'yes' : 'no'
 
         );
       ?>
@@ -227,6 +255,7 @@ use strings;  ?>
           }
           ?>
         </td>
+        <td class="text-center" invoiced><?= $dto->has_invoice ? '&check;' : '' ?></td>
         <td class="text-center" status><?= config::cms_job_status_verbatim($dto->status) ?></td>
 
         <td class="text-center" pm><?= $pm ?></td>
@@ -240,6 +269,8 @@ use strings;  ?>
   </table>
 
 </div>
+
+<div id="<?= $_uidMenu ?>-target"></div>
 
 <script>
   (_ => {
@@ -326,6 +357,24 @@ use strings;  ?>
                 .trigger('create-workorder');
 
             }))
+            .then(m => m.on('edit-workorder', e => {
+              e.stopPropagation();
+              _tr
+                .trigger('edit');
+
+            }))
+            .then(d => d.on('invoice-view', e => {
+              e.stopPropagation();
+              _tr
+                .trigger('invoice-view');
+
+            }))
+            .then(d => d.on('invoice-upload', e => {
+              e.stopPropagation();
+              _tr
+                .trigger('refresh');
+
+            }))
             .then(d => d.on('view-workorder', e => {
               e.stopPropagation();
               _tr
@@ -369,6 +418,44 @@ use strings;  ?>
           );
 
           if (0 < Number(_data.line_count)) {
+
+            _context.append(
+              $('<a href="#" class="d-none"></a>')
+              .on('reconcile', function(e) {
+                let _me = $(this);
+
+                _.post({
+                  url: _.url('<?= $this->route ?>'),
+                  data: {
+                    action: 'check-has-invoice',
+                    id: _data.id
+                  },
+
+                }).then(d => {
+                  if ('ack' == d.response) {
+                    if ('yes' == d.invoice) {
+                      _me
+                        .html('view invoice')
+                        .removeClass('d-none')
+                        .on('click', e => {
+                          e.stopPropagation();
+                          _tr.trigger('invoice-view');
+                          _context.close();
+
+                        });
+
+                    }
+                  } else {
+                    _.growl(d);
+
+                  }
+
+                });
+
+              })
+              .trigger('reconcile')
+
+            );
 
             _context.append(
               $('<a href="#"><div class="text-muted">workorder ...</div></a>')
@@ -602,6 +689,47 @@ use strings;  ?>
           });
 
         })
+        .on('delete-invoice', function(e) {
+          let _tr = $(this);
+
+          _.ask.alert({
+            title: 'delete invoice',
+            text: 'Are you Sure ?',
+            buttons: {
+              yes: function(e) {
+                _tr.trigger('delete-invoice-confirmed');
+                $(this).modal('hide');
+
+              }
+
+            }
+
+          });
+
+        })
+        .on('delete-invoice-confirmed', function(e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'job-invoice-delete',
+              id: _data.id
+
+            },
+
+          }).then(d => {
+            _.growl(d);
+            if ('ack' == d.response) {
+              _tr
+                .trigger('refresh');
+
+            }
+
+          });
+
+        })
         .on('duplicate', function(e) {
           let _tr = $(this);
           let _data = _tr.data();
@@ -745,6 +873,16 @@ use strings;  ?>
           });
 
         })
+        .on('invoice-view', function(e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _.get
+            .modal(_.url('<?= $this->route ?>/invoice/' + _data.id))
+            .then(m => m.on('delete-invoice', e => _tr.trigger('delete-invoice')))
+            .then(m => m.on('edit-workorder', e => _tr.trigger('edit')));
+
+        })
         .on('mark-sent', function(e) {
           let _tr = $(this);
           let _data = _tr.data();
@@ -819,7 +957,8 @@ use strings;  ?>
                 line_count: d.data.lines.length,
                 contractor: d.data.contractor_id,
                 pm: pm,
-                job_type: d.data.job_type
+                job_type: d.data.job_type,
+                invoice: 1 == Number(d.data.has_invoice)
 
               });
 
@@ -828,6 +967,7 @@ use strings;  ?>
               $('[address]', _tr).html(d.data.address_street);
               $('[tradingname]', _tr).html(d.data.contractor_trading_name);
               $('[status]', _tr).html(d.data.status_verbatim);
+              $('[invoiced]', _tr).html(1 == Number(d.data.has_invoice) ? '&check;' : '');
               $('[type]', _tr).html(String(d.data.type_verbatim).initials());
               $('[pm]', _tr).html(pm);
 

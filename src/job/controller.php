@@ -13,7 +13,12 @@ namespace cms\job;
 use currentuser;
 use FilesystemIterator;
 use MatthiasMullie;
-use Json, Response, dvc\session, strings, sys, cms\leasing;
+use cms\leasing, Json, Response, strings, sys;
+
+use dvc\{
+  fileUploader,
+  session
+};
 
 use green\{
   people\dao\people as dao_people,
@@ -27,7 +32,7 @@ class controller extends \Controller {
   protected function _index() {
     $this->render([
       'title' => $this->title = $this->label,
-      'primary' => 'about',
+      'primary' => '_news',
       'secondary' => 'index'
 
     ]);
@@ -63,6 +68,18 @@ class controller extends \Controller {
         Json::ack($action);
       } else {
         Json::nak($action);
+      }
+    } elseif ('check-has-invoice' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          Json::ack($action)
+            ->add('invoice', file_exists($path = $dao->getInvoicePath($dto)) ? 'yes' : 'no');
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak(sprintf('%s - missing id', $action));
       }
     } elseif ('check-has-workorder' == $action) {
       if ($id = (int)$this->getPost('id')) {
@@ -486,7 +503,6 @@ class controller extends \Controller {
               'archived' => \db::dbTimeStamp()
 
             ], $dto->id);
-
           }
 
           Json::ack($action)
@@ -497,6 +513,23 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
+    } elseif ('job-invoice-delete' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          if ( file_exists($path = $dao->getInvoicePath($dto))) {
+            unlink( $path);
+
+          }
+          Json::ack($action);
+
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak($action);
+      }
+
     } elseif ('job-save' == $action) {
 
       if ($description = $this->getPost('description')) {
@@ -581,6 +614,51 @@ class controller extends \Controller {
         $text = $this->getPost('text');
         config::cms_job_template($template, $text);
         Json::ack($action);
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('upload-invoice' == $action) {
+      if ($_FILES) {
+        if ($id = (int)$this->getPost('id')) {
+          $dao = new dao\job;
+          if ($dto = $dao->getByID($id)) {
+            if ($store = $dao->store($dto)) {
+              foreach ($_FILES as $file) {
+                $uploader = new fileUploader([
+                  'path' => $store,
+                  'accept' => [
+                    'image/png',
+                    'image/x-png',
+                    'image/jpeg',
+                    'image/pjpeg',
+                    'application/pdf'
+
+                  ]
+
+                ]);
+
+                if ($uploader->save(
+                  $file,
+                  $name = 'invoice',
+                  $delete = ['invoice.png', 'invoice.jpg', 'invoice.jpeg', 'invoice.pdf']
+                )) {
+                  Json::ack($action);
+                } else {
+                  Json::nak($action);
+                }
+
+                break;  // only 1 file
+
+              }
+            } else {
+              Json::nak($action);
+            }
+          } else {
+            Json::nak($action);
+          }
+        } else {
+          Json::nak($action);
+        }
       } else {
         Json::nak($action);
       }
@@ -716,7 +794,8 @@ class controller extends \Controller {
           'title' => $this->title = config::label_job_edit,
           'dto' => $dto,
           'categories' => dao\job_categories::getCategorySet(),
-          'hasWorkorder' => file_exists($path = $dao->getWorkOrderPath($dto))
+          'hasWorkorder' => file_exists($path = $dao->getWorkOrderPath($dto)),
+          'hasInvoice' => file_exists($path = $dao->getInvoicePath($dto)),
 
         ];
 
@@ -729,7 +808,8 @@ class controller extends \Controller {
         'title' => $this->title = config::label_job_add,
         'dto' => new dao\dto\job,
         'categories' => dao\job_categories::getCategorySet(),
-        'hasWorkorder' => false
+        'hasWorkorder' => false,
+        'hasInvoice' => false,
 
       ];
 
@@ -764,6 +844,44 @@ class controller extends \Controller {
       ],
 
     ]);
+  }
+
+  public function invoice($id = 0) {
+    if ($id = (int)$id) {
+      $dao = new dao\job;
+      if ($dto = $dao->getByID($id)) {
+        $dto = $dao->getRichData($dto);
+
+        $this->data = (object)[
+          'title' => $this->title = 'View Invoice',
+          'dto' => $dto,
+
+        ];
+
+        $this->load('job-view-invoice');
+      } else {
+        $this->load('not-found');
+      }
+    } else {
+      $this->load('invalid');
+    }
+  }
+
+  public function invoiceview($id = 0) {
+    if ($id = (int)$id) {
+      $dao = new dao\job;
+      if ($dto = $dao->getByID($id)) {
+        if (file_exists($path = $dao->getInvoicePath($dto))) {
+          sys::serve($path);
+        } else {
+          print file_get_contents(__DIR__ . '/views/not-found.html');
+        }
+      } else {
+        print file_get_contents(__DIR__ . '/views/not-found.html');
+      }
+    } else {
+      print file_get_contents(__DIR__ . '/views/invalid.html');
+    }
   }
 
   public function items() {

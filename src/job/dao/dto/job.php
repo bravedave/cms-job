@@ -23,6 +23,7 @@ class job extends _dto {
   public $due = '';
   public $job_payment = 0;
   public $archived = '';
+  public $has_invoice = false;
 
   public $contractor_id = 0;
   public $contractor_trading_name = '';

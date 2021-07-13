@@ -15,7 +15,7 @@ use theme;
 
 $dto = $this->data->dto;
 $categories = $this->data->categories;
-$readonly = $dto->status > 0 || strtotime( $dto->archived) > 0;
+$readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->hasInvoice;
 ?>
 
 <form id="<?= $_form = strings::rand() ?>" autocomplete="off">
@@ -28,6 +28,15 @@ $readonly = $dto->status > 0 || strtotime( $dto->archived) > 0;
   <style>
     #<?= $_form ?>button:focus {
       box-shadow: none;
+    }
+
+    .upload-invoice {
+      margin: -10px 4px !important;
+    }
+
+    .upload-invoice .has-advanced-upload::before {
+      content: "upload invoice";
+
     }
 
     @media (max-width: 768px) {
@@ -133,36 +142,27 @@ $readonly = $dto->status > 0 || strtotime( $dto->archived) > 0;
 
           <!-- --[type]-- -->
           <div class="form-row mb-2">
-            <div class="col-md-3 col-xl-2 col-form-label">type</div>
+            <div class="col-3 col-xl-2 col-form-label">type</div>
 
-            <div class="col pt-md-2">
+            <div class="col pt-2">
               <div class="form-check form-check-inline">
                 <input type="radio" class="form-check-input" name="job_type" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_type_order ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_type_order == $dto->job_type ? 'checked' : ''; ?>>
 
-                <label class="form-check-label" for="<?= $_uid ?>">
-                  Order
-
-                </label>
+                <label class="form-check-label" for="<?= $_uid ?>">Order</label>
 
               </div>
 
               <div class="form-check form-check-inline">
                 <input type="radio" class="form-check-input" name="job_type" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_type_recurring ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_type_recurring == $dto->job_type ? 'checked' : ''; ?>>
 
-                <label class="form-check-label" for="<?= $_uid ?>">
-                  Recurring
-
-                </label>
+                <label class="form-check-label" for="<?= $_uid ?>">Recur<span class="d-sm-none">...</span><span class="d-none d-sm-inline">ring</span></label>
 
               </div>
 
-              <div class="form-check form-check-inline">
+              <div class="form-check form-check-inline mr-0">
                 <input type="radio" class="form-check-input" name="job_type" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_type_quote ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_type_quote == $dto->job_type ? 'checked' : ''; ?>>
 
-                <label class="form-check-label" for="<?= $_uid ?>">
-                  Quote
-
-                </label>
+                <label class="form-check-label" for="<?= $_uid ?>">Quote</label>
 
               </div>
 
@@ -172,9 +172,9 @@ $readonly = $dto->status > 0 || strtotime( $dto->archived) > 0;
 
           <!-- --[payment]-- -->
           <div class="form-row mb-2">
-            <div class="col-md-3 col-xl-2 col-form-label">payment</div>
+            <div class="col-3 col-xl-2 col-form-label">payment</div>
 
-            <div class="col pt-md-2">
+            <div class="col pt-2">
               <div class="form-check form-check-inline">
                 <input type="radio" class="form-check-input" name="job_payment" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_payment_owner ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_payment_owner == $dto->job_payment ? 'checked' : ''; ?>>
 
@@ -352,18 +352,20 @@ $readonly = $dto->status > 0 || strtotime( $dto->archived) > 0;
         <div class="modal-footer">
           <?php if (!$readonly) { ?>
             <button type="button" class="btn btn-outline-secondary" accesskey="I" id="<?= $_btnAddItem = strings::rand() ?>">
-              <i class="bi bi-plus"></i> <span style="text-decoration: underline;">I</span>tem
+              <i class="bi bi-plus d-none d-sm-inline"></i> <span style="text-decoration: underline;">I</span>tem
             </button>
             <script>
               $('#<?= $_btnAddItem ?>').on('click', e => $('#<?= $_form ?>').trigger('item-add'));
             </script>
           <?php } ?>
           <button type="button" class="btn btn-outline-secondary" accesskey="T" id="<?= $_btnTenants = strings::rand() ?>">
-            <i class="bi bi-people"></i> <span style="text-decoration: underline;">T</span>enants
+            <i class="bi bi-people d-none d-sm-inline"></i> <span style="text-decoration: underline;">T</span>enants
           </button>
 
+          <div class="flex-fill upload-invoice" id="<?= $_uidInvoice = strings::rand() ?>"></div>
+
           <?php if ($readonly) { ?>
-            <button type="button" class="btn btn-outline-secondary ml-auto" data-dismiss="modal">close</button>
+            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">close</button>
             <?php if ($this->data->hasWorkorder) { ?>
               <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
               <script>
@@ -371,7 +373,7 @@ $readonly = $dto->status > 0 || strtotime( $dto->archived) > 0;
               </script>
             <?php } ?>
           <?php } else { ?>
-            <button type="submit" class="btn btn-primary ml-auto" accesskey="S"><span style="text-decoration: underline;">S</span>ave</button>
+            <button type="submit" class="btn btn-primary" accesskey="S"><span style="text-decoration: underline;">S</span>ave</button>
             <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
             <script>
               $('#<?= $_uid ?>').on('click', e => $('#<?= $_form ?>').trigger('submit-and-workorder'));
@@ -861,6 +863,19 @@ $readonly = $dto->status > 0 || strtotime( $dto->archived) > 0;
           $('#<?= $_btnTenants ?>').remove();
 
         })
+        .on('invoice-view', function(e) {
+          e.stopPropagation();
+
+          $('#<?= $_modal ?>').modal('hide');
+          $('#<?= $_modal ?>').trigger('invoice-view');
+
+        })
+        .on('invoice-upload', function(e) {
+          e.stopPropagation();
+
+          $('#<?= $_modal ?>').trigger('invoice-upload');
+
+        })
         .on('item-add', e => {
           e.stopPropagation();
 
@@ -1110,6 +1125,13 @@ $readonly = $dto->status > 0 || strtotime( $dto->archived) > 0;
           return false;
 
         })
+        .on('reload', function(e) {
+          e.stopPropagation();
+
+          $('#<?= $_modal ?>').modal('hide');
+          $('#<?= $_modal ?>').trigger('edit-workorder');
+
+        })
         .on('view-workorder', function(e) {
           e.stopPropagation();
 
@@ -1129,6 +1151,145 @@ $readonly = $dto->status > 0 || strtotime( $dto->archived) > 0;
           $(this).trigger('qualify-contractor');
         });
 
+      <?php if ($dto->id) { ?>
+        $('#<?= $_uidInvoice ?>')
+          .on('reconcile', function(e) {
+
+            <?php if ($this->data->hasInvoice) {  ?>
+              $('#<?= $_uidInvoice ?>')
+                .html('')
+                .append(
+                  $('<button type="button" class="btn btn-outline-secondary">Invoice</button>')
+                  .on('click', function(e) {
+                    e.stopPropagation();
+
+                    $('#<?= $_form ?>')
+                      .trigger('invoice-view');
+
+                  })
+                  .on('contextmenu', function(e) {
+                    if (e.shiftKey)
+                      return;
+
+                    e.stopPropagation();
+                    e.preventDefault();
+
+                    _.hideContexts();
+
+                    let _context = _.context();
+                    let _me = $(this);
+
+                    _context.append(
+                      $('<a href="#"><i class="bi bi-trash"></i>delete</a>')
+                      .on('click', function(e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+
+                        _context.close();
+                        _me.trigger('delete');
+                      })
+                    );
+
+                    _context
+                      .addClose()
+                      .open(e);
+
+                  })
+                  .on('delete', function(e) {
+                    let _me = $(this);
+
+                    _.ask.alert({
+                      title: 'confirm delete',
+                      text: 'Are you Sure ?',
+                      buttons: {
+                        yes: function(e) {
+                          $(this).modal('hide');
+                          _me.trigger('delete-confirmed');
+
+                        }
+
+                      }
+
+                    });
+
+                  })
+                  .on('delete-confirmed', function(e) {
+                    let _me = $(this);
+
+                    _.post({
+                      url: _.url('<?= $this->route ?>'),
+                      data: {
+                        action: 'job-invoice-delete',
+                        id: <?= $dto->id ?>
+
+                      },
+
+                    }).then(d => {
+                      _.growl(d);
+                      if ('ack' == d.response) {
+                        $('#<?= $_form ?>')
+                          .trigger('invoice-upload')
+                          .trigger('reload');
+                      }
+
+                    });
+
+                  })
+
+                );
+
+            <?php } else { ?>
+
+                (c => {
+
+                  $('#<?= $_uidInvoice ?>')
+                    .html('')
+                    .append(c);
+
+                  _.fileDragDropHandler.call(c, {
+                    url: _.url('<?= $this->route ?>'),
+                    queue: false,
+                    multiple: false,
+                    postData: {
+                      action: 'upload-invoice',
+                      id: <?= $dto->id ?>
+                    },
+                    onError: d => {
+
+                      $('#<?= $_uidInvoice ?>')
+                        .html('');
+
+                      $('<div class="alert alert-danger m-1"></div>')
+                        .html(d.description)
+                        .appendTo('#<?= $_uidInvoice ?>');
+
+                    },
+                    onUpload: d => {
+                      if ('ack' == d.response) {
+                        $('#<?= $_form ?>')
+                          .trigger('invoice-view')
+                          .trigger('invoice-upload');
+
+                      } else {
+                        console.log(d);
+
+                      }
+
+                    }
+
+                  });
+
+                })(_.fileDragDropContainer({
+                  fileControl: true,
+                  accept: 'image/jpeg,image/png,application/pdf'
+
+                }));
+
+            <?php } ?>
+
+          });
+      <?php } ?>
+
       $('#<?= $_btnTenants ?>')
         .on('click', e => $('#<?= $_form ?>').trigger('get-tenants'));
 
@@ -1139,7 +1300,11 @@ $readonly = $dto->status > 0 || strtotime( $dto->archived) > 0;
           .trigger('get-maintenance')
           .trigger('items-init');
 
-        $('select[name="status"]', '#<?= $_form ?>').focus();
+        $('#<?= $_uidInvoice ?>')
+          .trigger('reconcile');
+
+        $('select[name="status"]', '#<?= $_form ?>')
+          .focus();
 
       })
     })(_brayworth_);

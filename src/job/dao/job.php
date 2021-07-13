@@ -22,8 +22,47 @@ class job extends _dao {
   protected $_db_name = 'job';
   protected $template = __NAMESPACE__ . '\dto\job';
 
+  protected function _getInvoicePath(int $jobID): string {
+    $path = implode(DIRECTORY_SEPARATOR, [
+      $this->_store($jobID),
+      'invoice'
+
+    ]);
+
+    if (file_exists($path . '.jpg')) {
+      $path .= '.jpg';
+    } elseif (file_exists($path . '.png')) {
+      $path .= '.png';
+    } else {
+      $path .= '.pdf';
+    }
+
+    return $path;
+  }
+
+  protected function _store(int $jobID): string {
+    $path = implode(DIRECTORY_SEPARATOR, [
+      config::cms_job_store(),
+      $jobID
+
+    ]);
+
+    if (!is_dir($path)) {
+      mkdir($path, 0777);
+      chmod($path, 0777);
+    }
+
+    return $path;
+  }
+
   public function getByID($id) {
     if ($dto = parent::getByID($id)) {
+      $dto->has_invoice = file_exists($this->getInvoicePath($dto)) ? 1 : 0;
+
+      if (1 == $dto->has_invoice && $dto->status < config::job_status_invoiced) {
+        $dto->status = config::job_status_invoiced; // auto advance status
+      }
+
       if ($dto->status < config::job_status_sent) {
         if (strtotime($dto->email_sent) > 0) {
           $dto->status = config::job_status_sent; // auto advance status
@@ -31,6 +70,10 @@ class job extends _dao {
       }
     }
     return $dto;
+  }
+
+  public function getInvoicePath(dto\job $job): string {
+    return $this->_getInvoicePath($job->id);
   }
 
   public function getMatrix(bool $archived = false) {
@@ -44,8 +87,7 @@ class job extends _dao {
 
     if ($where) {
       $where = sprintf('WHERE %s', implode(' AND ', $where));
-    }
-    else {
+    } else {
       $where = '';
     }
 
@@ -110,6 +152,31 @@ class job extends _dao {
     );
 
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `lines` TEXT');
+    $this->Q('ALTER TABLE `matrix` ADD COLUMN `has_invoice` INT');
+
+    if ($res = $this->Result('SELECT `id`, `status` FROM `matrix`')) {
+      $res->dtoSet(function ($dto) {
+        if (file_exists($path = $this->_getInvoicePath($dto->id))) {
+          $set = [
+            '`has_invoice` = 1'
+          ];
+
+          if ($dto->status < config::job_status_invoiced) {
+            $set[] = sprintf( '`status` = %s', config::job_status_invoiced);
+
+          }
+
+          $sql = sprintf(
+            'UPDATE `matrix` SET %s  WHERE `id` = %d',
+            implode( ',', $set),
+            $dto->id
+
+          );
+
+          $this->Q($sql);
+        }
+      });
+    }
 
     $sql =
       'SELECT
@@ -270,17 +337,6 @@ class job extends _dao {
   }
 
   public function store(dto\job $job): string {
-    $path = implode(DIRECTORY_SEPARATOR, [
-      config::cms_job_store(),
-      $job->id
-
-    ]);
-
-    if (!is_dir($path)) {
-      mkdir($path, 0777);
-      chmod($path, 0777);
-    }
-
-    return $path;
+    return $this->_store($job->id);
   }
 }
