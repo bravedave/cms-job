@@ -1141,7 +1141,8 @@ use strings;  ?>
         if (!!pmFilter) {
           filterPM = pmFilter;
           $('#<?= $tblID ?> > thead > tr > td[PM]')
-            .html(pmFilter);
+            .html('')
+            .append($('<div class="badge badge-primary"></div>').html(filterPM));
 
           $('#<?= $srch ?>')
             .trigger('search');
