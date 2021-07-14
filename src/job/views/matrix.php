@@ -363,6 +363,12 @@ use strings;  ?>
             _tr.addClass('bg-info');
 
             _.get.modal(_.url('<?= $this->route ?>/job_edit/' + _data.id))
+              .then(d => d.on('complete', e => {
+                e.stopPropagation();
+                _tr
+                  .trigger('refresh');
+
+              }))
               .then(d => d.on('success', () => {
                 _tr
                   .trigger('refresh');
@@ -983,7 +989,8 @@ use strings;  ?>
                   contractor: d.data.contractor_id,
                   pm: pm,
                   job_type: d.data.job_type,
-                  invoice: 1 == Number(d.data.has_invoice)
+                  invoice: 1 == Number(d.data.has_invoice) ? 'yes' : 'no',
+                  complete: 1 == Number(d.data.complete) ? 'yes' : 'no'
 
                 });
 

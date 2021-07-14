@@ -62,13 +62,14 @@ class job extends _dao {
     if ($dto = parent::getByID($id)) {
       $dto->has_invoice = file_exists($this->getInvoicePath($dto)) ? 1 : 0;
 
-      if ( !isset( config::job_status[$dto->status])) {
+      if (!isset(config::job_status[$dto->status])) {
         $dto->status = 0;
-
       }
 
       if (1 == $dto->has_invoice && $dto->status < config::job_status_invoiced) {
         $dto->status = config::job_status_invoiced; // auto advance status
+      } elseif ($dto->complete && $dto->status < config::job_status_complete) {
+        $dto->status = config::job_status_complete; // auto advance status
       }
 
       if ($dto->status < config::job_status_sent) {
@@ -162,17 +163,27 @@ class job extends _dao {
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `lines` TEXT');
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `has_invoice` INT');
 
-    if ($res = $this->Result('SELECT `id`, `status` FROM `matrix`')) {
+    if ($res = $this->Result('SELECT `id`, `status`, `complete` FROM `matrix`')) {
       $res->dtoSet(function ($dto) {
+        $set = [];
         if (file_exists($path = $this->_getInvoicePath($dto->id))) {
-          $set = [
-            '`has_invoice` = 1'
-          ];
+          $set[] = '`has_invoice` = 1';
 
           if ($dto->status < config::job_status_invoiced) {
+            $dto->status = config::job_status_invoiced;
             $set[] = sprintf('`status` = %s', config::job_status_invoiced);
           }
+        }
 
+        if ( $dto->complete) {
+          if ($dto->status < config::job_status_complete) {
+            $dto->status = config::job_status_complete;
+            $set[] = sprintf('`status` = %s', config::job_status_complete);
+          }
+
+        }
+
+        if ($set) {
           $sql = sprintf(
             'UPDATE `matrix` SET %s  WHERE `id` = %d',
             implode(',', $set),

@@ -15,7 +15,7 @@ use theme;
 
 $dto = $this->data->dto;
 $categories = $this->data->categories;
-$readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->hasInvoice;
+$readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->hasInvoice;
 ?>
 
 <form id="<?= $_form = strings::rand() ?>" autocomplete="off">
@@ -31,7 +31,8 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
     }
 
     .upload-invoice {
-      margin: -3px 4px !important;
+      margin-top: -3px !important;
+      margin-bottom: -3px !important;
     }
 
     .upload-invoice .has-advanced-upload::before {
@@ -348,6 +349,50 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
 
           </div>
 
+          <div class="row">
+            <div class="offset-md-3 offset-xl-2 col upload-invoice" id="<?= $_uidInvoice = strings::rand() ?>"></div>
+            <?php if ($dto->id) { ?>
+              <div class="col-auto col-md-3 col-xl-2 pt-1">
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" id="<?= $_uid = strings::rand() ?>" <?= 1 == $dto->complete ? 'checked' : '' ?>>
+
+                  <label class="form-check-label" for="<?= $_uid ?>">
+                    Complete
+
+                  </label>
+
+                </div>
+                <script>
+                  (_ => {
+                    $('#<?= $_uid ?>').on('change', function(e) {
+                      _.post({
+                        url: _.url('<?= $this->route ?>'),
+                        data: {
+                          action: $(this).prop('checked') ? 'job-mark-complete' : 'job-mark-complete-undo',
+                          id: '<?= $dto->id ?>'
+
+                        },
+
+                      }).then(d => {
+                        _.growl(d);
+                        $('#<?= $_form ?>')
+                          .trigger('complete')
+                          .trigger('reload');
+
+                      });
+
+
+                    });
+
+                  })(_brayworth_);
+                </script>
+
+              </div>
+
+            <?php } ?>
+
+          </div>
+
         </div>
 
         <div class="modal-footer">
@@ -359,11 +404,9 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
               $('#<?= $_btnAddItem ?>').on('click', e => $('#<?= $_form ?>').trigger('item-add'));
             </script>
           <?php } ?>
-          <button type="button" class="btn btn-outline-secondary" accesskey="T" id="<?= $_btnTenants = strings::rand() ?>">
+          <button type="button" class="btn btn-outline-secondary mr-auto" accesskey="T" id="<?= $_btnTenants = strings::rand() ?>">
             <i class="bi bi-people d-none d-sm-inline"></i> <span style="text-decoration: underline;">T</span>enants
           </button>
-
-          <div class="flex-fill upload-invoice" id="<?= $_uidInvoice = strings::rand() ?>"></div>
 
           <?php if ($readonly) { ?>
             <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">close</button>
@@ -619,6 +662,12 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
       }
 
       $('#<?= $_form ?>')
+        .on('complete', function(e) {
+          e.stopPropagation();
+
+          $('#<?= $_modal ?>').trigger('complete');
+
+        })
         .on('get-keyset', function(e) {
           e.stopPropagation();
 
@@ -1350,17 +1399,18 @@ $readonly = $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->ha
       $('#<?= $_btnTenants ?>')
         .on('click', e => $('#<?= $_form ?>').trigger('get-tenants'));
 
-      $('#<?= $_modal ?>').on('shown.bs.modal', () => {
+      $('#<?= $_modal ?>')
+        .on('shown.bs.modal', () => {
 
-        $('#<?= $_form ?>')
-          .trigger('get-keyset')
-          .trigger('get-maintenance')
-          .trigger('items-init');
+          $('#<?= $_form ?>')
+            .trigger('get-keyset')
+            .trigger('get-maintenance')
+            .trigger('items-init');
 
-        $('select[name="status"]', '#<?= $_form ?>')
-          .focus();
+          $('select[name="status"]', '#<?= $_form ?>')
+            .focus();
 
-      })
+        })
     })(_brayworth_);
   </script>
 

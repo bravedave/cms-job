@@ -517,19 +517,30 @@ class controller extends \Controller {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job;
         if ($dto = $dao->getByID($id)) {
-          if ( file_exists($path = $dao->getInvoicePath($dto))) {
-            unlink( $path);
-
+          if (file_exists($path = $dao->getInvoicePath($dto))) {
+            unlink($path);
           }
           Json::ack($action);
-
         } else {
           Json::nak(sprintf('%s - not found', $action));
         }
       } else {
         Json::nak($action);
       }
-
+    } elseif ('job-mark-complete' == $action || 'job-mark-complete-undo' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          $dao->UpdateByID([
+            'complete' => 'job-mark-complete-undo' == $action ? 0 : 1
+          ], $dto->id);
+          Json::ack($action);
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak($action);
+      }
     } elseif ('job-save' == $action) {
 
       if ($description = $this->getPost('description')) {

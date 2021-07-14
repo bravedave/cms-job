@@ -2,6 +2,12 @@
 
 ## Latest News
 
+### 14 July, 2021
+
+* **complete** added to valid status
+  * makes the job readonly
+* **assigned** removed as status
+
 ### 13 July, 2021
 
 * **Filter by PM** as with other matrices, right click the property manager and set the filter - in this case it is persistent, so it will remember your setting.

@@ -12,7 +12,7 @@
 namespace cms\job;
 
 class config extends \config {
-	const cms_job_db_version = 1.6;
+	const cms_job_db_version = 1.7;
 
 	const label = 'JOB';
 	const label_contractor_add = 'New Contractor';
@@ -61,10 +61,11 @@ class config extends \config {
 	const job_payment_tenant = 1;
 
 	// 5 => 'quote',
+	// 10 => 'assigned',
 	const job_status = [
 		0 => 'draft',
 		2 => 'sent',
-		10 => 'assigned',
+		14 => 'complete',
 		15 => 'invoiced',
 
 	];
@@ -72,7 +73,8 @@ class config extends \config {
 	const job_status_new = 0;
 	const job_status_sent = 2;
 	// const job_status_quote = 5;
-	const job_status_assigned = 10;
+	// const job_status_assigned = 10;
+	const job_status_complete = 14;
 	const job_status_invoiced = 15;
 
 	const job_templates = [
@@ -165,14 +167,20 @@ class config extends \config {
 	}
 
 	static function cms_job_status_verbatim(int $status): string {
+		if (!isset(config::job_status[$status])) {
+			$status = 0;
+		}
+
 		if (config::job_status_new == $status) {
 			return 'draft';
 		} elseif (config::job_status_sent == $status) {
 			return 'sent';
 		// } elseif (config::job_status_quote == $status) {
 		// 	return 'quote';
-		} elseif (config::job_status_assigned == $status) {
-			return 'assigned';
+		// } elseif (config::job_status_assigned == $status) {
+		// 	return 'assigned';
+		} elseif (config::job_status_complete == $status) {
+			return 'complete';
 		} elseif (config::job_status_invoiced == $status) {
 			return 'invoiced';
 		}
