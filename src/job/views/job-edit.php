@@ -354,35 +354,47 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
             <?php if ($dto->id) { ?>
               <div class="col-auto col-md-3 col-xl-2 pt-1">
                 <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="<?= $_uid = strings::rand() ?>" <?= 1 == $dto->complete ? 'checked' : '' ?>>
+                  <?php
 
-                  <label class="form-check-label" for="<?= $_uid ?>">
-                    Complete
+                  printf(
+                    '<input type="checkbox" class="form-check-input" id="%s" %s %s>',
+                    $_uid = strings::rand(),
+                    1 == $dto->complete ? 'checked' : '',
+                    (int)$dto->paid_by > 0 ? 'disabled' : ''
 
-                  </label>
+                  );
+
+                  printf(
+                    '<label class="form-check-label" for="%s">Complete</label>',
+                    $_uid
+
+                  );
+
+                  ?>
 
                 </div>
                 <script>
                   (_ => {
-                    $('#<?= $_uid ?>').on('change', function(e) {
-                      _.post({
-                        url: _.url('<?= $this->route ?>'),
-                        data: {
-                          action: $(this).prop('checked') ? 'job-mark-complete' : 'job-mark-complete-undo',
-                          id: '<?= $dto->id ?>'
+                    $('#<?= $_uid ?>')
+                      .on('change', function(e) {
+                        _.post({
+                          url: _.url('<?= $this->route ?>'),
+                          data: {
+                            action: $(this).prop('checked') ? 'job-mark-complete' : 'job-mark-complete-undo',
+                            id: '<?= $dto->id ?>'
 
-                        },
+                          },
 
-                      }).then(d => {
-                        _.growl(d);
-                        $('#<?= $_form ?>')
-                          .trigger('complete')
-                          .trigger('reload');
+                        }).then(d => {
+                          _.growl(d);
+                          $('#<?= $_form ?>')
+                            .trigger('complete')
+                            .trigger('reload');
+
+                        });
+
 
                       });
-
-
-                    });
 
                   })(_brayworth_);
                 </script>
@@ -404,9 +416,15 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
               $('#<?= $_btnAddItem ?>').on('click', e => $('#<?= $_form ?>').trigger('item-add'));
             </script>
           <?php } ?>
+
+          <button type="button" class="btn btn-outline-secondary d-none" id="<?= $_btnInvoice = strings::rand() ?>">
+            Invoice
+          </button>
+
           <button type="button" class="btn btn-outline-secondary mr-auto" accesskey="T" id="<?= $_btnTenants = strings::rand() ?>">
             <i class="bi bi-people d-none d-sm-inline"></i> <span style="text-decoration: underline;">T</span>enants
           </button>
+
 
           <?php if ($readonly) { ?>
             <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">close</button>
@@ -1246,16 +1264,20 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
             <?php if ($this->data->hasInvoice) {  ?>
               $('#<?= $_uidInvoice ?>')
-                .html('')
-                .append(
-                  $('<button type="button" class="btn btn-outline-secondary">Invoice</button>')
-                  .on('click', function(e) {
-                    e.stopPropagation();
+                .html('');
 
-                    $('#<?= $_form ?>')
-                      .trigger('invoice-view');
+              $('#<?= $_btnInvoice ?>')
+                .removeClass('d-none')
+                .on('click', function(e) {
+                  e.stopPropagation();
 
-                  })
+                  $('#<?= $_form ?>')
+                    .trigger('invoice-view');
+
+                });
+
+              <?php if ((int)$dto->paid_by < 1) {  ?>
+                $('#<?= $_btnInvoice ?>')
                   .on('contextmenu', function(e) {
                     if (e.shiftKey)
                       return;
@@ -1323,9 +1345,8 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
                     });
 
-                  })
-
-                );
+                  });
+              <?php }  ?>
 
             <?php } else { ?>
               if ($('select[name="item_id\[\]"]', '#<?= $_form ?>').length > 0) {

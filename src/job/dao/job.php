@@ -66,8 +66,14 @@ class job extends _dao {
         $dto->status = 0;
       }
 
-      if (1 == $dto->has_invoice && $dto->status < config::job_status_invoiced) {
-        $dto->status = config::job_status_invoiced; // auto advance status
+      if (1 == $dto->has_invoice && $dto->status < config::job_status_reviewed) {
+        if ($dto->paid) {
+          $dto->status = config::job_status_paid; // auto advance status
+        } elseif ($dto->invoice_reviewed_by) {
+          $dto->status = config::job_status_reviewed; // auto advance status
+        } else {
+          $dto->status = config::job_status_invoiced; // auto advance status
+        }
       } elseif ($dto->complete && $dto->status < config::job_status_complete) {
         $dto->status = config::job_status_complete; // auto advance status
       }
@@ -89,7 +95,9 @@ class job extends _dao {
     $where = [];
     if (!$archived) {
       $where[] = sprintf(
-        'job.`archived` IS NULL OR DATE( job.archived) <= %s',
+        'COALESCE(job.`archived`,%s) = %s OR DATE( job.archived) <= %s',
+        $this->quote(''),
+        $this->quote(''),
         $this->quote('0000-00-00')
       );
     }
@@ -163,24 +171,29 @@ class job extends _dao {
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `lines` TEXT');
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `has_invoice` INT');
 
-    if ($res = $this->Result('SELECT `id`, `status`, `complete` FROM `matrix`')) {
+    if ($res = $this->Result('SELECT `id`, `status`, `complete`, `invoice_reviewed_by`, `paid_by` FROM `matrix`')) {
       $res->dtoSet(function ($dto) {
         $set = [];
         if (file_exists($path = $this->_getInvoicePath($dto->id))) {
           $set[] = '`has_invoice` = 1';
 
-          if ($dto->status < config::job_status_invoiced) {
-            $dto->status = config::job_status_invoiced;
-            $set[] = sprintf('`status` = %s', config::job_status_invoiced);
+          if ($dto->status < config::job_status_reviewed) {
+            if ($dto->paid_by) {
+              $dto->status = config::job_status_paid; // auto advance status
+            } elseif ($dto->invoice_reviewed_by) {
+              $dto->status = config::job_status_reviewed; // auto advance status
+            } else {
+              $dto->status = config::job_status_invoiced;
+            }
+            $set[] = sprintf('`status` = %s', $dto->status);
           }
         }
 
-        if ( $dto->complete) {
+        if ($dto->complete) {
           if ($dto->status < config::job_status_complete) {
             $dto->status = config::job_status_complete;
             $set[] = sprintf('`status` = %s', config::job_status_complete);
           }
-
         }
 
         if ($set) {
@@ -268,8 +281,6 @@ class job extends _dao {
           } else {
             \sys::logger(sprintf('<person not found %s> %s', $prop->people_id, __METHOD__));
           }
-        } else {
-          \sys::logger(sprintf('<%s> %s', 'person not specifed', __METHOD__));
         }
 
         if ($prop->property_manager) {
@@ -340,6 +351,14 @@ class job extends _dao {
     $job->brief = strings::brief($job->description);
     $job->status_verbatim = config::cms_job_status_verbatim($job->status);
     $job->type_verbatim = config::cms_job_type_verbatim($job->job_type);
+
+    if ($job->invoice_reviewed_by) {
+      $dao = new users;
+      if ($udto = $dao->getByID($job->invoice_reviewed_by)) {
+
+        $job->invoice_reviewed_by_name = $udto->name;
+      }
+    }
 
     return $job;
   }

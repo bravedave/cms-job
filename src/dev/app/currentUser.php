@@ -25,7 +25,7 @@ class currentuser extends dvc\currentUser {
 			// return false;
 			return true;
 		} elseif ('can-add-job-items' == $key) {
-			return false;
+			// return false;
 			return true;
 		}
 

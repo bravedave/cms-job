@@ -170,7 +170,6 @@ use strings;  ?>
         $lines = json_decode($dto->lines) ?? [];
         $pm = strings::initials($dto->pm);
 
-
         printf(
           '<tr
             class="%s"
@@ -183,7 +182,8 @@ use strings;  ?>
             data-email_sent="%s"
             data-job_type="%s"
             data-archived="%s",
-            data-invoiced="%s">',
+            data-invoiced="%s"
+            data-paid="%s">',
           strtotime($dto->archived) > 0 ? 'text-muted' : '',
           $dto->id,
           $dto->properties_id,
@@ -194,7 +194,8 @@ use strings;  ?>
           strtotime($dto->email_sent) > 0 ? 'yes' : 'no',
           $dto->job_type,
           strtotime($dto->archived) > 0 ? 'yes' : 'no',
-          1 == (int)$dto->has_invoice ? 'yes' : 'no'
+          1 == (int)$dto->has_invoice ? 'yes' : 'no',
+          (int)$dto->paid_by > 0 ? 'yes' : 'no'
 
         );
       ?>
@@ -442,6 +443,38 @@ use strings;  ?>
 
             if (0 < Number(_data.line_count)) {
 
+              let paidCtrl = $('<a href="#" class="d-none">paid</a>')
+                .on('reconcile', function(e) {
+                  let _me = $(this);
+
+                  if ('yes' == _data.paid) {
+                    _me
+                      .prepend('<i class="bi bi-check"></i>')
+                      .on('click', e => {
+                        e.stopPropagation();
+                        _tr.trigger('mark-paid-undo');
+                        _context.close();
+
+                      });
+
+                  } else {
+                    _me
+                      .on('click', e => {
+                        e.stopPropagation();
+                        _tr.trigger('mark-paid');
+                        _context.close();
+
+                      });
+
+                  }
+
+                  _me
+                    .removeClass('d-none');
+
+                });
+
+              _context.append(paidCtrl);
+
               _context.append(
                 $('<a href="#" class="d-none"></a>')
                 .on('reconcile', function(e) {
@@ -466,6 +499,8 @@ use strings;  ?>
                             _context.close();
 
                           });
+
+                        paidCtrl.trigger('reconcile');
 
                       }
                     } else {
@@ -910,9 +945,114 @@ use strings;  ?>
 
             _.get
               .modal(_.url('<?= $this->route ?>/invoice/' + _data.id))
-              .then(m => m.on('delete-invoice', e => _tr.trigger('delete-invoice')))
-              .then(m => m.on('edit-workorder', e => _tr.trigger('edit')));
+              .then(m => m.on('delete-invoice', e => {
+                e.stopPropagation();
+                _tr.trigger('delete-invoice');
 
+              }))
+              .then(m => m.on('edit-workorder', e => {
+                e.stopPropagation();
+                _tr.trigger('edit');
+
+              }))
+              .then(m => m.on('job-mark-invoice-reviewed', e => {
+                e.stopPropagation();
+                _tr.trigger('mark-reviewed');
+
+              }))
+              .then(m => m.on('job-mark-invoice-reviewed-undo', e => {
+                e.stopPropagation();
+                _tr.trigger('mark-reviewed-undo');
+
+              }))
+              .then(m => m.on('view-workorder', e => {
+                e.stopPropagation();
+                _tr.trigger('view-workorder');
+
+              }));
+
+          })
+          .on('mark-paid', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'job-mark-paid',
+                id: _data.id
+              },
+
+            }).then(d => {
+              _.growl(d);
+              if ('ack' == d.response) {
+                _tr.trigger('refresh');
+
+              }
+
+            });
+
+          })
+          .on('mark-paid-undo', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'job-mark-paid-undo',
+                id: _data.id
+              },
+
+            }).then(d => {
+              _.growl(d);
+              if ('ack' == d.response) {
+                _tr.trigger('refresh');
+
+              }
+
+            });
+          })
+          .on('mark-reviewed', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'job-mark-invoice-reviewed',
+                id: _data.id
+              },
+
+            }).then(d => {
+              _.growl(d);
+              if ('ack' == d.response) {
+                _tr.trigger('refresh');
+
+              }
+
+            });
+
+          })
+          .on('mark-reviewed-undo', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'job-mark-invoice-reviewed-undo',
+                id: _data.id
+              },
+
+            }).then(d => {
+              _.growl(d);
+              if ('ack' == d.response) {
+                _tr.trigger('refresh');
+
+              }
+
+            });
           })
           .on('mark-sent', function(e) {
             let _tr = $(this);
@@ -982,6 +1122,13 @@ use strings;  ?>
                 // console.log(d.data);
 
                 let pm = String(d.data.property_manager).initials();
+                let archived = false;
+                if ('' != d.data.archived) {
+                  let da = _.dayjs(d.data.archived);
+                  archived = da.isValid() && da.unix() > 0;
+
+                }
+
                 _tr.data({
                   properties_id: d.data.properties_id,
                   address_street: d.data.address_street,
@@ -990,9 +1137,13 @@ use strings;  ?>
                   pm: pm,
                   job_type: d.data.job_type,
                   invoice: 1 == Number(d.data.has_invoice) ? 'yes' : 'no',
-                  complete: 1 == Number(d.data.complete) ? 'yes' : 'no'
+                  complete: 1 == Number(d.data.complete) ? 'yes' : 'no',
+                  paid: Number(d.data.paid_by) > 0 ? 'yes' : 'no',
+                  archived: archived ? 'yes' : 'no',
 
                 });
+
+                archived ? _tr.addClass('text-muted') : _tr.removeClass('text-muted');
 
                 // console.log(d.data);
 
@@ -1053,9 +1204,26 @@ use strings;  ?>
 
             _.get
               .modal(_.url('<?= $this->route ?>/workorder/' + _data.id))
-              .then(m => m.on('refresh-workorder', e => _tr.trigger('create-workorder')))
-              .then(m => m.on('email-workorder', e => _tr.trigger('email-workorder')))
-              .then(m => m.on('edit-workorder', e => _tr.trigger('edit')));
+              .then(m => m.on('refresh-workorder', e => {
+                e.stopPropagation();
+                _tr.trigger('create-workorder');
+
+              }))
+              .then(m => m.on('email-workorder', e => {
+                e.stopPropagation();
+                _tr.trigger('email-workorder');
+
+              }))
+              .then(m => m.on('edit-workorder', e => {
+                e.stopPropagation();
+                _tr.trigger('edit');
+
+              }))
+              .then(m => m.on('invoice-view', e => {
+                e.stopPropagation();
+                _tr.trigger('invoice-view');
+
+              }))
 
           });
 

@@ -47,9 +47,43 @@ $_modal = strings::rand();
           <iframe class="w-100" id="<?= $_modal ?>iframe" src="<?= strings::url(sprintf('%s/workorderpdf/%d%s', $this->route, $dto->id, $t)) ?>"></iframe>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" id="<?= $_RefreshWorkOrder = strings::rand() ?>">refresh order</button>
-          <button type="button" class="btn btn-outline-secondary" id="<?= $_EmailOrder = strings::rand() ?>"><i class="bi bi-cursor"></i> email order</button>
+          <?php if ((int)$dto->paid_by < 1) {  ?>
+            <button type="button" class="btn btn-outline-secondary" id="<?= $_RefreshWorkOrder = strings::rand() ?>">refresh order</button>
+            <button type="button" class="btn btn-outline-secondary" id="<?= $_EmailOrder = strings::rand() ?>"><i class="bi bi-cursor"></i> email order</button>
+            <script>
+              (_ => {
+                $('#<?= $_RefreshWorkOrder ?>')
+                  .on('click', function(e) {
+                    e.stopPropagation();
+
+                    $('#<?= $_modal ?>').modal('hide');
+                    $('#<?= $_modal ?>').trigger('refresh-workorder');
+
+                  });
+
+                $('#<?= $_EmailOrder ?>')
+                  .on('click', function(e) {
+                    e.stopPropagation();
+
+                    $('#<?= $_modal ?>').modal('hide');
+                    $('#<?= $_modal ?>').trigger('email-workorder');
+
+                  });
+
+              })(_brayworth_);
+            </script>
+          <?php }  ?>
+
           <button type="button" class="btn btn-outline-secondary" id="<?= $_gotoJob = strings::rand() ?>"><?= config::label_job_view ?></button>
+          <?php if ($this->data->hasInvoice) { ?>
+            <button type="button" class="btn btn-outline-secondary" id="<?= $_uid = strings::rand() ?>">View Invoice</button>
+            <script>
+              $('#<?= $_uid ?>').on('click', e => {
+                $('#<?= $_modal ?>').modal('hide');
+                $('#<?= $_modal ?>').trigger('invoice-view');
+              });
+            </script>
+          <?php } ?>
           <button type="button" class="btn btn-outline-secondary ml-auto" data-dismiss="modal">close</button>
         </div>
       </div>
@@ -57,26 +91,6 @@ $_modal = strings::rand();
   </div>
   <script>
     (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
-      $('#<?= $_RefreshWorkOrder ?>')
-        .on('click', function(e) {
-          e.stopPropagation();
-
-          $('#<?= $_modal ?>')
-            .trigger('refresh-workorder')
-            .modal('hide');
-
-        });
-
-      $('#<?= $_EmailOrder ?>')
-        .on('click', function(e) {
-          e.stopPropagation();
-
-          $('#<?= $_modal ?>')
-            .trigger('email-workorder')
-            .modal('hide');
-
-        });
-
       $('#<?= $_gotoJob ?>')
         .on('click', function(e) {
           e.stopPropagation();

@@ -12,7 +12,7 @@
 namespace cms\job;
 
 class config extends \config {
-	const cms_job_db_version = 1.7;
+	const cms_job_db_version = 1.9;
 
 	const label = 'JOB';
 	const label_contractor_add = 'New Contractor';
@@ -67,6 +67,8 @@ class config extends \config {
 		2 => 'sent',
 		14 => 'complete',
 		15 => 'invoiced',
+		20 => 'reviewed',
+		30 => 'paid',
 
 	];
 
@@ -76,6 +78,8 @@ class config extends \config {
 	// const job_status_assigned = 10;
 	const job_status_complete = 14;
 	const job_status_invoiced = 15;
+	const job_status_reviewed = 20;
+	const job_status_paid = 30;
 
 	const job_templates = [
 		'template-workorder-send'
@@ -183,6 +187,10 @@ class config extends \config {
 			return 'complete';
 		} elseif (config::job_status_invoiced == $status) {
 			return 'invoiced';
+		} elseif (config::job_status_reviewed == $status) {
+			return 'reviewed';
+		} elseif (config::job_status_paid == $status) {
+			return 'paid';
 		}
 
 		return (string)$status;

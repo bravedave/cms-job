@@ -2,6 +2,13 @@
 
 ## Latest News
 
+### 26 July, 2021
+
+* **invoiced** and **paid** added to valid status
+* **paid**
+  * when marking an order *paid* it will be *archived*
+  * *paid* makes the workorder readonly
+
 ### 14 July, 2021
 
 * **complete** added to valid status

@@ -21,6 +21,9 @@ class job extends _dto {
   public $status = 0;
   public $status_verbatim = '';
   public $complete = 0;
+  public $invoice_reviewed = '';
+  public $invoice_reviewed_by = 0;
+  public $invoice_reviewed_by_name = '';
   public $due = '';
   public $job_payment = 0;
   public $archived = '';

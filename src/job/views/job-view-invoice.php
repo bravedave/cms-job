@@ -47,22 +47,78 @@ $_modal = strings::rand();
           <iframe class="w-100" id="<?= $_modal ?>iframe" src="<?= strings::url(sprintf('%s/invoiceview/%d%s', $this->route, $dto->id, $t)) ?>"></iframe>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" id="<?= $_delete = strings::rand() ?>"><i class="bi bi-trash"></i> delete</button>
+          <?php if ((int)$dto->paid_by < 1) {  ?>
+            <button type="button" class="btn btn-outline-secondary" id="<?= $_delete = strings::rand() ?>"><i class="bi bi-trash"></i> delete</button>
+            <script>
+              (_ => {
+                $('#<?= $_delete ?>')
+                  .on('click', function(e) {
+                    e.stopPropagation();
+
+                    $('#<?= $_modal ?>')
+                      .trigger('delete-invoice')
+                      .modal('hide');
+
+                  });
+
+              })(_brayworth_);
+            </script>
+          <?php } ?>
+
           <button type="button" class="btn btn-outline-secondary" id="<?= $_gotoJob = strings::rand() ?>"><?= config::label_job_view ?></button>
+
+          <div class="form-check">
+            <?php
+            printf(
+              '<input type="checkbox" class="form-check-input" id="%s" %s %s>',
+              $_uidReviewed = strings::rand(),
+              $dto->invoice_reviewed_by ? 'checked' : '',
+              (int)$dto->paid_by > 0 ? 'disabled' : ''
+
+            );
+
+            printf(
+              '<label class="form-check-label" for="%s" id="%slabel">%s</label>',
+              $_uidReviewed,
+              $_uidReviewed,
+              $dto->invoice_reviewed_by ?
+                sprintf(
+                  'Reviewed by %s - %s',
+                  $dto->invoice_reviewed_by_name,
+                  strings::asShortDate($dto->invoice_reviewed, $time = true)
+
+                )
+                :
+                'Reviewed'
+            );
+            ?>
+
+          </div>
+
           <button type="button" class="btn btn-outline-secondary ml-auto" data-dismiss="modal">close</button>
+          <?php if ($this->data->hasWorkorder) { ?>
+            <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
+            <script>
+              $('#<?= $_uid ?>').on('click', e => {
+                $('#<?= $_modal ?>').modal('hide');
+                $('#<?= $_modal ?>').trigger('view-workorder');
+              });
+            </script>
+          <?php } ?>
         </div>
       </div>
     </div>
   </div>
   <script>
     (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
-      $('#<?= $_delete ?>')
-        .on('click', function(e) {
-          e.stopPropagation();
+      $('#<?= $_uidReviewed ?>')
+        .on('change', function(e) {
+          let _me = $(this);
 
           $('#<?= $_modal ?>')
-            .trigger('delete-invoice')
-            .modal('hide');
+            .trigger(_me.prop('checked') ? 'job-mark-invoice-reviewed' : 'job-mark-invoice-reviewed-undo');
+
+          $('#<?= $_uidReviewed ?>label').html('Reviewed')
 
         });
 

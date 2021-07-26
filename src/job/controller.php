@@ -541,6 +541,57 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
+    } elseif ('job-mark-invoice-reviewed' == $action || 'job-mark-invoice-reviewed-undo' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          $a = 'job-mark-invoice-reviewed-undo' == $action ?
+            [
+              'invoice_reviewed' => '',
+              'invoice_reviewed_by' => 0
+
+            ]
+            :
+            [
+              'invoice_reviewed' => \db::dbTimeStamp(),
+              'invoice_reviewed_by' => currentuser::id()
+
+            ];
+
+          $dao->UpdateByID($a, $dto->id);
+          Json::ack($action);
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('job-mark-paid' == $action || 'job-mark-paid-undo' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          $a = 'job-mark-paid-undo' == $action ?
+            [
+              'paid' => '',
+              'paid_by' => 0
+
+            ]
+            :
+            [
+              'archived' => \db::dbTimeStamp(),
+              'paid' => \db::dbTimeStamp(),
+              'paid_by' => currentuser::id()
+
+            ];
+
+          $dao->UpdateByID($a, $dto->id);
+          Json::ack($action);
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak($action);
+      }
     } elseif ('job-save' == $action) {
 
       if ($description = $this->getPost('description')) {
@@ -866,6 +917,7 @@ class controller extends \Controller {
         $this->data = (object)[
           'title' => $this->title = 'View Invoice',
           'dto' => $dto,
+          'hasWorkorder' => file_exists($path = $dao->getWorkOrderPath($dto)),
 
         ];
 
@@ -997,6 +1049,7 @@ class controller extends \Controller {
         $this->data = (object)[
           'title' => $this->title = config::cms_job_PDF_title($dto->job_type),
           'dto' => $dto,
+          'hasInvoice' => file_exists($path = $dao->getInvoicePath($dto)),
 
         ];
 
