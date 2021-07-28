@@ -1418,5 +1418,7 @@ use strings;  ?>
 
       });
 
+    console.log('matrix loaded');
+
   })(_brayworth_);
 </script>
