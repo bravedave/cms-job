@@ -11,6 +11,7 @@
     * you will see updated by &lt;initials&gt;
     * hover on the text to see the full name of the user
   * *special note* - this is not retrospective, it will only be visible after updating/creating new jobs
+* **property record** Jobs now have tab of their own in property record
 
 ### 26 July, 2021
 
