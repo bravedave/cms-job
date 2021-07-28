@@ -957,7 +957,6 @@ class controller extends \Controller {
       'archived' => $archived
     ];
 
-    printf('<script type="text/javascript" src="%s"></script>', strings::url($this->route . '/js/job'));
     $this->load('matrix');
 
   }

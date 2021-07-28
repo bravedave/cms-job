@@ -104,7 +104,7 @@ use strings;  ?>
           }).then(d => {
             _.growl(d);
             if ('ack' == d.response) {
-              window.location.reload();
+              $(document).trigger('job-matrix-reload');
 
             } else {
               _.hourglass.off();
@@ -1389,6 +1389,7 @@ use strings;  ?>
       });
 
     $(document)
+      .on('job-matrix-reload', e => window.location.reload())
       .ready(() => {
         <?php if ($this->data->idx) {  ?>
           let tr = $('#<?= $tblID ?> > tbody > tr[data-id="<?= $this->data->idx ?>"]');
