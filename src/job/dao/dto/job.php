@@ -15,6 +15,11 @@ use dao\dto\_dto;
 class job extends _dto {
   public $id = 0;
   public $created = '';
+  public $created_by = 0;
+  public $created_by_name = '';
+  public $updated = '';
+  public $updated_by = 0;
+  public $updated_by_name = '';
   public $job_type = 0;
   public $brief = '';
   public $description = '';

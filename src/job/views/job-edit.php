@@ -64,11 +64,29 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
           <?php if ($dto->id) {  ?>
             <div class="form-row mb-2">
               <div class="col">&nbsp;</div>
-              <div class="col-auto small">created: <?= $dto->id ? strings::asLocalDate(($dto->created)) : 'new' ?></div>
-              <?php if (strtotime($dto->updated) > strtotime($dto->created)) {
+              <?php
+              $_u = [strings::asShortDate($dto->created)];
+              $_title = '';
+              if ($dto->created_by_name) {
+                $_title = 'created by ' . $dto->created_by_name;
+                $_u[] = strings::initials($dto->created_by_name);
+              }
+
+              printf(
+                '<div class="col-auto small" title="%s">created: %s</div>',
+                $_title,
+                implode(' / ', $_u)
+              );
+
+              if (strtotime($dto->updated) > strtotime($dto->created)) {
+                if ($dto->updated_by_name) {
+                  $_title = 'updated by ' . $dto->updated_by_name;
+                  $_u[] = strings::initials($dto->updated_by_name);
+                }
                 printf(
-                  '<div class="col-auto small">updated:%s</div>',
-                  strings::asLocalDate($dto->updated)
+                  '<div class="col-auto small" title="%s">updated: %s</div>',
+                  $_title,
+                  implode(' / ', $_u)
 
                 );
               }  ?>
@@ -342,89 +360,148 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
           </div>
 
           <div class="form-row">
-            <div class="col" id="<?= $_uidItemContainer = strings::rand() ?>">
-              <div class="d-none col-form-label" caption>items..</div>
-
-            </div>
-
-          </div>
-
-          <div class="row">
-            <div class="offset-md-3 offset-xl-2 col upload-invoice" id="<?= $_uidInvoice = strings::rand() ?>"></div>
-            <?php if ($dto->id) { ?>
-              <div class="col-auto col-md-3 col-xl-2 pt-1">
-                <div class="form-check">
-                  <?php
-
-                  printf(
-                    '<input type="checkbox" class="form-check-input" id="%s" %s %s>',
-                    $_uid = strings::rand(),
-                    1 == $dto->complete ? 'checked' : '',
-                    (int)$dto->paid_by > 0 ? 'disabled' : ''
-
-                  );
-
-                  printf(
-                    '<label class="form-check-label" for="%s">Complete</label>',
-                    $_uid
-
-                  );
-
-                  ?>
-
-                </div>
+            <div class="col col-form-label font-weight-bold">items..</div>
+            <?php if (!$readonly) { ?>
+              <div class="col-auto">
+                <button type="button" class="btn btn-sm btn-outline-secondary" accesskey="I" id="<?= $_btnAddItem = strings::rand() ?>">
+                  <i class="bi bi-plus d-none d-sm-inline"></i> <span style="text-decoration: underline;">I</span>tem
+                </button>
                 <script>
-                  (_ => {
-                    $('#<?= $_uid ?>')
-                      .on('change', function(e) {
-                        _.post({
-                          url: _.url('<?= $this->route ?>'),
-                          data: {
-                            action: $(this).prop('checked') ? 'job-mark-complete' : 'job-mark-complete-undo',
-                            id: '<?= $dto->id ?>'
-
-                          },
-
-                        }).then(d => {
-                          _.growl(d);
-                          $('#<?= $_form ?>')
-                            .trigger('complete')
-                            .trigger('reload');
-
-                        });
-
-
-                      });
-
-                  })(_brayworth_);
+                  $('#<?= $_btnAddItem ?>').on('click', e => $('#<?= $_form ?>').trigger('item-add'));
                 </script>
 
               </div>
-
             <?php } ?>
+          </div>
+
+          <!-- items -->
+          <div class="form-row mb-2">
+            <div class="col" id="<?= $_uidItemContainer = strings::rand() ?>"></div>
+
+          </div>
+
+          <?php if ($this->data->log) { ?>
+            <!-- comments -->
+            <div class="form-row">
+              <div class="col">
+                <div class="table-responsive">
+                  <table class="table table-sm">
+                    <thead class="small">
+                      <tr>
+                        <td colspan="3" class="border-0 font-weight-bold">comments..</td>
+                      </tr>
+                      <tr>
+                        <td>Date</td>
+                        <td>Comment</td>
+                        <td>PM</td>
+                      </tr>
+
+                    </thead>
+                    <tbody>
+                      <?php
+                      foreach ($this->data->log as $log) {
+                        printf(
+                          '<tr>
+                            <td>%s</td>
+                            <td>%s</td>
+                            <td>%s</td>
+                          </tr>',
+                          strings::asShortDate($log->created, $time = true),
+                          strings::text2html($log->comment),
+                          strings::initials($log->username)
+
+                        );
+                      } ?>
+
+                    </tbody>
+                  </table>
+
+                </div>
+              </div>
+
+            </div>
+          <?php } ?>
+
+          <div class="form-row">
+            <div class="offset-md-3 offset-xl-2 col upload-invoice" id="<?= $_uidInvoice = strings::rand() ?>"></div>
 
           </div>
 
         </div>
 
         <div class="modal-footer">
-          <?php if (!$readonly) { ?>
-            <button type="button" class="btn btn-outline-secondary" accesskey="I" id="<?= $_btnAddItem = strings::rand() ?>">
-              <i class="bi bi-plus d-none d-sm-inline"></i> <span style="text-decoration: underline;">I</span>tem
-            </button>
-            <script>
-              $('#<?= $_btnAddItem ?>').on('click', e => $('#<?= $_form ?>').trigger('item-add'));
-            </script>
-          <?php } ?>
-
           <button type="button" class="btn btn-outline-secondary d-none" id="<?= $_btnInvoice = strings::rand() ?>">
             Invoice
           </button>
 
-          <button type="button" class="btn btn-outline-secondary mr-auto" accesskey="T" id="<?= $_btnTenants = strings::rand() ?>">
+          <button type="button" class="btn btn-outline-secondary <?= $dto->id ? '' : 'mr-auto' ?>" accesskey="T" id="<?= $_btnTenants = strings::rand() ?>">
             <i class="bi bi-people d-none d-sm-inline"></i> <span style="text-decoration: underline;">T</span>enants
           </button>
 
+          <?php if ($dto->id) { ?>
+            <button type="button" class="btn btn-outline-secondary" id="<?= $_uid = strings::rand() ?>">
+              comment
+            </button>
+            <script>
+              (_ => {
+                $('#<?= $_uid ?>')
+                  .on('click', e => {
+                    $('#<?= $_modal ?>')
+                      .trigger('add-comment')
+                      .modal('hide');
+
+                  });
+
+              })(_brayworth_);
+            </script>
+
+            <div class="form-check mr-auto">
+              <?php
+
+              printf(
+                '<input type="checkbox" class="form-check-input" id="%s" %s %s>',
+                $_uid = strings::rand(),
+                1 == $dto->complete ? 'checked' : '',
+                (int)$dto->paid_by > 0 ? 'disabled' : ''
+
+              );
+
+              printf(
+                '<label class="form-check-label" for="%s">Complete</label>',
+                $_uid
+
+              );
+
+              ?>
+
+            </div>
+            <script>
+              (_ => {
+                $('#<?= $_uid ?>')
+                  .on('change', function(e) {
+                    _.post({
+                      url: _.url('<?= $this->route ?>'),
+                      data: {
+                        action: $(this).prop('checked') ? 'job-mark-complete' : 'job-mark-complete-undo',
+                        id: '<?= $dto->id ?>'
+
+                      },
+
+                    }).then(d => {
+                      _.growl(d);
+                      $('#<?= $_form ?>')
+                        .trigger('complete')
+                        .trigger('reload');
+
+                    });
+
+
+                  });
+
+              })(_brayworth_);
+            </script>
+
+          <?php } ?>
 
           <?php if ($readonly) { ?>
             <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">close</button>
@@ -438,11 +515,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
             <button type="submit" class="btn btn-primary" accesskey="S"><span style="text-decoration: underline;">S</span>ave</button>
             <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>" disabled order-button><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
             <script>
-              $('#<?= $_uid ?>')
-                .on('click', e =>
-                  $('#<?= $_form ?>')
-                  .trigger('submit-and-workorder')
-                );
+              $('#<?= $_uid ?>').on('click', e => $('#<?= $_form ?>').trigger('submit-and-workorder'));
             </script>
           <?php } ?>
 
@@ -671,9 +744,6 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
         row
           .appendTo('#<?= $_uidItemContainer ?>');
-
-        $('> div[caption]', '#<?= $_uidItemContainer ?>')
-          .removeClass('d-none');
 
         return row;
 

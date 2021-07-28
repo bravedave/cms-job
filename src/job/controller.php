@@ -14,7 +14,7 @@ use currentuser;
 use FilesystemIterator;
 use MatthiasMullie;
 use cms\leasing, Json, Response, strings, sys;
-
+use currentUser as GlobalCurrentUser;
 use dvc\{
   fileUploader,
   session
@@ -93,6 +93,19 @@ class controller extends \Controller {
       } else {
         Json::nak(sprintf('%s - missing id', $action));
       }
+    } elseif ('comment-post' == $action) {
+      $a = [
+        'comment' => $this->getPost('comment'),
+        'job_id' => $this->getPost('job_id'),
+        'user_id' => currentUser::id(),
+        'created' => \db::dbTimeStamp(),
+
+      ];
+      $a['updated'] = $a['created'];
+
+      $dao = new dao\job_log;
+      $dao->Insert($a);
+      Json::ack($action);
     } elseif ('contractor-save' == $action) {
       $a = [
         'trading_name' => $this->getPost('trading_name'),
@@ -597,6 +610,7 @@ class controller extends \Controller {
       if ($description = $this->getPost('description')) {
         $a = [
           'updated' => \db::dbTimeStamp(),
+          'updated_by' => currentuser::id(),
           'contractor_id' => (int)$this->getPost('contractor_id'),
           'properties_id' => (int)$this->getPost('properties_id'),
           'job_type' => (int)$this->getPost('job_type'),
@@ -613,6 +627,7 @@ class controller extends \Controller {
           $dao->UpdateByID($a, $id);
         } else {
           $a['created'] = $a['updated'];
+          $a['created_by'] = $a['updated_by'];
           $id = $dao->Insert($a);
         }
 
@@ -844,6 +859,26 @@ class controller extends \Controller {
     }
   }
 
+  public function comment() {
+    if ($id = (int)$this->getParam('property')) {
+      $dao = new dao\job;
+      if ($dto = $dao->getByID($id)) {
+        $dto = $dao->getRichData($dto);
+        $this->data = (object)[
+          'title' => $this->title = 'Add Comment',
+          'job' => $dto
+
+        ];
+
+        $this->load('comment');
+      } else {
+        $this->load('not-found');
+      }
+    } else {
+      $this->load('not-found');
+    }
+  }
+
   public function job_edit($id = 0) {
     if ($id = (int)$id) {
       $dao = new dao\job;
@@ -855,6 +890,7 @@ class controller extends \Controller {
         $this->data = (object)[
           'title' => $this->title = config::label_job_edit,
           'dto' => $dto,
+          'log' => dao\job_log::getForJob( $dto),
           'categories' => dao\job_categories::getCategorySet(),
           'hasWorkorder' => file_exists($path = $dao->getWorkOrderPath($dto)),
           'hasInvoice' => file_exists($path = $dao->getInvoicePath($dto)),
@@ -869,6 +905,7 @@ class controller extends \Controller {
       $this->data = (object)[
         'title' => $this->title = config::label_job_add,
         'dto' => new dao\dto\job,
+        'log' => [],
         'categories' => dao\job_categories::getCategorySet(),
         'hasWorkorder' => false,
         'hasInvoice' => false,

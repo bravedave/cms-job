@@ -30,6 +30,8 @@ $dbc->defineField('paid', 'datetime');
 $dbc->defineField('paid_by', 'bigint');
 $dbc->defineField('archived', 'datetime');
 $dbc->defineField('updated', 'datetime');
+$dbc->defineField('updated_by', 'bigint');
 $dbc->defineField('created', 'datetime');
+$dbc->defineField('created_by', 'bigint');
 
 $dbc->check();

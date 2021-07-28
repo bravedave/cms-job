@@ -352,11 +352,22 @@ class job extends _dao {
     $job->status_verbatim = config::cms_job_status_verbatim($job->status);
     $job->type_verbatim = config::cms_job_type_verbatim($job->job_type);
 
+    $dao = new users;
     if ($job->invoice_reviewed_by) {
-      $dao = new users;
       if ($udto = $dao->getByID($job->invoice_reviewed_by)) {
-
         $job->invoice_reviewed_by_name = $udto->name;
+      }
+    }
+
+    if ($job->updated_by) {
+      if ($udto = $dao->getByID($job->updated_by)) {
+        $job->updated_by_name = $udto->name;
+      }
+    }
+
+    if ($job->created_by) {
+      if ($udto = $dao->getByID($job->created_by)) {
+        $job->created_by_name = $udto->name;
       }
     }
 

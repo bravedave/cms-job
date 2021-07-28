@@ -381,6 +381,12 @@ use strings;  ?>
                   .trigger('create-workorder');
 
               }))
+              .then(m => m.on('add-comment', e => {
+                e.stopPropagation();
+                _tr
+                  .trigger('comment');
+
+              }))
               .then(m => m.on('edit-workorder', e => {
                 e.stopPropagation();
                 _tr
@@ -682,6 +688,15 @@ use strings;  ?>
             _context
               .addClose()
               .open(e);
+
+          })
+          .on('comment', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.get
+              .modal(_.url('<?= $this->route ?>/comment/?property=' + _data.id))
+              .then(m => m.on('hidden.bs.modal', e => _tr.trigger('edit')));
 
           })
           .on('create-workorder', function(e) {

@@ -2,6 +2,16 @@
 
 ## Latest News
 
+### 28 July, 2021
+
+* **comments** can be made against any job any time
+* **Add Item**, **complete** moved around on form
+* **creator and updater** of workorder
+  * are visible at the top of the form where the dates are displayed
+    * you will see updated by &lt;initials&gt;
+    * hover on the text to see the full name of the user
+  * *special note* - this is not retrospective, it will only be visible after updating/creating new jobs
+
 ### 26 July, 2021
 
 * **invoiced** and **paid** added to valid status
