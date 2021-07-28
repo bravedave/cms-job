@@ -945,6 +945,21 @@ class controller extends \Controller {
     ]);
   }
 
+  public function matrixOfProperty( $pid) {
+    $archived = 'yes' == session::get('job-matrix-archived');
+
+    $dao = new dao\job;
+    $this->data = (object)[
+      'title' => $this->title = config::label_matrix,
+      'res' => $dao->getMatrix($archived, $pid),
+      'idx' => $this->getParam('idx'),
+      'trigger' => $this->getParam('v'),
+      'archived' => $archived
+    ];
+
+    $this->load('matrix');
+  }
+
   public function invoice($id = 0) {
     if ($id = (int)$id) {
       $dao = new dao\job;

@@ -91,8 +91,14 @@ class job extends _dao {
     return $this->_getInvoicePath($job->id);
   }
 
-  public function getMatrix(bool $archived = false) {
+  public function getMatrix(bool $archived = false, $pid = 0) {
     $where = [];
+
+    if ( (int)$pid) {
+      $where[] = sprintf('job.properties_id = %d',$pid);
+
+    }
+
     if (!$archived) {
       $where[] = sprintf(
         'COALESCE(job.`archived`,%s) = %s OR DATE( job.archived) <= %s',
