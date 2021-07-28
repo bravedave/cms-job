@@ -101,7 +101,7 @@ class job extends _dao {
 
     if (!$archived) {
       $where[] = sprintf(
-        'COALESCE(job.`archived`,%s) = %s OR DATE( job.archived) <= %s',
+        '(COALESCE(job.`archived`,%s) = %s OR DATE( job.archived) <= %s)',
         $this->quote(''),
         $this->quote(''),
         $this->quote('0000-00-00')
