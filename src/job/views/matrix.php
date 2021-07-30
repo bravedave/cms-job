@@ -646,7 +646,7 @@ use strings;  ?>
                 .on('recon', function(e) {
                   if (Number(_data.contractor_primary_contact)) {
                     $(this)
-                      .attr('href', _.url('people/view/' + _data.contractor_primary_contact))
+                      .attr('href', _.url('person/view/' + _data.contractor_primary_contact))
                       .html('goto ' + _data.contractor_primary_contact_name)
                       .prepend('<i class="bi bi-box-arrow-up-right"></i>')
                       .removeClass('d-none')
