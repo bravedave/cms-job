@@ -121,6 +121,77 @@ use strings;  ?>
 
   </div>
 
+  <div class="col-auto">
+    <button type="button" class="btn btn-light" title="add new job" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-journal-plus"></i></button>
+    <script>
+      (_ => {
+        let active = false;
+
+        $('#<?= $_uid ?>')
+          .on('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            if (active) return;
+            active = true;
+
+            let _me = $(this);
+
+            _.get.modal(_.url('<?= $this->route ?>/job_edit'))
+              .then(m => m.on('success', (e, data) => {
+                $(document)
+                  .trigger('job-matrix-reload', {
+                    idx: data.id
+                  });
+
+              }))
+              .then(d => d.on('success-and-workorder', (e, data) => {
+                _me
+                  .trigger('create-workorder', data.id)
+
+              }))
+              .then(m => active = false);
+
+          })
+          .on('create-workorder', function(e, id) {
+
+            let _me = $(this);
+
+            _.hourglass.on();
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'create-workorder',
+                id: id
+
+              },
+
+            }).then(d => {
+              _.hourglass.off();
+              _.growl(d);
+              if ('ack' == d.response) {
+                $(document)
+                  .trigger('job-matrix-reload', {
+                    view: 'workorder',
+                    idx: data.id
+                  });
+
+              } else {
+                _.ask.alert({
+                  text: d.description
+
+                });
+              }
+
+            });
+
+          });
+
+      })(_brayworth_);
+    </script>
+
+  </div>
+
   <div class="col-auto d-md-none">
     <button type="button" class="btn btn-light" id="<?= $_uidMenu = strings::rand() ?>"><i class="bi bi-arrow-down"></i></button>
     <script>
@@ -1628,7 +1699,22 @@ use strings;  ?>
       });
 
     $(document)
-      .on('job-matrix-reload', e => window.location.reload())
+      .on('job-matrix-reload', (e, opt) => {
+        if (!!opt) {
+          if (!!opt.idx) {
+            if ('workorder' == opt.view) {
+              _.nav('<?= $this->route ?>/matrix?v=workorder&idx=' + opt.idx);
+            } else {
+              _.nav('<?= $this->route ?>/matrix?idx=' + opt.idx);
+            }
+          } else {
+            window.location.reload();
+          }
+        } else {
+          window.location.reload();
+        }
+
+      })
       .ready(() => {
         <?php if ($this->data->idx) {  ?>
           let tr = $('#<?= $tblID ?> > tbody > tr[data-id="<?= $this->data->idx ?>"]');

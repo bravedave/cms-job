@@ -30,72 +30,76 @@ use currentUser, strings;  ?>
 
   </li>
 
-  <li class="nav-item">
-    <a class="nav-link pl-4" href="#" id="<?= $_uid = strings::rand() ?>">
-      <i class="bi bi-journal-plus"></i> New <?= config::label ?>
+  <?php if (false) { ?>
 
-    </a>
+    <li class="nav-item">
+      <a class="nav-link pl-4" href="#" id="<?= $_uid = strings::rand() ?>">
+        <i class="bi bi-journal-plus"></i> New <?= config::label ?>
 
-  </li>
-  <script>
-    (_ => {
-      let active = false;
+      </a>
 
-      $('#<?= $_uid ?>')
-        .on('click', function(e) {
-          e.stopPropagation();
-          e.preventDefault();
+    </li>
+    <script>
+      (_ => {
+        let active = false;
 
-          if (active) return;
-          active = true;
+        $('#<?= $_uid ?>')
+          .on('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
 
-          let _me = $(this);
+            if (active) return;
+            active = true;
 
-          _.get.modal(_.url('<?= $this->route ?>/job_edit'))
-            .then(m => m.on('success', (e, data) => {
-              _.nav('<?= $this->route ?>/matrix?idx=' + data.id);
+            let _me = $(this);
 
-            }))
-            .then(d => d.on('success-and-workorder', (e, data) => {
-              _me
-                .trigger('create-workorder', data.id)
+            _.get.modal(_.url('<?= $this->route ?>/job_edit'))
+              .then(m => m.on('success', (e, data) => {
+                _.nav('<?= $this->route ?>/matrix?idx=' + data.id);
 
-            }))
-            .then(m => active = false);
+              }))
+              .then(d => d.on('success-and-workorder', (e, data) => {
+                _me
+                  .trigger('create-workorder', data.id)
 
-        })
-        .on('create-workorder', function(e, id) {
+              }))
+              .then(m => active = false);
 
-          let _me = $(this);
+          })
+          .on('create-workorder', function(e, id) {
 
-          _.hourglass.on();
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: {
-              action: 'create-workorder',
-              id: id
+            let _me = $(this);
 
-            },
+            _.hourglass.on();
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'create-workorder',
+                id: id
 
-          }).then(d => {
-            _.hourglass.off();
-            _.growl(d);
-            if ('ack' == d.response) {
-              _.nav('<?= $this->route ?>/matrix?v=workorder&idx=' + id);
+              },
 
-            } else {
-              _.ask.alert({
-                text: d.description
+            }).then(d => {
+              _.hourglass.off();
+              _.growl(d);
+              if ('ack' == d.response) {
+                _.nav('<?= $this->route ?>/matrix?v=workorder&idx=' + id);
 
-              });
-            }
+              } else {
+                _.ask.alert({
+                  text: d.description
+
+                });
+              }
+
+            });
 
           });
 
-        });
+      })(_brayworth_);
+    </script>
 
-    })(_brayworth_);
-  </script>
+  <?php } ?>
 
   <li class="nav-item">
     <a class="nav-link" href="<?= strings::url(sprintf('%s/contractors', $this->route)) ?>">
@@ -269,35 +273,35 @@ use currentUser, strings;  ?>
     })(_brayworth_);
   </script>
 
-<?php	if ( 'yes' == currentUser::option('google-sharer')) {	?>
-  <li class="nav-item h6 pt-3 pl-3">
-    Reference Documents
+  <?php if ('yes' == currentUser::option('google-sharer')) {  ?>
+    <li class="nav-item h6 pt-3 pl-3">
+      Reference Documents
 
-  </li>
+    </li>
 
-  <li class="nav-item">
-    <a class="nav-link pl-4" href="https://docs.google.com/document/d/1-M7o0YA7NGwqjCZHxHA1pf54DmJUERoclznsqC37Ue0/" target="_blank">
-      <i class="bi bi-file-richtext text-primary"></i> JOB - Workorder Management
+    <li class="nav-item">
+      <a class="nav-link pl-4" href="https://docs.google.com/document/d/1-M7o0YA7NGwqjCZHxHA1pf54DmJUERoclznsqC37Ue0/" target="_blank">
+        <i class="bi bi-file-richtext text-primary"></i> JOB - Workorder Management
 
-    </a>
+      </a>
 
-  </li>
+    </li>
 
-  <li class="nav-item">
-    <a class="nav-link pl-4" href="https://docs.google.com/document/d/13wwmQi9ZfyRIunOVLZl1ZKDJz-waNDm_65csP68Z_4o/" target="_blank">
-      <i class="bi bi-file-richtext text-primary"></i> Contractors
+    <li class="nav-item">
+      <a class="nav-link pl-4" href="https://docs.google.com/document/d/13wwmQi9ZfyRIunOVLZl1ZKDJz-waNDm_65csP68Z_4o/" target="_blank">
+        <i class="bi bi-file-richtext text-primary"></i> Contractors
 
-    </a>
+      </a>
 
-  </li>
+    </li>
 
-  <li class="nav-item">
-    <a class="nav-link pl-4" href="https://docs.google.com/document/d/1lpiaBuKzN7BkupqLU3a7w99g2rJ6SCZmIecb0V_RwlE/" target="_blank">
-      <i class="bi bi-file-richtext text-primary"></i> CMSS Maintenance - Job process
+    <li class="nav-item">
+      <a class="nav-link pl-4" href="https://docs.google.com/document/d/1lpiaBuKzN7BkupqLU3a7w99g2rJ6SCZmIecb0V_RwlE/" target="_blank">
+        <i class="bi bi-file-richtext text-primary"></i> CMSS Maintenance - Job process
 
-    </a>
+      </a>
 
-  </li>
-<?php	}	?>
+    </li>
+  <?php  }  ?>
 
 </ul>
