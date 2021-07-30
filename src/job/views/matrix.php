@@ -75,7 +75,7 @@ use strings;  ?>
 <h1 class="d-none d-print-block"><?= $this->title ?></h1>
 <div class="form-row mb-2 d-print-none">
   <div class="col">
-    <input type="search" class="form-control" accesskey="S" autofocus id="<?= $srch = strings::rand() ?>" placeholder="sSearch - press alt + s to focus anytime">
+    <input type="search" class="form-control" accesskey="S" autofocus id="<?= $srch = strings::rand() ?>" placeholder="search - press alt + s to focus anytime">
 
   </div>
 
