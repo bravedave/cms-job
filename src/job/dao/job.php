@@ -120,15 +120,22 @@ class job extends _dao {
         p.`street_index`,
         p.`property_manager`,
         c.`trading_name` `contractor_trading_name`,
+        c.`primary_contact` `contractor_primary_contact`,
+        people.`name` `contractor_primary_contact_name`,
         CASE
         WHEN p.`property_manager` > 0 THEN u.`name`
         ELSE %s
         END pm
       FROM
         `job`
-        LEFT JOIN `properties` p on p.id = job.`properties_id`
-        LEFT JOIN `job_contractors` c on c.id = job.`contractor_id`
-        LEFT JOIN `users` u ON u.id = p.`property_manager`
+          LEFT JOIN
+        `properties` p on p.id = job.`properties_id`
+          LEFT JOIN
+        `users` u ON u.id = p.`property_manager`
+          LEFT JOIN
+        `job_contractors` c on c.id = job.`contractor_id`
+          LEFT JOIN
+        `people` ON people.id = c.`primary_contact`
       %s',
       $this->quote(''),
       $this->quote(''),
@@ -144,6 +151,8 @@ class job extends _dao {
           p.`street_index`,
           p.`property_manager`,
           c.`trading_name` `contractor_trading_name`,
+          c.`primary_contact` `contractor_primary_contact`,
+          people.`name` `contractor_primary_contact_name`,
           CASE
           WHEN p.`property_manager` > 0 THEN u.`name`
           WHEN cp.`PropertyManager` > %s THEN uc.`name`
@@ -151,11 +160,18 @@ class job extends _dao {
           END pm
         FROM
           `job`
-          LEFT JOIN `properties` p on p.`id` = job.`properties_id`
-          LEFT JOIN `job_contractors` c on c.`id` = job.`contractor_id`
-          LEFT JOIN `console_properties` cp on cp.`properties_id` = p.`id`
-          LEFT JOIN `users` u ON u.id = p.`property_manager`
-          LEFT JOIN `users` uc ON uc.`console_code` = cp.`PropertyManager`
+            LEFT JOIN
+          `properties` p on p.`id` = job.`properties_id`
+            LEFT JOIN
+          `users` u ON u.id = p.`property_manager`
+            LEFT JOIN
+          `job_contractors` c on c.`id` = job.`contractor_id`
+            LEFT JOIN
+          `people` ON people.id = c.`primary_contact`
+            LEFT JOIN
+          `console_properties` cp on cp.`properties_id` = p.`id`
+            LEFT JOIN
+          `users` uc ON uc.`console_code` = cp.`PropertyManager`
         %s',
         $this->quote(''),
         $this->quote(''),

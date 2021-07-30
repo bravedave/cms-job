@@ -187,6 +187,8 @@ use strings;  ?>
             data-line_count="%s"
             data-contractor="%s"
             data-contractor_name="%s"
+            data-contractor_primary_contact="%s"
+            data-contractor_primary_contact_name="%s"
             data-pm="%s"
             data-email_sent="%s"
             data-job_type="%s"
@@ -202,6 +204,8 @@ use strings;  ?>
           count($lines),
           $dto->contractor_id,
           htmlentities($dto->contractor_trading_name),
+          $dto->contractor_primary_contact,
+          htmlentities($dto->contractor_primary_contact_name),
           $pm,
           strtotime($dto->email_sent) > 0 ? 'yes' : 'no',
           $dto->job_type,
@@ -636,6 +640,27 @@ use strings;  ?>
 
             }
 
+            if (Number(_data.contractor) > 0) {
+              _context.append(
+                $('<a class="d-none" target="_blank"></a>')
+                .on('recon', function(e) {
+                  if (Number(_data.contractor_primary_contact)) {
+                    $(this)
+                      .attr('href', _.url('people/view/' + _data.contractor_primary_contact))
+                      .html('goto ' + _data.contractor_primary_contact_name)
+                      .prepend('<i class="bi bi-box-arrow-up-right"></i>')
+                      .removeClass('d-none')
+                      .on('click', e => _context.close());
+
+                  }
+
+                })
+                .trigger('recon')
+
+              );
+
+            }
+
             _context.append(
               $('<a href="#">email sent</a>')
               .on('click', e => {
@@ -906,7 +931,9 @@ use strings;  ?>
                       _.email.activate(o);
                     } else {
                       console.log(o);
-                      console.log('no email program');
+                      _.ask.alert({
+                        text: 'no email program'
+                      });
 
                     }
 
@@ -968,8 +995,9 @@ use strings;  ?>
               }
 
             } else {
-              console.log(o);
-              console.log('no email program');
+              _.ask.alert({
+                text: 'no email program'
+              });
 
             }
 
