@@ -225,7 +225,7 @@ use strings;  ?>
     <thead class="small">
       <tr>
         <td line-number>#</td>
-        <td class="constrain" data-role="sort-header" data-key="street_index">Property</td>
+        <td class="constrain <?= $this->data->hidepropertycolumn ? 'd-none' : '' ?>" data-role="sort-header" data-key="street_index">Property</td>
         <td class="d-none d-md-table-cell constrain" data-role="sort-header" data-key="contractor_name">Contractor</td>
         <td class="d-none d-md-table-cell">Items</td>
         <td class="text-center" title="Order/Recurring/Quote" type>Type</td>
@@ -288,7 +288,7 @@ use strings;  ?>
         );
       ?>
         <td class="small" line-number></td>
-        <td class="constrain">
+        <td class="constrain <?= $this->data->hidepropertycolumn ? 'd-none' : '' ?>">
           <div class="constrained text-truncate" address>
             <?= $dto->address_street ?>
 

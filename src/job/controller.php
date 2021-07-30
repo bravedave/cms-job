@@ -930,7 +930,8 @@ class controller extends \Controller {
       'res' => $dao->getMatrix($archived),
       'idx' => $this->getParam('idx'),
       'trigger' => $this->getParam('v'),
-      'archived' => $archived
+      'archived' => $archived,
+      'hidepropertycolumn' => false
     ];
 
     $this->render([
@@ -954,7 +955,8 @@ class controller extends \Controller {
       'res' => $dao->getMatrix($archived, $pid),
       'idx' => $this->getParam('idx'),
       'trigger' => $this->getParam('v'),
-      'archived' => $archived
+      'archived' => $archived,
+      'hidepropertycolumn' => true
     ];
 
     $this->load('matrix');
