@@ -75,7 +75,7 @@ use strings;  ?>
 <h1 class="d-none d-print-block"><?= $this->title ?></h1>
 <div class="form-row mb-2 d-print-none">
   <div class="col">
-    <input type="search" class="form-control" autofocus id="<?= $srch = strings::rand() ?>">
+    <input type="search" class="form-control" accesskey="S" autofocus id="<?= $srch = strings::rand() ?>" placeholder="sSearch - press alt + s to focus anytime">
 
   </div>
 
@@ -147,18 +147,20 @@ use strings;  ?>
 
 </div>
 
+<div class="form-row mb-2 d-print-none" id="<?= $stats = strings::rand() ?>"></div>
+
 <div class="table-responsive">
   <table class="table table-sm fade" id="<?= $tblID = strings::rand() ?>">
     <thead class="small">
       <tr>
         <td line-number>#</td>
-        <td class="constrain">Property</td>
-        <td class="d-none d-md-table-cell constrain">Contractor</td>
+        <td class="constrain" data-role="sort-header" data-key="street_index">Property</td>
+        <td class="d-none d-md-table-cell constrain" data-role="sort-header" data-key="contractor_name">Contractor</td>
         <td class="d-none d-md-table-cell">Items</td>
-        <td class="text-center" title="Order/Recurring/Quote">Type</td>
+        <td class="text-center" title="Order/Recurring/Quote" type>Type</td>
         <td class="text-center icon-width"><i class="bi bi-cursor"></i></td>
         <td class="text-center" title="has invoice"><i class="bi bi-info-circle"></i></td>
-        <td class="text-center">Status</td>
+        <td class="text-center" status>Status</td>
         <td class="text-center" PM>PM</td>
 
       </tr>
@@ -169,6 +171,11 @@ use strings;  ?>
       <?php while ($dto = $this->data->res->dto()) {
         $lines = json_decode($dto->lines) ?? [];
         $pm = strings::initials($dto->pm);
+        if (strtotime($dto->email_sent) > 0) {
+          if ($dto->status < config::job_status_sent) {
+            $dto->status = config::job_status_sent; // auto advance status
+          }
+        }
 
         printf(
           '<tr
@@ -176,11 +183,14 @@ use strings;  ?>
             data-id="%s"
             data-properties_id="%s"
             data-address_street="%s"
+            data-street_index="%s"
             data-line_count="%s"
             data-contractor="%s"
+            data-contractor_name="%s"
             data-pm="%s"
             data-email_sent="%s"
             data-job_type="%s"
+            data-status="%s"
             data-archived="%s",
             data-invoiced="%s"
             data-paid="%s">',
@@ -188,11 +198,14 @@ use strings;  ?>
           $dto->id,
           $dto->properties_id,
           htmlentities($dto->address_street),
+          htmlentities($dto->street_index),
           count($lines),
           $dto->contractor_id,
+          htmlentities($dto->contractor_trading_name),
           $pm,
           strtotime($dto->email_sent) > 0 ? 'yes' : 'no',
           $dto->job_type,
+          $dto->status,
           strtotime($dto->archived) > 0 ? 'yes' : 'no',
           1 == (int)$dto->has_invoice ? 'yes' : 'no',
           (int)$dto->paid_by > 0 ? 'yes' : 'no'
@@ -247,10 +260,6 @@ use strings;  ?>
               '<i class="bi bi-cursor" title="%s"></i>',
               strings::asLocalDate($dto->email_sent)
             );
-
-            if ($dto->status < config::job_status_sent) {
-              $dto->status = config::job_status_sent; // auto advance status
-            }
           } else {
             print '&nbsp;';
           }
@@ -275,15 +284,52 @@ use strings;  ?>
 
 <script>
   (_ => {
+    let jobTypes = <?= json_encode(config::job_types) ?>;
+    let jobStatuses = <?= json_encode(config::job_status) ?>;
+
     $('#<?= $tblID ?>')
       .on('update-line-numbers', function(e) {
         let tot = 0;
-        $('> tbody > tr:not(.d-none) >td[line-number]', this).each((i, e) => {
-          $(e).data('line', i + 1).html(i + 1);
+        let stats = {};
+
+        $('> tbody > tr:not(.d-none)', this).each((i, e) => {
+          let _e = $(e);
+          let _data = _e.data();
+          // console.log(_data);
+          if (!stats[_data.status]) stats[_data.status] = 0;
+          stats[_data.status]++;
+
+          $('>td[line-number]', e)
+            .data('line', i + 1)
+            .html(i + 1);
           tot++;
         });
 
         $('> thead > tr >td[line-number]', this).html(tot);
+
+        $('#<?= $stats ?>')
+          .html('');
+
+        // console.log(stats);
+        $.each(stats, (i, s) => {
+          let ig = $('<div class="input-group input-group-sm"></div>');
+          $('<div class="input-group-prepend"></div>')
+            .append(
+              $('<div class="input-group-text"></div>')
+              .html(jobStatuses[i])
+            )
+            .appendTo(ig);
+
+          $('<div class="form-control"></div>')
+            .html(s)
+            .appendTo(ig);
+
+          $('<div class="col-auto"></div>')
+            .append(ig)
+            .appendTo('#<?= $stats ?>');
+
+        });
+
 
       });
 
@@ -1134,7 +1180,7 @@ use strings;  ?>
             }).then(d => {
               if ('ack' == d.response) {
                 // console.log('matrix-refresh-row');
-                // console.log(d.data);
+                console.log(d.data);
 
                 let pm = String(d.data.property_manager).initials();
                 let archived = false;
@@ -1151,6 +1197,7 @@ use strings;  ?>
                   contractor: d.data.contractor_id,
                   pm: pm,
                   job_type: d.data.job_type,
+                  status: d.data.status,
                   invoice: 1 == Number(d.data.has_invoice) ? 'yes' : 'no',
                   complete: 1 == Number(d.data.complete) ? 'yes' : 'no',
                   paid: Number(d.data.paid_by) > 0 ? 'yes' : 'no',
@@ -1258,6 +1305,142 @@ use strings;  ?>
 
       });
 
+    let filterType = '';
+    $('#<?= $tblID ?> > thead > tr > td[type]')
+      .on(_.browser.isMobileDevice ? 'click' : 'contextmenu', function(e) {
+        if (e.shiftKey)
+          return;
+
+        e.stopPropagation();
+        e.preventDefault();
+
+        _.hideContexts();
+
+        let _context = _.context();
+        let _me = $(this);
+
+        $.each(jobTypes, (i, jt) => {
+          _context.append(
+            $('<a href="#"></a>')
+            .html(jt)
+            .on('click', function(e) {
+              e.stopPropagation();
+              e.preventDefault();
+              _context.close();
+
+              filterType = i;
+              _me
+                .html('')
+                .append(
+                  $('<div class="badge badge-primary"></div>')
+                  .html(jt)
+
+                );
+
+              $('#<?= $srch ?>').trigger('search');
+              sessionStorage.setItem('job-matrix-filter-type', i);
+
+            })
+            .on('reconcile', function() {
+              // console.log(i, filterType, String(i) === String(filterType));
+              if (String(i) === String(filterType)) $(this).prepend('<i class="bi bi-check"></i>')
+
+            })
+            .trigger('reconcile')
+
+          );
+
+        });
+
+        _context.append('<hr>');
+        _context.append(
+          $('<a href="#">clear</a>').on('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            _context.close();
+
+            filterType = '';
+            _me.html('Type');
+            $('#<?= $srch ?>')
+              .trigger('search');
+
+            sessionStorage.removeItem('job-matrix-filter-type');
+
+          })
+        );
+
+        _context.open(e);
+
+      });
+
+    let filterStatus = '';
+    $('#<?= $tblID ?> > thead > tr > td[status]')
+      .on(_.browser.isMobileDevice ? 'click' : 'contextmenu', function(e) {
+        if (e.shiftKey)
+          return;
+
+        e.stopPropagation();
+        e.preventDefault();
+
+        _.hideContexts();
+
+        let _context = _.context();
+        let _me = $(this);
+
+        $.each(jobStatuses, (i, status) => {
+          _context.append(
+            $('<a href="#"></a>')
+            .html(status)
+            .on('click', function(e) {
+              e.stopPropagation();
+              e.preventDefault();
+              _context.close();
+
+              filterStatus = i;
+              _me
+                .html('')
+                .append(
+                  $('<div class="badge badge-primary"></div>')
+                  .html(status)
+
+                );
+
+              $('#<?= $srch ?>').trigger('search');
+              sessionStorage.setItem('job-matrix-filter-status', i);
+
+            })
+            .on('reconcile', function() {
+              // console.log(i, filterStatus, String(i) === String(filterStatus));
+              if (String(i) === String(filterStatus)) $(this).prepend('<i class="bi bi-check"></i>')
+
+            })
+            .trigger('reconcile')
+
+          );
+
+        });
+
+        _context.append('<hr>');
+        _context.append(
+          $('<a href="#">clear</a>').on('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            _context.close();
+
+            filterStatus = '';
+            _me.html('Type');
+            $('#<?= $srch ?>')
+              .trigger('search');
+
+            sessionStorage.removeItem('job-matrix-filter-status');
+
+          })
+        );
+
+        _context.open(e);
+
+      });
+
     let filterPM = '';
     if (pms.length > 0) {
       $('#<?= $tblID ?> > thead > tr > td[PM]')
@@ -1292,7 +1475,7 @@ use strings;  ?>
 
               })
               .on('reconcile', function() {
-                if (pm == filterPM) $(this).prepend('<i class="bi bi-check"></i>')
+                if (pm === filterPM) $(this).prepend('<i class="bi bi-check"></i>')
 
               })
               .trigger('reconcile')
@@ -1328,11 +1511,29 @@ use strings;  ?>
       .on('restore-filter', function(e) {
 
         let pmFilter = localStorage.getItem('job-matrix-filter-pm');
-        if (!!pmFilter) {
-          filterPM = pmFilter;
-          $('#<?= $tblID ?> > thead > tr > td[PM]')
-            .html('')
-            .append($('<div class="badge badge-primary"></div>').html(filterPM));
+        let typeFilter = sessionStorage.getItem('job-matrix-filter-type');
+        let statusFilter = sessionStorage.getItem('job-matrix-filter-status');
+        if (!!pmFilter || !!typeFilter || !!statusFilter) {
+          if (!!pmFilter) {
+            filterPM = pmFilter;
+            $('#<?= $tblID ?> > thead > tr > td[PM]')
+              .html('')
+              .append($('<div class="badge badge-primary"></div>').html(filterPM));
+          }
+
+          if (!!typeFilter) {
+            filterType = typeFilter;
+            $('#<?= $tblID ?> > thead > tr > td[type]')
+              .html('')
+              .append($('<div class="badge badge-primary"></div>').html(jobTypes[filterType]));
+          }
+
+          if (!!statusFilter) {
+            filterStatus = statusFilter;
+            $('#<?= $tblID ?> > thead > tr > td[status]')
+              .html('')
+              .append($('<div class="badge badge-primary"></div>').html(jobStatuses[filterStatus]));
+          }
 
           $('#<?= $srch ?>')
             .trigger('search');
@@ -1361,10 +1562,20 @@ use strings;  ?>
           let _tr = $(tr);
           let _data = _tr.data();
 
-          if (filterPM != '' && _data.pm != filterPM) {
+          // if (String(filterStatus) !== '') {
+          //   console.log(String(_data.status), String(filterStatus), String(_data.status) !== String(filterStatus));
+          // }
+
+          if (String(filterType) !== '' && String(_data.job_type) !== String(filterType)) {
             _tr.addClass('d-none');
 
-          } else if ('' == txt.trim()) {
+          } else if (String(filterStatus) !== '' && String(_data.status) !== String(filterStatus)) {
+            _tr.addClass('d-none');
+
+          } else if (String(filterPM) !== '' && _data.pm !== filterPM) {
+            _tr.addClass('d-none');
+
+          } else if ('' === txt.trim()) {
             _tr.removeClass('d-none');
 
           } else {
@@ -1416,9 +1627,17 @@ use strings;  ?>
         $('#<?= $tblID ?>')
           .trigger('restore-filter');
 
+        // console.log( 'don\'t leave this active')
+        // $('thead>tr>td[data-role="sort-header"]').each((i, el) => {
+        //   $(el)
+        //     .addClass('pointer')
+        //     .on('click', _.table.sort);
+
+        // });
+
       });
 
-    console.log('matrix loaded');
+    // console.log('matrix loaded');
 
   })(_brayworth_);
 </script>

@@ -94,9 +94,8 @@ class job extends _dao {
   public function getMatrix(bool $archived = false, $pid = 0) {
     $where = [];
 
-    if ( (int)$pid) {
-      $where[] = sprintf('job.properties_id = %d',$pid);
-
+    if ((int)$pid) {
+      $where[] = sprintf('job.properties_id = %d', $pid);
     }
 
     if (!$archived) {
@@ -117,18 +116,19 @@ class job extends _dao {
     $sql = sprintf(
       'SELECT
         job.*,
-        p.address_street,
-        p.property_manager,
-        c.trading_name `contractor_trading_name`,
+        p.`address_street`,
+        p.`street_index`,
+        p.`property_manager`,
+        c.`trading_name` `contractor_trading_name`,
         CASE
-        WHEN p.property_manager > 0 THEN u.name
+        WHEN p.`property_manager` > 0 THEN u.`name`
         ELSE %s
         END pm
       FROM
         `job`
-        LEFT JOIN `properties` p on p.id = job.properties_id
-        LEFT JOIN `job_contractors` c on c.id = job.contractor_id
-        LEFT JOIN `users` u ON u.id = p.property_manager
+        LEFT JOIN `properties` p on p.id = job.`properties_id`
+        LEFT JOIN `job_contractors` c on c.id = job.`contractor_id`
+        LEFT JOIN `users` u ON u.id = p.`property_manager`
       %s',
       $this->quote(''),
       $this->quote(''),
@@ -140,21 +140,22 @@ class job extends _dao {
       $sql = sprintf(
         'SELECT
           job.*,
-          p.address_street,
-          p.property_manager,
-          c.trading_name `contractor_trading_name`,
+          p.`address_street`,
+          p.`street_index`,
+          p.`property_manager`,
+          c.`trading_name` `contractor_trading_name`,
           CASE
-          WHEN p.property_manager > 0 THEN u.name
-          WHEN cp.PropertyManager > %s THEN uc.name
+          WHEN p.`property_manager` > 0 THEN u.`name`
+          WHEN cp.`PropertyManager` > %s THEN uc.`name`
           ELSE %s
           END pm
         FROM
           `job`
-          LEFT JOIN `properties` p on p.id = job.properties_id
-          LEFT JOIN `job_contractors` c on c.id = job.contractor_id
-          LEFT JOIN `console_properties` cp on cp.properties_id = p.id
-          LEFT JOIN `users` u ON u.id = p.property_manager
-          LEFT JOIN `users` uc ON uc.console_code = cp.PropertyManager
+          LEFT JOIN `properties` p on p.`id` = job.`properties_id`
+          LEFT JOIN `job_contractors` c on c.`id` = job.`contractor_id`
+          LEFT JOIN `console_properties` cp on cp.`properties_id` = p.`id`
+          LEFT JOIN `users` u ON u.id = p.`property_manager`
+          LEFT JOIN `users` uc ON uc.`console_code` = cp.`PropertyManager`
         %s',
         $this->quote(''),
         $this->quote(''),
@@ -177,7 +178,19 @@ class job extends _dao {
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `lines` TEXT');
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `has_invoice` INT');
 
-    if ($res = $this->Result('SELECT `id`, `status`, `complete`, `invoice_reviewed_by`, `paid_by` FROM `matrix`')) {
+    $sql = 'SELECT
+        `id`,
+        `status`,
+        `complete`,
+        `invoice_reviewed_by`,
+        `paid_by`,
+        `properties_id`,
+        `address_street`,
+        `street_index`
+      FROM
+        `matrix`';
+
+    if ($res = $this->Result($sql)) {
       $res->dtoSet(function ($dto) {
         $set = [];
         if (file_exists($path = $this->_getInvoicePath($dto->id))) {
@@ -199,6 +212,30 @@ class job extends _dao {
           if ($dto->status < config::job_status_complete) {
             $dto->status = config::job_status_complete;
             $set[] = sprintf('`status` = %s', config::job_status_complete);
+          }
+        }
+
+        if (!$dto->street_index) {
+          if ($street_index = strings::street_index($dto->address_street)) {
+            $set[] = sprintf(
+              '`street_index` = %s',
+              $this->quote($street_index)
+
+            );
+
+            if ((int)$dto->properties_id) {
+              $a = [
+                'street_index' => $street_index
+              ];
+              $dao = new \dao\properties;
+              $dao->UpdateByID($a, $dto->properties_id);
+            }
+          } else {
+            $set[] = sprintf(
+              '`street_index` = %s',
+              $this->quote($dto->address_street)
+
+            );
           }
         }
 

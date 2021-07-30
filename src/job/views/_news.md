@@ -2,6 +2,13 @@
 
 ## Latest News
 
+### 30 July, 2021
+
+* **Job Matrix &gt; Sort Columns** - Sort feature has been added to Property and Contractor
+* **New Filters** - Job Types and Status can be filtered through context menus on the respective columns headers
+* **Statistics** - Dynamic statics are displayed
+* **Access Key = *S*** - to return to the search bar, press **&lt;alt&gt;+&lt;S&gt;** and start typing. This is useful if you are well down the page and wish to return to the search box
+
 ### 28 July, 2021
 
 * **comments** can be made against any job any time
