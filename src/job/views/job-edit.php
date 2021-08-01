@@ -65,6 +65,21 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
             <div class="form-row mb-2">
               <div class="col">&nbsp;</div>
               <?php
+
+              // status
+              printf(
+                '<div class="col-auto">
+                  <div class="input-group input-group-sm">
+                    <div class="input-group-prepend">
+                      <div class="input-group-text">status</div>
+                    </div>
+                    <div class="form-control">%s</div>
+                  </div>
+                </div>',
+                config::job_status[$dto->status]
+
+              );
+
               $_u = [strings::asShortDate($dto->created)];
               $_title = '';
               if ($dto->created_by_name) {
@@ -73,7 +88,14 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
               }
 
               printf(
-                '<div class="col-auto small" title="%s">created: %s</div>',
+                '<div class="col-auto" title="%s">
+                  <div class="input-group input-group-sm">
+                    <div class="input-group-prepend">
+                      <div class="input-group-text">create</div>
+                    </div>
+                    <div class="form-control">%s</div>
+                  </div>
+                </div>',
                 $_title,
                 implode(' / ', $_u)
               );
@@ -84,7 +106,14 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                   $_u[] = strings::initials($dto->updated_by_name);
                 }
                 printf(
-                  '<div class="col-auto small" title="%s">updated: %s</div>',
+                  '<div class="col-auto" title="%s">
+                    <div class="input-group input-group-sm">
+                      <div class="input-group-prepend">
+                        <div class="input-group-text">update</div>
+                      </div>
+                      <div class="form-control">%s</div>
+                    </div>
+                  </div>',
                   $_title,
                   implode(' / ', $_u)
 
@@ -95,29 +124,8 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
           <?php }  ?>
 
-          <!-- --[status/due]-- -->
+          <!-- --[due]-- -->
           <div class="form-row">
-            <div class="col-md-3 col-xl-2 col-form-label">status</div>
-
-            <!-- --[status]-- -->
-            <div class="col mb-2">
-              <select name="status" class="form-control" <?= $readonly ? 'disabled' : '' ?>>
-                <?php
-                foreach (config::job_status as $k => $label) {
-                  printf(
-                    '<option value="%s" %s>%s</option>',
-                    $k,
-                    $k == $dto->status ? 'selected' : '',
-                    $label
-
-                  );
-                } ?>
-
-              </select>
-
-            </div>
-
-            <!-- --[due]-- -->
             <div class="col-lg-6 mb-2">
               <div class="form-row">
                 <div class="col-lg-auto col-form-label">due</div>
