@@ -173,7 +173,7 @@ use strings;  ?>
                 $(document)
                   .trigger('job-matrix-reload', {
                     view: 'workorder',
-                    idx: data.id
+                    idx: id
                   });
 
               } else {
