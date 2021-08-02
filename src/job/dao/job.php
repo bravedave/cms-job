@@ -67,7 +67,7 @@ class job extends _dao {
       }
 
       if (1 == $dto->has_invoice && $dto->status < config::job_status_reviewed) {
-        if ($dto->paid) {
+        if ($dto->paid && strtotime($dto->paid) > 0) {
           $dto->status = config::job_status_paid; // auto advance status
         } elseif ($dto->invoice_reviewed_by) {
           $dto->status = config::job_status_reviewed; // auto advance status
