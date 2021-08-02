@@ -2,6 +2,14 @@
 
 ## Latest News
 
+### 2 August, 2021
+
+* **Quotes**
+  * Removed Upload Invoice/Added Upload Quote
+  * If a quote is present, status is progressed to _quoted_
+  * when a quote is marked complete, it is archived
+    * _note, if you removed the complete check, it is not un-archived_
+
 ### 30 July, 2021
 
 * **Job Matrix &gt; Sort Columns** - Sort feature has been added to Property and Contractor

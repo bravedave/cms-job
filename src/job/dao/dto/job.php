@@ -21,6 +21,14 @@ class job extends _dto {
   public $updated_by = 0;
   public $updated_by_name = '';
   public $job_type = 0;
+  public $job_recurrence_interval = 0;
+  public $job_recurrence_start = '';
+  public $job_recurrence_week_frequency = 1;
+  public $job_recurrence_month_frequency = 1;
+  public $job_recurrence_year_frequency = 1;
+  public $job_recurrence_day_of_week = '';
+  public $job_recurrence_day_of_month = '';
+  public $job_recurrence_on_business_day = 1;
   public $brief = '';
   public $description = '';
   public $status = 0;

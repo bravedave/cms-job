@@ -16,7 +16,7 @@ $dto = $this->data->dto;
 $t = '';
 
 $dao = new dao\job;
-if ($path = $dao->getWorkOrderPath($dto)) {
+if ($path = $dao->getQuotePath($dto)) {
   if (file_exists($path)) {
     $t = '?t=' . filemtime($path);
   }
@@ -44,60 +44,38 @@ $_modal = strings::rand();
           </button>
         </div>
         <div class="modal-body">
-          <iframe class="w-100" id="<?= $_modal ?>iframe" src="<?= strings::url(sprintf('%s/workorderpdf/%d%s', $this->route, $dto->id, $t)) ?>"></iframe>
+          <iframe class="w-100" id="<?= $_modal ?>iframe" src="<?= strings::url(sprintf('%s/quoteview/%d%s', $this->route, $dto->id, $t)) ?>"></iframe>
         </div>
         <div class="modal-footer">
-          <?php if ((int)$dto->paid_by < 1) {  ?>
-            <button type="button" class="btn btn-outline-secondary" id="<?= $_RefreshWorkOrder = strings::rand() ?>">refresh order</button>
-            <button type="button" class="btn btn-outline-secondary" id="<?= $_EmailOrder = strings::rand() ?>"><i class="bi bi-cursor"></i> email order</button>
-            <script>
-              (_ => {
-                $('#<?= $_RefreshWorkOrder ?>')
-                  .on('click', function(e) {
-                    e.stopPropagation();
+          <button type="button" class="btn btn-outline-secondary" id="<?= $_delete = strings::rand() ?>"><i class="bi bi-trash"></i> delete</button>
+          <script>
+            (_ => {
+              $('#<?= $_delete ?>')
+                .on('click', function(e) {
+                  e.stopPropagation();
 
-                    $('#<?= $_modal ?>')
-                      .trigger('refresh-workorder')
-                      .modal('hide');
+                  $('#<?= $_modal ?>')
+                    .trigger('delete-quote')
+                    .modal('hide');
 
-                  });
+                });
 
-                $('#<?= $_EmailOrder ?>')
-                  .on('click', function(e) {
-                    e.stopPropagation();
-
-                    $('#<?= $_modal ?>')
-                      .trigger('email-workorder')
-                      .modal('hide');
-
-                  });
-
-              })(_brayworth_);
-            </script>
-          <?php }  ?>
+            })(_brayworth_);
+          </script>
 
           <button type="button" class="btn btn-outline-secondary" id="<?= $_gotoJob = strings::rand() ?>"><?= config::label_job_view ?></button>
-          <?php if ($this->data->hasInvoice) { ?>
-            <button type="button" class="btn btn-outline-secondary" id="<?= $_uid = strings::rand() ?>">View Invoice</button>
-            <script>
-              $('#<?= $_uid ?>').on('click', e => {
-                $('#<?= $_modal ?>')
-                  .trigger('invoice-view')
-                  .modal('hide');
-              });
-            </script>
-          <?php } ?>
-          <?php if ($this->data->hasQuote) { ?>
-            <button type="button" class="btn btn-outline-secondary" id="<?= $_uid = strings::rand() ?>">View Quote</button>
-            <script>
-              $('#<?= $_uid ?>').on('click', e => {
-                $('#<?= $_modal ?>')
-                  .trigger('quote-view')
-                  .modal('hide');
-              });
-            </script>
-          <?php } ?>
+
           <button type="button" class="btn btn-outline-secondary ml-auto" data-dismiss="modal">close</button>
+          <?php if ($this->data->hasWorkorder) { ?>
+            <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
+            <script>
+              $('#<?= $_uid ?>').on('click', e => {
+                $('#<?= $_modal ?>')
+                  .trigger('view-workorder')
+                  .modal('hide');
+              });
+            </script>
+          <?php } ?>
         </div>
       </div>
     </div>

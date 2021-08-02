@@ -13,6 +13,14 @@ namespace cms\job\dao\db;
 $dbc = \sys::dbCheck('job' );
 
 $dbc->defineField('job_type', 'int');
+$dbc->defineField('job_recurrence_interval', 'int');
+$dbc->defineField('job_recurrence_start', 'date');
+$dbc->defineField('job_recurrence_week_frequency', 'int');
+$dbc->defineField('job_recurrence_month_frequency', 'int');
+$dbc->defineField('job_recurrence_year_frequency', 'int');
+$dbc->defineField('job_recurrence_day_of_week', 'varchar');
+$dbc->defineField('job_recurrence_day_of_month', 'varchar', 100);
+$dbc->defineField('job_recurrence_on_business_day', 'tinyint');
 $dbc->defineField('properties_id', 'bigint');
 $dbc->defineField('contractor_id', 'bigint');
 $dbc->defineField('description', 'text');

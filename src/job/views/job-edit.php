@@ -30,6 +30,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
       box-shadow: none;
     }
 
+    .upload-quote,
     .upload-invoice {
       margin-top: -3px !important;
       margin-bottom: -3px !important;
@@ -40,10 +41,23 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
     }
 
+    .upload-quote .has-advanced-upload::before {
+      content: "upload quote";
+
+    }
+
     @media (max-width: 768px) {
       [item-row] {
         border-bottom: 1px solid #dee2e6;
         margin-bottom: 1rem;
+      }
+
+    }
+
+    @media (min-width: 1200px) {
+      #<?= $_uidStatBar = strings::rand() ?> {
+        position: absolute;
+
       }
 
     }
@@ -62,100 +76,137 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
         <div class="modal-body">
           <?php if ($dto->id) {  ?>
-            <div class="form-row mb-2">
-              <div class="col">&nbsp;</div>
-              <?php
+            <div class="form-row">
+              <div class="col position-relative">
+                <div class="container-fluid" id="<?= $_uidStatBar ?>">
+                  <div class="form-row mb-2">
+                    <div class="col">&nbsp;</div>
+                    <?php
 
-              // status
-              printf(
-                '<div class="col-auto">
-                  <div class="input-group input-group-sm">
-                    <div class="input-group-prepend">
-                      <div class="input-group-text">status</div>
-                    </div>
-                    <div class="form-control">%s</div>
-                  </div>
-                </div>',
-                config::job_status[$dto->status]
-
-              );
-
-              $_u = [strings::asShortDate($dto->created)];
-              $_title = '';
-              if ($dto->created_by_name) {
-                $_title = 'created by ' . $dto->created_by_name;
-                $_u[] = strings::initials($dto->created_by_name);
-              }
-
-              printf(
-                '<div class="col-auto" title="%s">
-                  <div class="input-group input-group-sm">
-                    <div class="input-group-prepend">
-                      <div class="input-group-text">create</div>
-                    </div>
-                    <div class="form-control">%s</div>
-                  </div>
-                </div>',
-                $_title,
-                implode(' / ', $_u)
-              );
-
-              if (strtotime($dto->updated) > strtotime($dto->created)) {
-                if ($dto->updated_by_name) {
-                  $_title = 'updated by ' . $dto->updated_by_name;
-                  $_u[] = strings::initials($dto->updated_by_name);
-                }
-                printf(
-                  '<div class="col-auto" title="%s">
-                    <div class="input-group input-group-sm">
-                      <div class="input-group-prepend">
-                        <div class="input-group-text">update</div>
+                    // status
+                    printf(
+                      '<div class="col-auto">
+                      <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                          <div class="input-group-text">status</div>
+                        </div>
+                        <div class="form-control">%s</div>
                       </div>
-                      <div class="form-control">%s</div>
-                    </div>
-                  </div>',
-                  $_title,
-                  implode(' / ', $_u)
+                    </div>',
+                      config::job_status[$dto->status]
 
-                );
-              }  ?>
+                    );
 
+                    $_u = [strings::asShortDate($dto->created)];
+                    $_title = '';
+                    if ($dto->created_by_name) {
+                      $_title = 'created by ' . $dto->created_by_name;
+                      $_u[] = strings::initials($dto->created_by_name);
+                    }
+
+                    printf(
+                      '<div class="col-auto" title="%s">
+                      <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                          <div class="input-group-text">create</div>
+                        </div>
+                        <div class="form-control">%s</div>
+                      </div>
+                    </div>',
+                      $_title,
+                      implode(' / ', $_u)
+                    );
+
+                    if (strtotime($dto->updated) > strtotime($dto->created)) {
+                      if ($dto->updated_by_name) {
+                        $_title = 'updated by ' . $dto->updated_by_name;
+                        $_u[] = strings::initials($dto->updated_by_name);
+                      }
+                      printf(
+                        '<div class="col-auto" title="%s">
+                        <div class="input-group input-group-sm">
+                          <div class="input-group-prepend">
+                            <div class="input-group-text">update</div>
+                          </div>
+                          <div class="form-control">%s</div>
+                        </div>
+                      </div>',
+                        $_title,
+                        implode(' / ', $_u)
+
+                      );
+                    }  ?>
+
+                  </div>
+                </div>
+              </div>
             </div>
 
           <?php }  ?>
 
           <!-- --[due]-- -->
           <div class="form-row">
-            <div class="col-lg-6 mb-2">
-              <div class="form-row">
-                <div class="col-lg-auto col-form-label">due</div>
+            <div class="col-3 col-xl-2 col-form-label">due</div>
 
-                <div class="col">
-                  <div class="input-group">
-                    <input name="due" class="form-control" type="date" <?= $readonly ? 'disabled' : 'required' ?> id="<?= $_uid = strings::rand() ?>" value="<?php if (strtotime($dto->due) > 0) print $dto->due; ?>">
+            <div class="col-lg-3 col-xl-4">
+              <div class="input-group">
+                <input name="due" class="form-control" type="date" <?= $readonly ? 'disabled' : 'required' ?> id="<?= $_uid = strings::rand() ?>" value="<?php if (strtotime($dto->due) > 0) print $dto->due; ?>">
 
-                    <?php if (!$readonly) { ?>
-                      <div class="input-group-append d-none">
-                        <button type="button" class="btn input-group-text" id="<?= $_uid ?>7">7</button>
-                      </div>
+                <?php if (!$readonly) { ?>
+                  <div class="input-group-append d-none">
+                    <button type="button" class="btn input-group-text" id="<?= $_uid ?>7">7</button>
+                  </div>
 
-                      <div class="input-group-append d-none">
-                        <button type="button" class="btn input-group-text" id="<?= $_uid ?>14">14</button>
-                      </div>
+                  <div class="input-group-append d-none">
+                    <button type="button" class="btn input-group-text" id="<?= $_uid ?>14">14</button>
+                  </div>
 
-                      <div class="input-group-append">
-                        <button type="button" class="btn input-group-text" id="<?= $_uid ?>28">28</button>
-                      </div>
+                  <div class="input-group-append">
+                    <button type="button" class="btn input-group-text" id="<?= $_uid ?>28">28</button>
+                  </div>
 
-                      <script>
-                        (_ => {
-                          $('#<?= $_uid ?>7').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+7 days')) ?>'));
-                          $('#<?= $_uid ?>14').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+14 days')) ?>'));
-                          $('#<?= $_uid ?>28').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+28 days')) ?>'));
+                  <script>
+                    (_ => {
+                      $('#<?= $_uid ?>7').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+7 days')) ?>'));
+                      $('#<?= $_uid ?>14').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+14 days')) ?>'));
+                      $('#<?= $_uid ?>28').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+28 days')) ?>'));
 
-                        })(_brayworth_);
-                      </script>
-                    <?php } ?>
+                    })(_brayworth_);
+                  </script>
+                <?php } ?>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- --[type/recurrence]-- -->
+          <div class="form-row">
+            <!-- --[type]-- -->
+            <div class="col-xl-6">
+              <div class="form-row mb-2">
+                <div class="col-3 col-xl-4 col-form-label">type</div>
+
+                <div class="col-lg pt-2">
+                  <div class="form-check form-check-inline">
+                    <input type="radio" class="form-check-input" name="job_type" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_type_order ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_type_order == $dto->job_type ? 'checked' : ''; ?>>
+
+                    <label class="form-check-label" for="<?= $_uid ?>">Order</label>
+
+                  </div>
+
+                  <div class="form-check form-check-inline">
+                    <input type="radio" class="form-check-input" name="job_type" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_type_recurring ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_type_recurring == $dto->job_type ? 'checked' : ''; ?>>
+
+                    <label class="form-check-label" for="<?= $_uid ?>">Recur<span class="d-sm-none">...</span><span class="d-none d-sm-inline">ring</span></label>
+
+                  </div>
+
+                  <div class="form-check form-check-inline mr-0">
+                    <input type="radio" class="form-check-input" name="job_type" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_type_quote ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_type_quote == $dto->job_type ? 'checked' : ''; ?>>
+
+                    <label class="form-check-label" for="<?= $_uid ?>">Quote</label>
 
                   </div>
 
@@ -165,31 +216,267 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
             </div>
 
-          </div>
+            <div class="col-xl" id="<?= $_uidRecurrenceCell = strings::rand() ?>">
+              <div class="form-row">
 
-          <!-- --[type]-- -->
-          <div class="form-row mb-2">
-            <div class="col-3 col-xl-2 col-form-label">type</div>
+                <div class="col-3 col-form-label">recurrence</div>
+                <div class="col-lg pt-2">
+                  <div class="form-row mb-2">
+                    <div class="col">
 
-            <div class="col pt-2">
-              <div class="form-check form-check-inline">
-                <input type="radio" class="form-check-input" name="job_type" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_type_order ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_type_order == $dto->job_type ? 'checked' : ''; ?>>
+                      <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" name="job_recurrence_interval" <?= $readonly ? 'disabled' : '' ?> value="<?= config::job_recurrence_interval_week ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_recurrence_interval_week == $dto->job_recurrence_interval ? 'checked' : ''; ?>>
 
-                <label class="form-check-label" for="<?= $_uid ?>">Order</label>
+                        <label class="form-check-label" for="<?= $_uid ?>">Week</label>
 
-              </div>
+                      </div>
 
-              <div class="form-check form-check-inline">
-                <input type="radio" class="form-check-input" name="job_type" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_type_recurring ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_type_recurring == $dto->job_type ? 'checked' : ''; ?>>
+                      <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" name="job_recurrence_interval" <?= $readonly ? 'disabled' : '' ?> value="<?= config::job_recurrence_interval_month ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_recurrence_interval_month == $dto->job_recurrence_interval ? 'checked' : ''; ?>>
 
-                <label class="form-check-label" for="<?= $_uid ?>">Recur<span class="d-sm-none">...</span><span class="d-none d-sm-inline">ring</span></label>
+                        <label class="form-check-label" for="<?= $_uid ?>">Month</label>
 
-              </div>
+                      </div>
 
-              <div class="form-check form-check-inline mr-0">
-                <input type="radio" class="form-check-input" name="job_type" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_type_quote ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_type_quote == $dto->job_type ? 'checked' : ''; ?>>
+                      <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" name="job_recurrence_interval" <?= $readonly ? 'disabled' : '' ?> value="<?= config::job_recurrence_interval_year ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_recurrence_interval_year == $dto->job_recurrence_interval ? 'checked' : ''; ?>>
 
-                <label class="form-check-label" for="<?= $_uid ?>">Quote</label>
+                        <label class="form-check-label" for="<?= $_uid ?>">Year</label>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  <!-- --[Start]-- -->
+                  <div class="form-row mb-2">
+                    <div class="col">
+                      <div class="input-group">
+                        <div class="input-group-prepend">
+                          <div class="input-group-text">Start</div>
+                        </div>
+
+                        <?php
+                        printf(
+                          '<input type="date" class="form-control" name="job_recurrence_start" value="%s">',
+                          strtotime($dto->job_recurrence_start) > 0 ? $dto->job_recurrence_start : ''
+
+                        );
+
+                        ?>
+
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  <div class="form-row mb-2 d-none" id="<?= $_uidRecurrenceWeekFrequency = strings::rand() ?>">
+                    <div class="col">
+                      <div class="input-group">
+                        <div class="input-group-prepend">
+                          <div class="input-group-text">every</div>
+                        </div>
+
+                        <?php
+                        printf(
+                          '<input type="number" class="form-control" name="job_recurrence_week_frequency" value="%s" min="1" max="9">',
+                          $dto->job_recurrence_week_frequency
+
+                        );
+                        ?>
+
+                        <div class="input-group-append">
+                          <div class="input-group-text"> week/s</div>
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  <div class="form-row mb-2 d-none" id="<?= $_uidRecurrenceMonthFrequency = strings::rand() ?>">
+                    <div class="col">
+                      <div class="input-group">
+                        <div class="input-group-prepend">
+                          <div class="input-group-text">every</div>
+                        </div>
+
+                        <?php
+                        printf(
+                          '<input type="number" class="form-control" name="job_recurrence_month_frequency" value="%s" min="1" max="9">',
+                          $dto->job_recurrence_month_frequency
+
+                        );
+                        ?>
+
+                        <div class="input-group-append">
+                          <div class="input-group-text"> month/s</div>
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  <div class="form-row mb-2 d-none" id="<?= $_uidRecurrenceYearFrequency = strings::rand() ?>">
+                    <div class="col">
+                      <div class="input-group">
+                        <div class="input-group-prepend">
+                          <div class="input-group-text">every</div>
+                        </div>
+
+                        <?php
+                        printf(
+                          '<input type="number" class="form-control" name="job_recurrence_year_frequency" value="%s" min="1" max="9">',
+                          $dto->job_recurrence_year_frequency
+
+                        );
+                        ?>
+
+                        <div class="input-group-append">
+                          <div class="input-group-text"> years/s</div>
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  <div class="form-row mb-2 d-none" id="<?= $_uidRecurrenceDayOfWeek = strings::rand() ?>">
+                    <div class="col">
+                      <?php
+                      $_template = '<div class="form-check"><input type="checkbox" class="form-check-input" name="job_recurrence_day_of_week[]" value="%s" id="%s" %s><label class="form-check-label" for="%s">%s</label></div>';
+                      $recurrenceDays = explode(',', $dto->job_recurrence_day_of_week);
+
+                      printf(
+                        $_template,
+                        config::job_recurrence_day_monday,
+                        $_uid = strings::rand(),
+                        in_array(config::job_recurrence_day_monday, $recurrenceDays) ? 'checked' : '',
+                        $_uid,
+                        'Monday'
+
+                      );
+
+                      printf(
+                        $_template,
+                        config::job_recurrence_day_tuesday,
+                        $_uid = strings::rand(),
+                        in_array(config::job_recurrence_day_tuesday, $recurrenceDays) ? 'checked' : '',
+                        $_uid,
+                        'Tuesday'
+
+                      );
+
+                      printf(
+                        $_template,
+                        config::job_recurrence_day_wednesday,
+                        $_uid = strings::rand(),
+                        in_array(config::job_recurrence_day_wednesday, $recurrenceDays) ? 'checked' : '',
+                        $_uid,
+                        'Wednesday'
+
+                      );
+
+                      printf(
+                        $_template,
+                        config::job_recurrence_day_thursday,
+                        $_uid = strings::rand(),
+                        in_array(config::job_recurrence_day_thursday, $recurrenceDays) ? 'checked' : '',
+                        $_uid,
+                        'Thursday'
+
+                      );
+
+                      printf(
+                        $_template,
+                        config::job_recurrence_day_friday,
+                        $_uid = strings::rand(),
+                        in_array(config::job_recurrence_day_friday, $recurrenceDays) ? 'checked' : '',
+                        $_uid,
+                        'Friday'
+
+                      );
+
+                      printf(
+                        $_template,
+                        config::job_recurrence_day_saturday,
+                        $_uid = strings::rand(),
+                        in_array(config::job_recurrence_day_saturday, $recurrenceDays) ? 'checked' : '',
+                        $_uid,
+                        'Saturday'
+
+                      );
+
+                      printf(
+                        $_template,
+                        config::job_recurrence_day_sunday,
+                        $_uid = strings::rand(),
+                        in_array(config::job_recurrence_day_sunday, $recurrenceDays) ? 'checked' : '',
+                        $_uid,
+                        'Sunday'
+
+                      );
+
+                      ?>
+
+                    </div>
+
+                  </div>
+
+                  <div class="form-row mb-2 d-none" id="<?= $_uidRecurrenceOnBusinessDay = strings::rand() ?>">
+                    <div class="col">
+                      <div class="form-check">
+                        <?php
+                        printf(
+                          '<input type="checkbox" class="form-check-input" name="%s" value="1" id="%s" %s>',
+                          'job_recurrence_on_business_day',
+                          $_uid = strings::rand(),
+                          1 == $dto->job_recurrence_on_business_day ? 'checked' : ''
+
+                        );
+                        ?>
+
+                        <label class="form-check-label" for="<?= $_uid ?>">
+                          recur on business day
+                        </label>
+
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <div class="form-row mb-2 d-none" id="<?= $_uidRecurrenceDayOfMonth = strings::rand() ?>">
+                    <div class="col-6 col-lg-3 pb-2">
+                      <?php
+                      $_template = '<div class="form-check"><input type="checkbox" class="form-check-input" name="job_recurrence_day_of_month[]" value="%s" id="%s" %s><label class="form-check-label" for="%s">%s</label></div>';
+                      $recurrenceDays = explode(',', $dto->job_recurrence_day_of_month);
+
+                      for ($i = 1; $i <= 31; $i++) {
+                        printf(
+                          $_template,
+                          $i,
+                          $_uid = strings::rand(),
+                          in_array($i, $recurrenceDays) ? 'checked' : '',
+                          $_uid,
+                          $i
+
+                        );
+
+                        if (0 == $i % 8) print '</div><div class="col-6 col-lg-3 pb-2">';
+                      } ?>
+
+                    </div>
+
+                  </div>
+
+                </div>
 
               </div>
 
@@ -440,6 +727,10 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary d-none" id="<?= $_btnInvoice = strings::rand() ?>">
             Invoice
+          </button>
+
+          <button type="button" class="btn btn-outline-secondary d-none" id="<?= $_btnQuote = strings::rand() ?>">
+            Quote
           </button>
 
           <button type="button" class="btn btn-outline-secondary <?= $dto->id ? '' : 'mr-auto' ?>" accesskey="T" id="<?= $_btnTenants = strings::rand() ?>">
@@ -758,6 +1049,66 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
       }
 
       $('#<?= $_form ?>')
+        .on('check-job-type', function(e) {
+          $('#<?= $_uidInvoice ?>').trigger('reconcile');
+          $(this).trigger('check-recurrence');
+
+        })
+        .on('check-recurrence', function(e) {
+          let _form = $(this);
+          let _data = _form.serializeFormJSON();
+
+          if (<?= config::job_type_recurring ?> == _data.job_type) {
+            $('#<?= $_uidRecurrenceCell ?>').removeClass('d-none');
+            $('input[name="job_recurrence_interval"], input[name="job_recurrence_start"]', _form)
+              .prop('required', true);
+
+            if (<?= config::job_recurrence_interval_week ?> == _data.job_recurrence_interval) {
+
+              $('#<?= $_uidRecurrenceDayOfWeek ?>, #<?= $_uidRecurrenceWeekFrequency ?>').removeClass('d-none');
+              $('#<?= $_uidRecurrenceDayOfMonth ?>, #<?= $_uidRecurrenceMonthFrequency ?>').addClass('d-none');
+              $('#<?= $_uidRecurrenceYearFrequency ?>').addClass('d-none');
+              $('#<?= $_uidRecurrenceOnBusinessDay ?>').addClass('d-none');
+              $('input[name="job_recurrence_week_frequency"]', _form).attr('min', 1);
+              $('input[name="job_recurrence_month_frequency"]', _form).attr('min', 0);
+
+            } else if (<?= config::job_recurrence_interval_month ?> == _data.job_recurrence_interval) {
+
+              $('#<?= $_uidRecurrenceDayOfWeek ?>, #<?= $_uidRecurrenceWeekFrequency ?>').addClass('d-none');
+              $('#<?= $_uidRecurrenceDayOfMonth ?>, #<?= $_uidRecurrenceMonthFrequency ?>').removeClass('d-none');
+              $('#<?= $_uidRecurrenceYearFrequency ?>').addClass('d-none');
+              $('#<?= $_uidRecurrenceOnBusinessDay ?>').removeClass('d-none');
+              $('input[name="job_recurrence_week_frequency"]', _form).attr('min', 0);
+              $('input[name="job_recurrence_month_frequency"]', _form).attr('min', 1);
+
+            } else if (<?= config::job_recurrence_interval_year ?> == _data.job_recurrence_interval) {
+              $('#<?= $_uidRecurrenceDayOfWeek ?>, #<?= $_uidRecurrenceWeekFrequency ?>').addClass('d-none');
+              $('#<?= $_uidRecurrenceDayOfMonth ?>, #<?= $_uidRecurrenceMonthFrequency ?>').addClass('d-none');
+              $('#<?= $_uidRecurrenceYearFrequency ?>').removeClass('d-none');
+              $('#<?= $_uidRecurrenceOnBusinessDay ?>').removeClass('d-none');
+              $('input[name="job_recurrence_week_frequency"]', _form).attr('min', 0);
+              $('input[name="job_recurrence_month_frequency"]', _form).attr('min', 0);
+
+            } else {
+
+              $('#<?= $_uidRecurrenceDayOfWeek ?>, #<?= $_uidRecurrenceWeekFrequency ?>').addClass('d-none');
+              $('#<?= $_uidRecurrenceDayOfMonth ?>, #<?= $_uidRecurrenceMonthFrequency ?>').addClass('d-none');
+              $('#<?= $_uidRecurrenceYearFrequency ?>').addClass('d-none');
+              $('#<?= $_uidRecurrenceOnBusinessDay ?>').removeClass('d-none');
+              $('input[name="job_recurrence_week_frequency"]', _form).attr('min', 0);
+              $('input[name="job_recurrence_month_frequency"]', _form).attr('min', 0);
+
+            }
+
+          } else {
+            $('#<?= $_uidRecurrenceCell ?>').addClass('d-none');
+            $('input[name="job_recurrence_interval"]', _form).prop('required', false);
+            $('input[name="job_recurrence_week_frequency"]', _form).attr('min', 0);
+            $('input[name="job_recurrence_month_frequency"]', _form).attr('min', 0);
+
+          }
+
+        })
         .on('complete', function(e) {
           e.stopPropagation();
 
@@ -1185,10 +1536,29 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                 .trigger('validate-order-button');
 
             })
-            .trigger('qualify-contractor');
+            .trigger('qualify-contractor')
+            .trigger('check-job-type');
 
-          $('#<?= $_uidInvoice ?>')
-            .trigger('reconcile');
+        })
+        .on('quote-view', function(e) {
+          e.stopPropagation();
+
+          $('#<?= $_modal ?>').modal('hide');
+          $('#<?= $_modal ?>').trigger('quote-view');
+
+        })
+        .on('quote-upload', function(e) {
+          e.stopPropagation();
+
+          $('#<?= $_modal ?>').trigger('quote-upload');
+
+        })
+        .on('reload', function(e) {
+          e.stopPropagation();
+
+          $('#<?= $_modal ?>')
+            .trigger('edit-workorder')
+            .modal('hide');
 
         })
         .on('submit-and-workorder', function(e) {
@@ -1291,13 +1661,6 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
           return false;
 
         })
-        .on('reload', function(e) {
-          e.stopPropagation();
-
-          $('#<?= $_modal ?>').modal('hide');
-          $('#<?= $_modal ?>').trigger('edit-workorder');
-
-        })
         .on('validate-order-button', function(e) {
           let i = $('select[name="item_id\[\]"]', this).length;
 
@@ -1340,160 +1703,239 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
         $('#<?= $_uidInvoice ?>')
           .on('reconcile', function(e) {
 
-            <?php if ($this->data->hasInvoice) {  ?>
-              $('#<?= $_uidInvoice ?>')
-                .html('');
+            $('#<?= $_btnInvoice ?>, #<?= $_btnQuote ?>')
+              .addClass('d-none');
 
-              $('#<?= $_btnInvoice ?>')
-                .removeClass('d-none')
-                .on('click', function(e) {
-                  e.stopPropagation();
+            $('#<?= $_uidInvoice ?>')
+              .removeClass('upload-invoice upload-quote')
+              .html('');
+            let _form = $('#<?= $_form ?>');
+            let _data = _form.serializeFormJSON();
 
-                  $('#<?= $_form ?>')
-                    .trigger('invoice-view');
-
-                });
-
-              <?php if ((int)$dto->paid_by < 1) {  ?>
-                $('#<?= $_btnInvoice ?>')
-                  .on('contextmenu', function(e) {
-                    if (e.shiftKey)
-                      return;
-
+            if (<?= config::job_type_quote ?> == Number(_data.job_type) || <?= $readonly && config::job_type_quote == $dto->job_type ? 'true' : 'false' ?>) {
+              <?php if ($this->data->hasQuote) { ?>
+                $('#<?= $_btnQuote ?>')
+                  .removeClass('d-none')
+                  .on('click', function(e) {
                     e.stopPropagation();
-                    e.preventDefault();
 
-                    _.hideContexts();
-
-                    let _context = _.context();
-                    let _me = $(this);
-
-                    _context.append(
-                      $('<a href="#"><i class="bi bi-trash"></i>delete</a>')
-                      .on('click', function(e) {
-                        e.stopPropagation();
-                        e.preventDefault();
-
-                        _context.close();
-                        _me.trigger('delete');
-                      })
-                    );
-
-                    _context
-                      .addClose()
-                      .open(e);
-
-                  })
-                  .on('delete', function(e) {
-                    let _me = $(this);
-
-                    _.ask.alert({
-                      title: 'confirm delete',
-                      text: 'Are you Sure ?',
-                      buttons: {
-                        yes: function(e) {
-                          $(this).modal('hide');
-                          _me.trigger('delete-confirmed');
-
-                        }
-
-                      }
-
-                    });
-
-                  })
-                  .on('delete-confirmed', function(e) {
-                    let _me = $(this);
-
-                    _.post({
-                      url: _.url('<?= $this->route ?>'),
-                      data: {
-                        action: 'job-invoice-delete',
-                        id: <?= $dto->id ?>
-
-                      },
-
-                    }).then(d => {
-                      _.growl(d);
-                      if ('ack' == d.response) {
-                        $('#<?= $_form ?>')
-                          .trigger('invoice-upload')
-                          .trigger('reload');
-                      }
-
-                    });
+                    $('#<?= $_form ?>')
+                      .trigger('quote-view');
 
                   });
-              <?php }  ?>
 
-            <?php } else { ?>
-              if ($('select[name="item_id\[\]"]', '#<?= $_form ?>').length > 0) {
-                let el = $('input[name="contractor_id"]', '#<?= $_form ?>');
-                if (Number(el.val()) > 0) {
-                  // console.log('lines + contractor - so invoice upload ...');
-                  (c => {
+              <?php } else { ?>
+                $('#<?= $_uidInvoice ?>')
+                  .addClass('upload-quote')
+                  .html('');
+                (c => {
 
-                    $('#<?= $_uidInvoice ?>')
-                      .html('')
-                      .append(c);
+                  $('#<?= $_uidInvoice ?>')
+                    .append(c);
 
-                    _.fileDragDropHandler.call(c, {
-                      url: _.url('<?= $this->route ?>'),
-                      queue: false,
-                      multiple: false,
-                      postData: {
-                        action: 'upload-invoice',
-                        id: <?= $dto->id ?>
-                      },
-                      onError: d => {
+                  _.fileDragDropHandler.call(c, {
+                    url: _.url('<?= $this->route ?>'),
+                    queue: false,
+                    multiple: false,
+                    postData: {
+                      action: 'upload-quote',
+                      id: <?= $dto->id ?>
+                    },
+                    onError: d => {
 
-                        $('#<?= $_uidInvoice ?>')
-                          .html('');
+                      $('#<?= $_uidInvoice ?>')
+                        .html('');
 
-                        $('<div class="alert alert-danger m-1"></div>')
-                          .html(d.description)
-                          .appendTo('#<?= $_uidInvoice ?>');
+                      $('<div class="alert alert-danger m-1"></div>')
+                        .html(d.description)
+                        .appendTo('#<?= $_uidInvoice ?>');
 
-                      },
-                      onUpload: d => {
-                        if ('ack' == d.response) {
-                          $('#<?= $_form ?>')
-                            .trigger('invoice-view')
-                            .trigger('invoice-upload');
+                    },
+                    onUpload: d => {
+                      if ('ack' == d.response) {
+                        $('#<?= $_form ?>')
+                          .trigger('quote-view')
+                          .trigger('quote-upload');
 
-                        } else {
-                          console.log(d);
-
-                        }
+                      } else {
+                        console.log(d);
 
                       }
 
+                    }
+
+                  });
+
+                })(_.fileDragDropContainer({
+                  fileControl: true,
+                  accept: 'image/jpeg,image/png,application/pdf'
+
+                }));
+
+              <?php } ?>
+
+            } else {
+              $('#<?= $_uidInvoice ?>')
+                .addClass('upload-invoice');
+
+              <?php if ($this->data->hasInvoice) {  ?>
+
+                $('#<?= $_btnInvoice ?>')
+                  .removeClass('d-none')
+                  .on('click', function(e) {
+                    e.stopPropagation();
+
+                    $('#<?= $_form ?>')
+                      .trigger('invoice-view');
+
+                  });
+
+                <?php if ((int)$dto->paid_by < 1) {  ?>
+                  $('#<?= $_btnInvoice ?>')
+                    .on('contextmenu', function(e) {
+                      if (e.shiftKey)
+                        return;
+
+                      e.stopPropagation();
+                      e.preventDefault();
+
+                      _.hideContexts();
+
+                      let _context = _.context();
+                      let _me = $(this);
+
+                      _context.append(
+                        $('<a href="#"><i class="bi bi-trash"></i>delete</a>')
+                        .on('click', function(e) {
+                          e.stopPropagation();
+                          e.preventDefault();
+
+                          _context.close();
+                          _me.trigger('delete');
+                        })
+                      );
+
+                      _context
+                        .addClose()
+                        .open(e);
+
+                    })
+                    .on('delete', function(e) {
+                      let _me = $(this);
+
+                      _.ask.alert({
+                        title: 'confirm delete',
+                        text: 'Are you Sure ?',
+                        buttons: {
+                          yes: function(e) {
+                            $(this).modal('hide');
+                            _me.trigger('delete-confirmed');
+
+                          }
+
+                        }
+
+                      });
+
+                    })
+                    .on('delete-confirmed', function(e) {
+                      let _me = $(this);
+
+                      _.post({
+                        url: _.url('<?= $this->route ?>'),
+                        data: {
+                          action: 'job-invoice-delete',
+                          id: <?= $dto->id ?>
+
+                        },
+
+                      }).then(d => {
+                        _.growl(d);
+                        if ('ack' == d.response) {
+                          $('#<?= $_form ?>')
+                            .trigger('invoice-upload')
+                            .trigger('reload');
+                        }
+
+                      });
+
                     });
+                <?php }  ?>
 
-                  })(_.fileDragDropContainer({
-                    fileControl: true,
-                    accept: 'image/jpeg,image/png,application/pdf'
+              <?php } else { ?>
+                if ($('select[name="item_id\[\]"]', '#<?= $_form ?>').length > 0) {
+                  let el = $('input[name="contractor_id"]', '#<?= $_form ?>');
+                  if (Number(el.val()) > 0) {
+                    // console.log('lines + contractor - so invoice upload ...');
+                    (c => {
 
-                  }));
+                      $('#<?= $_uidInvoice ?>')
+                        .append(c);
+
+                      _.fileDragDropHandler.call(c, {
+                        url: _.url('<?= $this->route ?>'),
+                        queue: false,
+                        multiple: false,
+                        postData: {
+                          action: 'upload-invoice',
+                          id: <?= $dto->id ?>
+                        },
+                        onError: d => {
+
+                          $('#<?= $_uidInvoice ?>')
+                            .html('');
+
+                          $('<div class="alert alert-danger m-1"></div>')
+                            .html(d.description)
+                            .appendTo('#<?= $_uidInvoice ?>');
+
+                        },
+                        onUpload: d => {
+                          if ('ack' == d.response) {
+                            $('#<?= $_form ?>')
+                              .trigger('invoice-view')
+                              .trigger('invoice-upload');
+
+                          } else {
+                            console.log(d);
+
+                          }
+
+                        }
+
+                      });
+
+                    })(_.fileDragDropContainer({
+                      fileControl: true,
+                      accept: 'image/jpeg,image/png,application/pdf'
+
+                    }));
+
+                  } else {
+                    // console.log('there is no contractor - so no invoice upload ...');
+                    $('#<?= $_uidInvoice ?>')
+                      .html('');
+
+                  }
 
                 } else {
-                  // console.log('there is no contractor - so no invoice upload ...');
+                  // console.log('there are no lines - so no invoice upload ...');
                   $('#<?= $_uidInvoice ?>')
                     .html('');
 
                 }
 
-              } else {
-                // console.log('there are no lines - so no invoice upload ...');
-                $('#<?= $_uidInvoice ?>')
-                  .html('');
+              <?php } ?>
 
-              }
-
-            <?php } ?>
+            }
 
           });
       <?php } ?>
+
+      $('input[name="job_type"]', '#<?= $_form ?>')
+        .on('change', e => $('#<?= $_form ?>').trigger('check-job-type'));
+      $('input[name="job_recurrence_interval"]', '#<?= $_form ?>')
+        .on('change', e => $('#<?= $_form ?>').trigger('check-recurrence'));
 
       $('#<?= $_btnTenants ?>')
         .on('click', e => $('#<?= $_form ?>').trigger('get-tenants'));

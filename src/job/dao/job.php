@@ -43,6 +43,24 @@ class job extends _dao {
     return $path;
   }
 
+  protected function _getQuotePath(int $jobID): string {
+    $path = implode(DIRECTORY_SEPARATOR, [
+      $this->_store($jobID),
+      'quote'
+
+    ]);
+
+    if (file_exists($path . '.jpg')) {
+      $path .= '.jpg';
+    } elseif (file_exists($path . '.png')) {
+      $path .= '.png';
+    } else {
+      $path .= '.pdf';
+    }
+
+    return $path;
+  }
+
   protected function _store(int $jobID): string {
     $path = implode(DIRECTORY_SEPARATOR, [
       config::cms_job_store(),
@@ -61,12 +79,18 @@ class job extends _dao {
   public function getByID($id) {
     if ($dto = parent::getByID($id)) {
       $dto->has_invoice = file_exists($this->getInvoicePath($dto)) ? 1 : 0;
+      $dto->has_quote = file_exists($this->getQuotePath($dto)) ? 1 : 0;
 
       if (!isset(config::job_status[$dto->status])) {
         $dto->status = 0;
       }
 
-      if (1 == $dto->has_invoice && $dto->status < config::job_status_reviewed) {
+      if ($dto->job_type == config::job_type_quote) {
+        if (1 == $dto->has_quote && $dto->status < config::job_status_quoted) {
+          $dto->status = config::job_status_quoted; // auto advance status
+
+        }
+      } elseif (1 == $dto->has_invoice && $dto->status < config::job_status_reviewed) {
         if ($dto->paid && strtotime($dto->paid) > 0) {
           $dto->status = config::job_status_paid; // auto advance status
         } elseif ($dto->invoice_reviewed_by) {
@@ -193,9 +217,11 @@ class job extends _dao {
 
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `lines` TEXT');
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `has_invoice` INT');
+    $this->Q('ALTER TABLE `matrix` ADD COLUMN `has_quote` INT');
 
     $sql = 'SELECT
         `id`,
+        `job_type`,
         `status`,
         `complete`,
         `invoice_reviewed_by`,
@@ -209,7 +235,18 @@ class job extends _dao {
     if ($res = $this->Result($sql)) {
       $res->dtoSet(function ($dto) {
         $set = [];
-        if (file_exists($path = $this->_getInvoicePath($dto->id))) {
+        if ($dto->job_type == config::job_type_quote) {
+          if (file_exists($path = $this->_getQuotePath($dto->id))) {
+            $set[] = '`has_quote` = 1';
+            if ($dto->status < config::job_status_quoted) {
+              $dto->status = config::job_status_quoted; // auto advance status
+              $set[] = sprintf('`status` = %s', $dto->status);
+            }
+
+          }
+          // \sys::logger( sprintf('<%s><%s> %s', $this->_getQuotePath($dto->id), $dto->status, __METHOD__));
+
+        } else if (file_exists($path = $this->_getInvoicePath($dto->id))) {
           $set[] = '`has_invoice` = 1';
 
           if ($dto->status < config::job_status_reviewed) {
@@ -308,6 +345,10 @@ class job extends _dao {
     }
 
     return $this->Result('SELECT * FROM `matrix`');
+  }
+
+  public function getQuotePath(dto\job $job): string {
+    return $this->_getQuotePath($job->id);
   }
 
   public function getRichData(dto\job $job): dto\job {

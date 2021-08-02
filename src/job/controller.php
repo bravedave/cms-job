@@ -81,6 +81,18 @@ class controller extends \Controller {
       } else {
         Json::nak(sprintf('%s - missing id', $action));
       }
+    } elseif ('check-has-quote' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          Json::ack($action)
+            ->add('quote', file_exists($path = $dao->getQuotePath($dto)) ? 'yes' : 'no');
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak(sprintf('%s - missing id', $action));
+      }
     } elseif ('check-has-workorder' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job;
@@ -540,13 +552,32 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
+    } elseif ('job-quote-delete' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          if (file_exists($path = $dao->getQuotePath($dto))) {
+            unlink($path);
+          }
+          Json::ack($action);
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak($action);
+      }
     } elseif ('job-mark-complete' == $action || 'job-mark-complete-undo' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job;
         if ($dto = $dao->getByID($id)) {
-          $dao->UpdateByID([
+          $a = [
             'complete' => 'job-mark-complete-undo' == $action ? 0 : 1
-          ], $dto->id);
+          ];
+          if ( 'job-mark-complete' == $action && config::job_type_quote == $dto->job_type) {
+            $a['archived'] = \db::dbTimeStamp();
+
+          }
+          $dao->UpdateByID($a, $dto->id);
           Json::ack($action);
         } else {
           Json::nak(sprintf('%s - not found', $action));
@@ -614,6 +645,14 @@ class controller extends \Controller {
           'contractor_id' => (int)$this->getPost('contractor_id'),
           'properties_id' => (int)$this->getPost('properties_id'),
           'job_type' => (int)$this->getPost('job_type'),
+          'job_recurrence_interval' => (int)$this->getPost('job_recurrence_interval'),
+          'job_recurrence_start' => date('Y-m-d', strtotime( $this->getPost('job_recurrence_start'))),
+          'job_recurrence_day_of_week' => implode( ',', (array)$this->getPost('job_recurrence_day_of_week')),
+          'job_recurrence_day_of_month' => implode( ',', (array)$this->getPost('job_recurrence_day_of_month')),
+          'job_recurrence_on_business_day' => (int)$this->getPost('job_recurrence_on_business_day'),
+          'job_recurrence_week_frequency' => (int)$this->getPost('job_recurrence_week_frequency'),
+          'job_recurrence_month_frequency' => (int)$this->getPost('job_recurrence_month_frequency'),
+          'job_recurrence_year_frequency' => (int)$this->getPost('job_recurrence_year_frequency'),
           'status' => (int)$this->getPost('status'),
           'due' => $this->getPost('due'),
           'job_payment' => (int)$this->getPost('job_payment'),
@@ -718,6 +757,51 @@ class controller extends \Controller {
                   $file,
                   $name = 'invoice',
                   $delete = ['invoice.png', 'invoice.jpg', 'invoice.jpeg', 'invoice.pdf']
+                )) {
+                  Json::ack($action);
+                } else {
+                  Json::nak($action);
+                }
+
+                break;  // only 1 file
+
+              }
+            } else {
+              Json::nak($action);
+            }
+          } else {
+            Json::nak($action);
+          }
+        } else {
+          Json::nak($action);
+        }
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('upload-quote' == $action) {
+      if ($_FILES) {
+        if ($id = (int)$this->getPost('id')) {
+          $dao = new dao\job;
+          if ($dto = $dao->getByID($id)) {
+            if ($store = $dao->store($dto)) {
+              foreach ($_FILES as $file) {
+                $uploader = new fileUploader([
+                  'path' => $store,
+                  'accept' => [
+                    'image/png',
+                    'image/x-png',
+                    'image/jpeg',
+                    'image/pjpeg',
+                    'application/pdf'
+
+                  ]
+
+                ]);
+
+                if ($uploader->save(
+                  $file,
+                  $name = 'quote',
+                  $delete = ['quote.png', 'quote.jpg', 'quote.jpeg', 'quote.pdf']
                 )) {
                   Json::ack($action);
                 } else {
@@ -890,10 +974,11 @@ class controller extends \Controller {
         $this->data = (object)[
           'title' => $this->title = config::label_job_edit,
           'dto' => $dto,
-          'log' => dao\job_log::getForJob( $dto),
+          'log' => dao\job_log::getForJob($dto),
           'categories' => dao\job_categories::getCategorySet(),
           'hasWorkorder' => file_exists($path = $dao->getWorkOrderPath($dto)),
           'hasInvoice' => file_exists($path = $dao->getInvoicePath($dto)),
+          'hasQuote' => file_exists($path = $dao->getQuotePath($dto)),
 
         ];
 
@@ -946,7 +1031,7 @@ class controller extends \Controller {
     ]);
   }
 
-  public function matrixOfProperty( $pid) {
+  public function matrixOfProperty($pid) {
     $archived = 'yes' == session::get('job-matrix-archived');
 
     $dao = new dao\job;
@@ -960,7 +1045,6 @@ class controller extends \Controller {
     ];
 
     $this->load('matrix');
-
   }
 
   public function invoice($id = 0) {
@@ -1080,6 +1164,45 @@ class controller extends \Controller {
     }
   }
 
+  public function quote($id = 0) {
+    if ($id = (int)$id) {
+      $dao = new dao\job;
+      if ($dto = $dao->getByID($id)) {
+        $dto = $dao->getRichData($dto);
+
+        $this->data = (object)[
+          'title' => $this->title = 'View Quote',
+          'dto' => $dto,
+          'hasWorkorder' => file_exists($path = $dao->getWorkOrderPath($dto)),
+
+        ];
+
+        $this->load('job-view-quote');
+      } else {
+        $this->load('not-found');
+      }
+    } else {
+      $this->load('invalid');
+    }
+  }
+
+  public function quoteview($id = 0) {
+    if ($id = (int)$id) {
+      $dao = new dao\job;
+      if ($dto = $dao->getByID($id)) {
+        if (file_exists($path = $dao->getQuotePath($dto))) {
+          sys::serve($path);
+        } else {
+          print file_get_contents(__DIR__ . '/views/not-found.html');
+        }
+      } else {
+        print file_get_contents(__DIR__ . '/views/not-found.html');
+      }
+    } else {
+      print file_get_contents(__DIR__ . '/views/invalid.html');
+    }
+  }
+
   public function templateeditor() {
     $template = $this->getParam('t');
     if (\in_array($template, config::job_templates)) {
@@ -1105,6 +1228,7 @@ class controller extends \Controller {
           'title' => $this->title = config::cms_job_PDF_title($dto->job_type),
           'dto' => $dto,
           'hasInvoice' => file_exists($path = $dao->getInvoicePath($dto)),
+          'hasQuote' => file_exists($path = $dao->getQuotePath($dto)),
 
         ];
 

@@ -121,6 +121,7 @@ use strings;  ?>
 
   </div>
 
+  <!-- --[add new job]-- -->
   <div class="col-auto">
     <button type="button" class="btn btn-light" title="add new job" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-journal-plus"></i></button>
     <script>
@@ -230,7 +231,7 @@ use strings;  ?>
         <td class="d-none d-md-table-cell">Items</td>
         <td class="text-center" title="Order/Recurring/Quote" type>Type</td>
         <td class="text-center icon-width"><i class="bi bi-cursor"></i></td>
-        <td class="text-center" title="has invoice"><i class="bi bi-info-circle"></i></td>
+        <td class="text-center" title="has invoice/quote"><i class="bi bi-info-circle"></i></td>
         <td class="text-center" status>Status</td>
         <td class="text-center" PM>PM</td>
 
@@ -266,6 +267,7 @@ use strings;  ?>
             data-status="%s"
             data-archived="%s",
             data-invoiced="%s"
+            data-quote="%s"
             data-paid="%s">',
           strtotime($dto->archived) > 0 ? 'text-muted' : '',
           $dto->id,
@@ -283,6 +285,7 @@ use strings;  ?>
           $dto->status,
           strtotime($dto->archived) > 0 ? 'yes' : 'no',
           1 == (int)$dto->has_invoice ? 'yes' : 'no',
+          1 == (int)$dto->has_quote ? 'yes' : 'no',
           (int)$dto->paid_by > 0 ? 'yes' : 'no'
 
         );
@@ -340,7 +343,18 @@ use strings;  ?>
           }
           ?>
         </td>
-        <td class="text-center" invoiced><?= $dto->has_invoice ? '&check;' : '' ?></td>
+
+        <td class="text-center" invoiced>
+          <?php
+          if ($dto->job_type == config::job_type_quote) {
+            if ($dto->has_quote) {
+              print 'q';
+            }
+          } elseif ($dto->has_invoice) {
+            print '&check;';
+          }
+          ?></td>
+
         <td class="text-center" status><?= config::cms_job_status_verbatim($dto->status) ?></td>
 
         <td class="text-center" pm><?= $pm ?></td>
@@ -526,6 +540,18 @@ use strings;  ?>
                   .trigger('refresh');
 
               }))
+              .then(d => d.on('quote-view', e => {
+                e.stopPropagation();
+                _tr
+                  .trigger('quote-view');
+
+              }))
+              .then(d => d.on('quote-upload', e => {
+                e.stopPropagation();
+                _tr
+                  .trigger('refresh');
+
+              }))
               .then(d => d.on('view-workorder', e => {
                 e.stopPropagation();
                 _tr
@@ -698,6 +724,50 @@ use strings;  ?>
               );
 
             }
+
+            _context.append(
+              $('<a href="#" class="d-none"></a>')
+              .on('reconcile', function(e) {
+                let _me = $(this);
+
+                // _data is from _tr
+                // console.log( _data);
+
+                if (Number(_data.contractor) > 0) {
+                  _.post({
+                    url: _.url('<?= $this->route ?>'),
+                    data: {
+                      action: 'check-has-quote',
+                      id: _data.id
+                    },
+
+                  }).then(d => {
+                    if ('ack' == d.response) {
+                      if ('yes' == d.quote) {
+                        _me
+                          .html('<i class="bi bi-file-text"></i>view quote')
+                          .removeClass('d-none')
+                          .on('click', e => {
+                            e.stopPropagation();
+                            _tr.trigger('quote-view');
+                            _context.close();
+
+                          });
+
+                      }
+                    } else {
+                      _.growl(d);
+
+                    }
+
+                  });
+
+                }
+
+              })
+              .trigger('reconcile')
+
+            );
 
             if (Number(_data.properties_id) > 0) {
               _context.append(
@@ -953,6 +1023,47 @@ use strings;  ?>
             });
 
           })
+          .on('delete-quote', function(e) {
+            let _tr = $(this);
+
+            _.ask.alert({
+              title: 'delete quote',
+              text: 'Are you Sure ?',
+              buttons: {
+                yes: function(e) {
+                  _tr.trigger('delete-quote-confirmed');
+                  $(this).modal('hide');
+
+                }
+
+              }
+
+            });
+
+          })
+          .on('delete-quote-confirmed', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'job-quote-delete',
+                id: _data.id
+
+              },
+
+            }).then(d => {
+              _.growl(d);
+              if ('ack' == d.response) {
+                _tr
+                  .trigger('refresh');
+
+              }
+
+            });
+
+          })
           .on('duplicate', function(e) {
             let _tr = $(this);
             let _data = _tr.data();
@@ -1132,6 +1243,39 @@ use strings;  ?>
               }));
 
           })
+          .on('quote-view', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.get
+              .modal(_.url('<?= $this->route ?>/quote/' + _data.id))
+              .then(m => m.on('delete-quote', e => {
+                e.stopPropagation();
+                _tr.trigger('delete-quote');
+
+              }))
+              .then(m => m.on('edit-workorder', e => {
+                e.stopPropagation();
+                _tr.trigger('edit');
+
+              }))
+              // .then(m => m.on('job-mark-invoice-reviewed', e => {
+              //   e.stopPropagation();
+              //   _tr.trigger('mark-reviewed');
+
+              // }))
+              // .then(m => m.on('job-mark-invoice-reviewed-undo', e => {
+              //   e.stopPropagation();
+              //   _tr.trigger('mark-reviewed-undo');
+
+              // }))
+              .then(m => m.on('view-workorder', e => {
+                e.stopPropagation();
+                _tr.trigger('view-workorder');
+
+              }));
+
+          })
           .on('mark-paid', function(e) {
             let _tr = $(this);
             let _data = _tr.data();
@@ -1298,6 +1442,7 @@ use strings;  ?>
                   job_type: d.data.job_type,
                   status: d.data.status,
                   invoice: 1 == Number(d.data.has_invoice) ? 'yes' : 'no',
+                  quote: 1 == Number(d.data.has_quote) ? 'yes' : 'no',
                   complete: 1 == Number(d.data.complete) ? 'yes' : 'no',
                   paid: Number(d.data.paid_by) > 0 ? 'yes' : 'no',
                   archived: archived ? 'yes' : 'no',
@@ -1305,13 +1450,12 @@ use strings;  ?>
                 });
 
                 archived ? _tr.addClass('text-muted') : _tr.removeClass('text-muted');
-
                 // console.log(d.data);
 
                 $('[address]', _tr).html(d.data.address_street);
                 $('[tradingname]', _tr).html(d.data.contractor_trading_name);
                 $('[status]', _tr).html(d.data.status_verbatim);
-                $('[invoiced]', _tr).html(1 == Number(d.data.has_invoice) ? '&check;' : '');
+                $('[invoiced]', _tr).html(1 == Number(d.data.has_quote) ? 'q' : (1 == Number(d.data.has_invoice) ? '&check;' : ''));
                 $('[type]', _tr).html(String(d.data.type_verbatim).initials());
                 $('[pm]', _tr).html(pm);
 
@@ -1385,6 +1529,11 @@ use strings;  ?>
                 _tr.trigger('invoice-view');
 
               }))
+              .then(m => m.on('quote-view', e => {
+                e.stopPropagation();
+                _tr.trigger('quote-view');
+
+              }));
 
           });
 

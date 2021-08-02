@@ -12,7 +12,7 @@
 namespace cms\job;
 
 class config extends \config {
-	const cms_job_db_version = 2.2;
+	const cms_job_db_version = 2.9;
 
 	const label = 'JOB';
 	const label_contractor_add = 'New Contractor';
@@ -46,6 +46,17 @@ class config extends \config {
 
 	];
 
+	const job_recurrence_interval_week = 1;
+	const job_recurrence_interval_month = 2;
+	const job_recurrence_interval_year = 3;
+	const job_recurrence_day_sunday = 1;
+	const job_recurrence_day_monday = 2;
+	const job_recurrence_day_tuesday = 3;
+	const job_recurrence_day_wednesday = 4;
+	const job_recurrence_day_thursday = 5;
+	const job_recurrence_day_friday = 6;
+	const job_recurrence_day_saturday = 7;
+
 	const job_type_order = 0;
 	const job_type_recurring = 1;
 	const job_type_quote = 2;
@@ -60,11 +71,11 @@ class config extends \config {
 	const job_payment_owner = 0;
 	const job_payment_tenant = 1;
 
-	// 5 => 'quote',
 	// 10 => 'assigned',
 	const job_status = [
 		0 => 'draft',
 		2 => 'sent',
+		5 => 'quoted',
 		14 => 'complete',
 		15 => 'invoiced',
 		20 => 'reviewed',
@@ -74,7 +85,7 @@ class config extends \config {
 
 	const job_status_new = 0;
 	const job_status_sent = 2;
-	// const job_status_quote = 5;
+	const job_status_quoted = 5;
 	// const job_status_assigned = 10;
 	const job_status_complete = 14;
 	const job_status_invoiced = 15;
@@ -179,8 +190,8 @@ class config extends \config {
 			return 'draft';
 		} elseif (config::job_status_sent == $status) {
 			return 'sent';
-		// } elseif (config::job_status_quote == $status) {
-		// 	return 'quote';
+		} elseif (config::job_status_quoted == $status) {
+			return 'quoted';
 		// } elseif (config::job_status_assigned == $status) {
 		// 	return 'assigned';
 		} elseif (config::job_status_complete == $status) {
