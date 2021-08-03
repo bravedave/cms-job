@@ -2,6 +2,12 @@
 
 ## Latest News
 
+### 3 August, 2021
+
+* **Sort by Status** has been added to the JOB matrix
+* **Recurring** Job types
+  * we are now able to define the schedule
+
 ### 2 August, 2021
 
 * **Quotes**
