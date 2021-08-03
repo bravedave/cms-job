@@ -38,6 +38,12 @@ class controller extends \Controller {
     ]);
   }
 
+  protected function before() {
+    config::cms_job_checkdatabase();
+    parent::before();
+  }
+
+
   protected function postHandler() {
     $action = $this->getPost('action');
 
