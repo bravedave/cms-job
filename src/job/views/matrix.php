@@ -232,7 +232,7 @@ use strings;  ?>
         <td class="text-center" title="Order/Recurring/Quote" type>Type</td>
         <td class="text-center icon-width"><i class="bi bi-cursor"></i></td>
         <td class="text-center" title="has invoice/quote"><i class="bi bi-info-circle"></i></td>
-        <td class="text-center" status>Status</td>
+        <td class="text-center" status data-role="sort-header" data-key="status">Status</td>
         <td class="text-center" PM>PM</td>
 
       </tr>
