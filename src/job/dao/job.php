@@ -384,6 +384,7 @@ class job extends _dao {
       });
     }
 
+    // get lines for jobs
     $sql =
       'SELECT
         m.*,
@@ -393,7 +394,10 @@ class job extends _dao {
       FROM `matrix` m
         LEFT JOIN `job_lines` jl ON jl.job_id = m.id
         LEFT JOIN `job_items` ji ON ji.id = jl.item_id
-      ORDER BY m.id, ji.job_categories_id';
+      WHERE
+        m.`id` > 0
+      ORDER BY
+        m.id, ji.job_categories_id';
 
     if ($res = $this->Result($sql)) {
       $items = [];
@@ -423,6 +427,57 @@ class job extends _dao {
       }
     }
 
+    // get lines for recurring jobs from their parents
+    $sql =
+    'SELECT
+        m.*,
+        jl.item_id,
+        ji.item,
+        ji.description
+      FROM
+        (SELECT
+          DISTINCT job_recurrence_parent FROM `matrix`
+        WHERE
+          COALESCE( matrix.`id`,0) = 0 AND matrix.`job_recurrence_parent` > 0
+        ) m
+        LEFT JOIN `job_lines` jl ON jl.job_id = m.job_recurrence_parent
+        LEFT JOIN `job_items` ji ON ji.id = jl.item_id
+      ORDER BY
+        m.job_recurrence_parent, ji.job_categories_id';
+
+    if ($res = $this->Result($sql)) {
+      // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
+
+      $items = [];
+      $res->dtoSet(function ($dto) use (&$items) {
+        if ($dto->item || $dto->description) {
+          if (!isset($items[$dto->job_recurrence_parent])) $items[$dto->job_recurrence_parent] = [];
+          $items[$dto->job_recurrence_parent][] = (object)[
+            'item' => $dto->item,
+            'description' => $dto->description,
+
+          ];
+        }
+
+        return $dto;
+      });
+
+      // \sys::logSQL(sprintf('<%s> %s', count($items), __METHOD__));
+      foreach ($items as $k => $v) {
+        $sql = sprintf(
+          'UPDATE `matrix` SET `lines` = %s WHERE `job_recurrence_parent` = %d',
+          $this->quote(json_encode($v)),
+          $k
+
+        );
+
+        // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
+        $this->Q($sql);
+      }
+    }
+
+    // $this->Result('DROP TABLE IF EXISTS _matrix');
+    // $this->Result('CREATE TABLE _matrix AS SELECT * FROM `matrix`');
     return $this->Result('SELECT * FROM `matrix`');
   }
 
