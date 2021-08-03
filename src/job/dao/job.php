@@ -279,16 +279,15 @@ class job extends _dao {
         } else {
         }
 
+        // $file = sprintf(
+        //   '%s/sql-temp.sql',
+        //   config::dataPath()
 
-        $file = sprintf(
-          '%s/sql-temp.sql',
-          config::dataPath()
+        // );
 
-        );
-
-        file_put_contents($file, json_encode($a, JSON_PRETTY_PRINT));
-        \sys::logger(sprintf('<%s> %s', $file, __METHOD__));
-        \sys::logger(sprintf('<%s> %s', $dto->id, __METHOD__));
+        // file_put_contents($file, json_encode($a, JSON_PRETTY_PRINT));
+        // \sys::logger(sprintf('<%s> %s', $file, __METHOD__));
+        // \sys::logger(sprintf('<%s> %s', $dto->id, __METHOD__));
       });
     }
 
