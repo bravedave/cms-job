@@ -7,6 +7,7 @@
 * **Sort by Status** has been added to the JOB matrix
 * **Recurring** Job types
   * we are now able to define the schedule
+  * recurring jobs appear in the list
 
 ### 2 August, 2021
 
