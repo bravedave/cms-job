@@ -17,7 +17,7 @@ use dao\{
   people
 };
 
-// use green;
+use DateTime, DateInterval;
 use strings;
 // use sys;
 
@@ -117,14 +117,16 @@ class job extends _dao {
 
   public function getMatrix(bool $archived = false, $pid = 0) {
     $where = [];
+    $whereRecurring = [];
 
     if ((int)$pid) {
-      $where[] = sprintf('job.properties_id = %d', $pid);
+      $where[] = sprintf('job.`properties_id` = %d', $pid);
+      $whereRecurring[] = sprintf('job.`properties_id` = %d', $pid);
     }
 
     if (!$archived) {
-      $where[] = sprintf(
-        '(COALESCE(job.`archived`,%s) = %s OR DATE( job.archived) <= %s)',
+      $_where[] = sprintf(
+        '(COALESCE(job.`archived`,%s) = %s OR DATE( job.`archived`) <= %s)',
         $this->quote(''),
         $this->quote(''),
         $this->quote('0000-00-00')
@@ -132,12 +134,16 @@ class job extends _dao {
     }
 
     if ($where) {
-      $where = sprintf('WHERE %s', implode(' AND ', $where));
+      $where = sprintf('WHERE %s', implode(' AND ', $_where));
     } else {
       $where = '';
     }
 
-    $sql = sprintf(
+    $whereRecurring[] = sprintf('job.`job_type` = %s', config::job_type_recurring);
+    $whereRecurring[] = 'job.`job_recurrence_disable` = 0';
+    $whereRecurring = sprintf('WHERE %s', implode(' AND ', $whereRecurring));
+
+    $sqlSeed = sprintf(
       'SELECT
         job.*,
         p.`address_street`,
@@ -159,16 +165,14 @@ class job extends _dao {
           LEFT JOIN
         `job_contractors` c on c.id = job.`contractor_id`
           LEFT JOIN
-        `people` ON people.id = c.`primary_contact`
-      %s',
+        `people` ON people.id = c.`primary_contact`',
       $this->quote(''),
-      $this->quote(''),
-      $where
+      $this->quote('')
 
     );
 
     if (config::$CONSOLE_FALLBACK) {
-      $sql = sprintf(
+      $sqlSeed = sprintf(
         'SELECT
           job.*,
           p.`address_street`,
@@ -195,17 +199,14 @@ class job extends _dao {
             LEFT JOIN
           `console_properties` cp on cp.`properties_id` = p.`id`
             LEFT JOIN
-          `users` uc ON uc.`console_code` = cp.`PropertyManager`
-        %s',
+          `users` uc ON uc.`console_code` = cp.`PropertyManager`',
         $this->quote(''),
-        $this->quote(''),
-        $where
+        $this->quote('')
 
       );
     }
 
-    // \sys::logSQL(sprintf('<%s> %s', $sql, __METHOD__));
-
+    $sql = implode(' ', [$sqlSeed, $where]);
     $this->Q(
       sprintf(
         'CREATE TEMPORARY TABLE `matrix` AS %s',
@@ -214,6 +215,85 @@ class job extends _dao {
       )
 
     );
+
+    $sql = implode(' ', [$sqlSeed, $whereRecurring]);
+    if ($res = $this->Result($sql)) {
+      $res->dtoSet(function ($dto) {
+        $ignore = [
+          'id',
+          'created',
+          'updated',
+          'due',
+          'archived',
+          'complete',
+          'invoice_reviewed',
+          'invoice_reviewed_by',
+          'paid',
+          'paid_by',
+          'updated_by',
+          'created_by',
+          'email_sent',
+          'email_sent_by',
+
+        ];
+
+        $a = [];
+        foreach ($dto as $fld => $val) {
+          if (in_array($fld, $ignore)) continue;
+
+          $a[$fld] = $val;
+        }
+
+        $lookAhead = date('Y-m-d', strtotime(sprintf('+%s months', config::cms_job_recurrence_lookahead())));
+        if ($dto->job_recurrence_interval == config::job_recurrence_interval_week) {
+          if ((int)$dto->job_recurrence_week_frequency) {
+
+            // \sys::logger(sprintf('<%s> %s', 'weekly', __METHOD__));
+
+            if (strtotime($dto->due) > 0) {
+              $interval = new DateInterval(sprintf('P%sW', (int)$dto->job_recurrence_week_frequency));
+
+              $due = new DateTime($dto->due);
+              $daysOfWeek = explode(',', $dto->job_recurrence_day_of_week);
+              // \sys::logger(sprintf('<%s ? %s> %s', $due->format('Y-m-d'), $lookAhead, __METHOD__));
+
+              $due->add($interval);
+              while ($due->format('Y-m-d') <= $lookAhead && ( strtotime($dto->job_recurrence_end) < 1 || $due->format('Y-m-d') <= $dto->job_recurrence_end)) {
+
+                for ($i = 0; $i < 7; $i++) {
+                  $_time = strtotime(sprintf('+%s days', $i), $due->getTimestamp());
+                  if (in_array(date('N', $_time), $daysOfWeek)) {
+                    $a['due'] = date('Y-m-d', $_time);
+                    $a['job_recurrence_parent'] = $dto->id;
+                    $this->db->Insert( 'matrix', $a);
+
+                    // \sys::logger(sprintf('<%s> %s', date('Y-m-d : D', $_time), __METHOD__));
+                  }
+                }
+                $due->add($interval);
+              }
+            // } else {
+            //   \sys::logger(sprintf('<%s> %s', 'due is missing', __METHOD__));
+            }
+          }
+        } else {
+        }
+
+
+        $file = sprintf(
+          '%s/sql-temp.sql',
+          config::dataPath()
+
+        );
+
+        file_put_contents($file, json_encode($a, JSON_PRETTY_PRINT));
+        \sys::logger(sprintf('<%s> %s', $file, __METHOD__));
+        \sys::logger(sprintf('<%s> %s', $dto->id, __METHOD__));
+      });
+    }
+
+    // \sys::logSQL(sprintf('<%s> %s', $sql, __METHOD__));
+
 
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `lines` TEXT');
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `has_invoice` INT');
@@ -230,7 +310,8 @@ class job extends _dao {
         `address_street`,
         `street_index`
       FROM
-        `matrix`';
+        `matrix`
+      WHERE `id` > 0';
 
     if ($res = $this->Result($sql)) {
       $res->dtoSet(function ($dto) {
@@ -242,7 +323,6 @@ class job extends _dao {
               $dto->status = config::job_status_quoted; // auto advance status
               $set[] = sprintf('`status` = %s', $dto->status);
             }
-
           }
           // \sys::logger( sprintf('<%s><%s> %s', $this->_getQuotePath($dto->id), $dto->status, __METHOD__));
 

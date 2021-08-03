@@ -573,9 +573,8 @@ class controller extends \Controller {
           $a = [
             'complete' => 'job-mark-complete-undo' == $action ? 0 : 1
           ];
-          if ( 'job-mark-complete' == $action && config::job_type_quote == $dto->job_type) {
+          if ('job-mark-complete' == $action && config::job_type_quote == $dto->job_type) {
             $a['archived'] = \db::dbTimeStamp();
-
           }
           $dao->UpdateByID($a, $dto->id);
           Json::ack($action);
@@ -646,9 +645,9 @@ class controller extends \Controller {
           'properties_id' => (int)$this->getPost('properties_id'),
           'job_type' => (int)$this->getPost('job_type'),
           'job_recurrence_interval' => (int)$this->getPost('job_recurrence_interval'),
-          'job_recurrence_start' => date('Y-m-d', strtotime( $this->getPost('job_recurrence_start'))),
-          'job_recurrence_day_of_week' => implode( ',', (array)$this->getPost('job_recurrence_day_of_week')),
-          'job_recurrence_day_of_month' => implode( ',', (array)$this->getPost('job_recurrence_day_of_month')),
+          'job_recurrence_end' => date('Y-m-d', strtotime($this->getPost('job_recurrence_end'))),
+          'job_recurrence_day_of_week' => implode(',', (array)$this->getPost('job_recurrence_day_of_week')),
+          'job_recurrence_day_of_month' => implode(',', (array)$this->getPost('job_recurrence_day_of_month')),
           'job_recurrence_on_business_day' => (int)$this->getPost('job_recurrence_on_business_day'),
           'job_recurrence_week_frequency' => (int)$this->getPost('job_recurrence_week_frequency'),
           'job_recurrence_month_frequency' => (int)$this->getPost('job_recurrence_month_frequency'),
@@ -713,6 +712,10 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
+    } elseif ('set-job-recurrence-lookahead' == $action) {
+      config::cms_job_recurrence_lookahead((int)$this->getPost('months'));
+      Json::ack($action)
+        ->add('months', config::cms_job_recurrence_lookahead());
     } elseif ('set-primary-contact' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job_contractors;

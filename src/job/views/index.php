@@ -241,6 +241,82 @@ use currentUser, strings;  ?>
     })(_brayworth_);
   </script>
 
+  <li class="nav-item pt-3 pl-3">
+    <h6>Project Recurrence</h6>
+    <p class="text-muted form-text">The number of months ahead recurring jobs will be calculated</p>
+    <div class="input-group">
+      <div class="input-group-prepend">
+        <div class="input-group-text">months</div>
+      </div>
+
+      <input type="number" class="form-control" id="<?= $_uid = strings::rand() ?>" value="<?= config::cms_job_recurrence_lookahead() ?>">
+
+      <div class="input-group-append">
+        <button type="button" class="btn input-group-text" id="<?= $_uid ?>btn" title="save as default"><i class="bi bi-save"></i></button>
+      </div>
+
+      <div class="input-group-append">
+        <button type="button" class="btn input-group-text" id="<?= $_uid ?>reset" title="reset to system default"><i class="bi bi-recycle"></i></button>
+      </div>
+
+    </div>
+
+  </li>
+  <script>
+    (_ => {
+      $('#<?= $_uid ?>btn')
+        .on('click', function(e) {
+          e.stopPropagation();
+
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'set-job-recurrence-lookahead',
+              months: $('#<?= $_uid ?>').val()
+
+            },
+
+          }).then(d => {
+            _.growl(d);
+
+            if ('ack' == d.response) {
+              $('#<?= $_uid ?>').val(d.months);
+
+            }
+
+          });
+          // _.get.modal(_.url('<?= $this->route ?>/invoiceto_edit'));
+
+        });
+
+      $('#<?= $_uid ?>reset')
+        .on('click', function(e) {
+          e.stopPropagation();
+
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'set-job-recurrence-lookahead',
+              months: 0
+
+            },
+
+          }).then(d => {
+            _.growl(d);
+
+            if ('ack' == d.response) {
+              $('#<?= $_uid ?>').val(d.months);
+
+            }
+
+          });
+          // _.get.modal(_.url('<?= $this->route ?>/invoiceto_edit'));
+
+        });
+
+    })(_brayworth_);
+  </script>
+
   <li class="nav-item h6 pt-3 pl-3">
     Templates
 

@@ -233,6 +233,7 @@ use strings;  ?>
         <td class="text-center icon-width"><i class="bi bi-cursor"></i></td>
         <td class="text-center" title="has invoice/quote"><i class="bi bi-info-circle"></i></td>
         <td class="text-center" status data-role="sort-header" data-key="status">Status</td>
+        <td class="text-center" due data-role="sort-header" data-key="due">Due</td>
         <td class="text-center" PM>PM</td>
 
       </tr>
@@ -261,6 +262,7 @@ use strings;  ?>
             data-contractor_name="%s"
             data-contractor_primary_contact="%s"
             data-contractor_primary_contact_name="%s"
+            data-due="%s"
             data-pm="%s"
             data-email_sent="%s"
             data-job_type="%s"
@@ -269,7 +271,7 @@ use strings;  ?>
             data-invoiced="%s"
             data-quote="%s"
             data-paid="%s">',
-          strtotime($dto->archived) > 0 ? 'text-muted' : '',
+          $dto->id ? (strtotime($dto->archived) > 0 ? 'text-muted' : '') : 'text-info',
           $dto->id,
           $dto->properties_id,
           htmlentities($dto->address_street),
@@ -279,6 +281,7 @@ use strings;  ?>
           htmlentities($dto->contractor_trading_name),
           $dto->contractor_primary_contact,
           htmlentities($dto->contractor_primary_contact_name),
+          $dto->due,
           $pm,
           strtotime($dto->email_sent) > 0 ? 'yes' : 'no',
           $dto->job_type,
@@ -357,6 +360,7 @@ use strings;  ?>
 
         <td class="text-center" status><?= config::cms_job_status_verbatim($dto->status) ?></td>
 
+        <td class="text-center" due><?= strings::asLocalDate($dto->due) ?></td>
         <td class="text-center" pm><?= $pm ?></td>
 
       <?php
@@ -582,91 +586,149 @@ use strings;  ?>
             let _tr = $(this);
             let _data = _tr.data();
 
-            _context.append(
-              $('<a href="#"><i class="bi bi-pencil"></i>edit</a>')
-              .on('click', e => {
-                e.stopPropagation();
-
-                _tr.trigger('edit');
-                _context.close();
-
-              })
-
-            );
-
-            if (0 < Number(_data.line_count)) {
-
-              let paidCtrl = $('<a href="#" class="d-none">paid</a>')
-                .on('reconcile', function(e) {
-                  let _me = $(this);
-
-                  if ('yes' == _data.paid) {
-                    _me
-                      .prepend('<i class="bi bi-check"></i>')
-                      .on('click', e => {
-                        e.stopPropagation();
-                        _tr.trigger('mark-paid-undo');
-                        _context.close();
-
-                      });
-
-                  } else {
-                    _me
-                      .on('click', e => {
-                        e.stopPropagation();
-                        _tr.trigger('mark-paid');
-                        _context.close();
-
-                      });
-
-                  }
-
-                  _me
-                    .removeClass('d-none');
-
-                });
-
-              _context.append(paidCtrl);
-
+            if (Number(_data.id) > 0) {
               _context.append(
-                $('<a href="#" class="d-none"></a>')
-                .on('reconcile', function(e) {
-                  let _me = $(this);
+                $('<a href="#"><i class="bi bi-pencil"></i>edit</a>')
+                .on('click', e => {
+                  e.stopPropagation();
 
-                  _.post({
-                    url: _.url('<?= $this->route ?>'),
-                    data: {
-                      action: 'check-has-invoice',
-                      id: _data.id
-                    },
+                  _tr.trigger('edit');
+                  _context.close();
 
-                  }).then(d => {
-                    if ('ack' == d.response) {
-                      if ('yes' == d.invoice) {
-                        _me
-                          .html('view invoice')
-                          .removeClass('d-none')
-                          .on('click', e => {
-                            e.stopPropagation();
-                            _tr.trigger('invoice-view');
-                            _context.close();
+                })
 
-                          });
+              );
 
-                        paidCtrl.trigger('reconcile');
+              if (0 < Number(_data.line_count)) {
 
-                      }
+                let paidCtrl = $('<a href="#" class="d-none">paid</a>')
+                  .on('reconcile', function(e) {
+                    let _me = $(this);
+
+                    if ('yes' == _data.paid) {
+                      _me
+                        .prepend('<i class="bi bi-check"></i>')
+                        .on('click', e => {
+                          e.stopPropagation();
+                          _tr.trigger('mark-paid-undo');
+                          _context.close();
+
+                        });
+
                     } else {
-                      _.growl(d);
+                      _me
+                        .on('click', e => {
+                          e.stopPropagation();
+                          _tr.trigger('mark-paid');
+                          _context.close();
+
+                        });
 
                     }
 
+                    _me
+                      .removeClass('d-none');
+
                   });
 
-                })
-                .trigger('reconcile')
+                _context.append(paidCtrl);
 
-              );
+                _context.append(
+                  $('<a href="#" class="d-none"></a>')
+                  .on('reconcile', function(e) {
+                    let _me = $(this);
+
+                    _.post({
+                      url: _.url('<?= $this->route ?>'),
+                      data: {
+                        action: 'check-has-invoice',
+                        id: _data.id
+                      },
+
+                    }).then(d => {
+                      if ('ack' == d.response) {
+                        if ('yes' == d.invoice) {
+                          _me
+                            .html('view invoice')
+                            .removeClass('d-none')
+                            .on('click', e => {
+                              e.stopPropagation();
+                              _tr.trigger('invoice-view');
+                              _context.close();
+
+                            });
+
+                          paidCtrl.trigger('reconcile');
+
+                        }
+                      } else {
+                        _.growl(d);
+
+                      }
+
+                    });
+
+                  })
+                  .trigger('reconcile')
+
+                );
+
+                _context.append(
+                  $('<a href="#" class="d-none"></a>')
+                  .on('reconcile', function(e) {
+                    let _me = $(this);
+
+                    // _data is from _tr
+                    // console.log( _data);
+
+                    if (Number(_data.contractor) > 0) {
+                      _.post({
+                        url: _.url('<?= $this->route ?>'),
+                        data: {
+                          action: 'check-has-workorder',
+                          id: _data.id
+                        },
+
+                      }).then(d => {
+                        if ('ack' == d.response) {
+                          if ('yes' == d.workorder) {
+                            _me
+                              .html('<i class="bi bi-file-pdf text-danger"></i>view workorder')
+                              .removeClass('d-none')
+                              .on('click', e => {
+                                e.stopPropagation();
+                                _tr.trigger('view-workorder');
+                                _context.close();
+
+                              });
+
+                          } else {
+                            _me
+                              .html('create workorder')
+                              .removeClass('d-none')
+                              .on('click', e => {
+                                e.stopPropagation();
+                                _tr.trigger('create-workorder');
+                                _context.close();
+
+                              });
+
+                          }
+                        } else {
+                          _.growl(d);
+
+                        }
+
+                      });
+
+                    }
+
+                  })
+                  .trigger('reconcile')
+
+                );
+
+              }
 
               _context.append(
                 $('<a href="#" class="d-none"></a>')
@@ -680,30 +742,19 @@ use strings;  ?>
                     _.post({
                       url: _.url('<?= $this->route ?>'),
                       data: {
-                        action: 'check-has-workorder',
+                        action: 'check-has-quote',
                         id: _data.id
                       },
 
                     }).then(d => {
                       if ('ack' == d.response) {
-                        if ('yes' == d.workorder) {
+                        if ('yes' == d.quote) {
                           _me
-                            .html('<i class="bi bi-file-pdf text-danger"></i>view workorder')
+                            .html('<i class="bi bi-file-text"></i>view quote')
                             .removeClass('d-none')
                             .on('click', e => {
                               e.stopPropagation();
-                              _tr.trigger('view-workorder');
-                              _context.close();
-
-                            });
-
-                        } else {
-                          _me
-                            .html('create workorder')
-                            .removeClass('d-none')
-                            .on('click', e => {
-                              e.stopPropagation();
-                              _tr.trigger('create-workorder');
+                              _tr.trigger('quote-view');
                               _context.close();
 
                             });
@@ -723,51 +774,11 @@ use strings;  ?>
 
               );
 
+            } else {
+              _context.append('its a recurring job, figuring out what to do next :)')
+
             }
 
-            _context.append(
-              $('<a href="#" class="d-none"></a>')
-              .on('reconcile', function(e) {
-                let _me = $(this);
-
-                // _data is from _tr
-                // console.log( _data);
-
-                if (Number(_data.contractor) > 0) {
-                  _.post({
-                    url: _.url('<?= $this->route ?>'),
-                    data: {
-                      action: 'check-has-quote',
-                      id: _data.id
-                    },
-
-                  }).then(d => {
-                    if ('ack' == d.response) {
-                      if ('yes' == d.quote) {
-                        _me
-                          .html('<i class="bi bi-file-text"></i>view quote')
-                          .removeClass('d-none')
-                          .on('click', e => {
-                            e.stopPropagation();
-                            _tr.trigger('quote-view');
-                            _context.close();
-
-                          });
-
-                      }
-                    } else {
-                      _.growl(d);
-
-                    }
-
-                  });
-
-                }
-
-              })
-              .trigger('reconcile')
-
-            );
 
             if (Number(_data.properties_id) > 0) {
               _context.append(
@@ -802,98 +813,99 @@ use strings;  ?>
 
             }
 
-            _context.append(
-              $('<a href="#">email sent</a>')
-              .on('click', e => {
-                e.stopPropagation();
-                _tr.trigger('yes' == _data.email_sent ? 'mark-sent-undo' : 'mark-sent');
-                _context.close();
-              })
-              .on('reconcile', function(e) {
-                if ('yes' == _data.email_sent) {
-                  $(this).prepend('<i class="bi bi-check"></i>')
-
-                }
-
-              })
-              .trigger('reconcile')
-
-            );
-
-            if (0 < Number(_data.line_count)) {
+            if (Number(_data.id) > 0) {
               _context.append(
-                $('<a href="#"><i class="bi bi-files"></i>duplicate</a>')
+                $('<a href="#">email sent</a>')
                 .on('click', e => {
                   e.stopPropagation();
-                  _tr.trigger('duplicate');
+                  _tr.trigger('yes' == _data.email_sent ? 'mark-sent-undo' : 'mark-sent');
                   _context.close();
                 })
+                .on('reconcile', function(e) {
+                  if ('yes' == _data.email_sent) {
+                    $(this).prepend('<i class="bi bi-check"></i>')
+
+                  }
+
+                })
+                .trigger('reconcile')
 
               );
-
-              if (<?= config::job_type_quote ?> == _data.job_type) {
-                // console.log( _data);
-
+              if (0 < Number(_data.line_count)) {
                 _context.append(
-                  $('<a href="#" title="duplicate, mark as order and archive"><i class="bi bi-ui-checks"></i>invoke order</a>')
+                  $('<a href="#"><i class="bi bi-files"></i>duplicate</a>')
                   .on('click', e => {
                     e.stopPropagation();
-                    _tr.trigger('invoke-order');
+                    _tr.trigger('duplicate');
                     _context.close();
                   })
 
                 );
 
+                if (<?= config::job_type_quote ?> == _data.job_type) {
+                  // console.log( _data);
+
+                  _context.append(
+                    $('<a href="#" title="duplicate, mark as order and archive"><i class="bi bi-ui-checks"></i>invoke order</a>')
+                    .on('click', e => {
+                      e.stopPropagation();
+                      _tr.trigger('invoke-order');
+                      _context.close();
+                    })
+
+                  );
+
+                }
+
               }
 
-            }
-
-            _context.append(
-              $('<a href="#"><i class="bi bi-arrow-repeat"></i>refresh</a>')
-              .on('click', e => {
-                e.stopPropagation();
-                _tr.trigger('refresh');
-                _context.close();
-              })
-
-            );
-
-            if (0 == Number(_data.line_count)) {
-
               _context.append(
-                $('<a href="#"><i class="bi bi-trash"></i>delete</a>')
+                $('<a href="#"><i class="bi bi-arrow-repeat"></i>refresh</a>')
                 .on('click', e => {
                   e.stopPropagation();
-                  _tr.trigger('delete');
+                  _tr.trigger('refresh');
                   _context.close();
-
                 })
 
               );
+              if (0 == Number(_data.line_count)) {
 
-            } else if ('yes' == _data.archived) {
-              _context.append(
-                $('<a href="#"><i class="bi bi-archive-fill"></i>archived</a>')
-                .on('click', e => {
-                  e.stopPropagation();
-                  _tr.trigger('archive-undo');
-                  _context.close();
+                _context.append(
+                  $('<a href="#"><i class="bi bi-trash"></i>delete</a>')
+                  .on('click', e => {
+                    e.stopPropagation();
+                    _tr.trigger('delete');
+                    _context.close();
 
-                })
+                  })
 
-              );
+                );
 
-            } else {
-              _context.append(
-                $('<a href="#"><i class="bi bi-archive"></i>archive</a>')
-                .on('click', e => {
-                  e.stopPropagation();
-                  _tr.trigger('archive');
-                  _context.close();
+              } else if ('yes' == _data.archived) {
+                _context.append(
+                  $('<a href="#"><i class="bi bi-archive-fill"></i>archived</a>')
+                  .on('click', e => {
+                    e.stopPropagation();
+                    _tr.trigger('archive-undo');
+                    _context.close();
 
-                })
+                  })
 
-              );
+                );
+
+              } else {
+                _context.append(
+                  $('<a href="#"><i class="bi bi-archive"></i>archive</a>')
+                  .on('click', e => {
+                    e.stopPropagation();
+                    _tr.trigger('archive');
+                    _context.close();
+
+                  })
+
+                );
+
+              }
 
             }
 
@@ -1538,16 +1550,19 @@ use strings;  ?>
           });
 
         if (!_.browser.isMobileDevice) {
-          _tr
-            .addClass('pointer')
-            .on('click', function(e) {
-              e.stopPropagation();
-              e.preventDefault();
+          if ( _data.id > 0) {
+            _tr
+              .addClass('pointer')
+              .on('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
 
-              _.hideContexts();
-              $(this).trigger('edit');
+                _.hideContexts();
+                $(this).trigger('edit');
 
-            });
+              });
+
+          }
 
         }
 

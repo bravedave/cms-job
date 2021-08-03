@@ -249,23 +249,37 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
                   </div>
 
-                  <!-- --[Start]-- -->
+                  <!-- --[end]-- -->
                   <div class="form-row mb-2">
                     <div class="col">
                       <div class="input-group">
                         <div class="input-group-prepend">
-                          <div class="input-group-text">Start</div>
+                          <div class="input-group-text">end</div>
                         </div>
 
                         <?php
                         printf(
-                          '<input type="date" class="form-control" name="job_recurrence_start" value="%s">',
-                          strtotime($dto->job_recurrence_start) > 0 ? $dto->job_recurrence_start : ''
+                          '<input type="date" class="form-control" name="job_recurrence_end" value="%s" id="%s">',
+                          strtotime($dto->job_recurrence_end) > 0 ? $dto->job_recurrence_end : '',
+                          $_uid = strings::rand()
 
-                        );
+                        );  ?>
 
-                        ?>
+                        <div class="input-group-append">
+                          <button type="button" class="btn input-group-text" id="<?= $_uid ?>-reset" title="clear end date field"><i class="bi bi-x"></i></button>
+                        </div>
 
+                        <script>
+                          (_ => {
+                            $('#<?= $_uid ?>-reset').on( 'click', function( e) {
+                              e.stopPropagation();
+
+                              $('#<?= $_uid ?>').val('');
+
+                            });
+
+                          })(_brayworth_);
+                        </script>
 
                       </div>
 
@@ -351,7 +365,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                   <div class="form-row mb-2 d-none" id="<?= $_uidRecurrenceDayOfWeek = strings::rand() ?>">
                     <div class="col">
                       <?php
-                      $_template = '<div class="form-check"><input type="checkbox" class="form-check-input" name="job_recurrence_day_of_week[]" value="%s" id="%s" %s><label class="form-check-label" for="%s">%s</label></div>';
+                      $_template = '<div class="form-check form-check-inline"><input type="checkbox" class="form-check-input" name="job_recurrence_day_of_week[]" value="%s" id="%s" %s><label class="form-check-label" for="%s">%s</label></div>';
                       $recurrenceDays = explode(',', $dto->job_recurrence_day_of_week);
 
                       printf(
@@ -360,7 +374,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                         $_uid = strings::rand(),
                         in_array(config::job_recurrence_day_monday, $recurrenceDays) ? 'checked' : '',
                         $_uid,
-                        'Monday'
+                        'Mon'
 
                       );
 
@@ -370,7 +384,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                         $_uid = strings::rand(),
                         in_array(config::job_recurrence_day_tuesday, $recurrenceDays) ? 'checked' : '',
                         $_uid,
-                        'Tuesday'
+                        'Tue'
 
                       );
 
@@ -380,7 +394,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                         $_uid = strings::rand(),
                         in_array(config::job_recurrence_day_wednesday, $recurrenceDays) ? 'checked' : '',
                         $_uid,
-                        'Wednesday'
+                        'Wed'
 
                       );
 
@@ -390,7 +404,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                         $_uid = strings::rand(),
                         in_array(config::job_recurrence_day_thursday, $recurrenceDays) ? 'checked' : '',
                         $_uid,
-                        'Thursday'
+                        'Thur'
 
                       );
 
@@ -400,7 +414,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                         $_uid = strings::rand(),
                         in_array(config::job_recurrence_day_friday, $recurrenceDays) ? 'checked' : '',
                         $_uid,
-                        'Friday'
+                        'Fri'
 
                       );
 
@@ -410,7 +424,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                         $_uid = strings::rand(),
                         in_array(config::job_recurrence_day_saturday, $recurrenceDays) ? 'checked' : '',
                         $_uid,
-                        'Saturday'
+                        'Sat'
 
                       );
 
@@ -420,7 +434,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                         $_uid = strings::rand(),
                         in_array(config::job_recurrence_day_sunday, $recurrenceDays) ? 'checked' : '',
                         $_uid,
-                        'Sunday'
+                        'Sun'
 
                       );
 
@@ -1060,8 +1074,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
           if (<?= config::job_type_recurring ?> == _data.job_type) {
             $('#<?= $_uidRecurrenceCell ?>').removeClass('d-none');
-            $('input[name="job_recurrence_interval"], input[name="job_recurrence_start"]', _form)
-              .prop('required', true);
+            $('input[name="job_recurrence_interval"]', _form).prop('required', true);
 
             if (<?= config::job_recurrence_interval_week ?> == _data.job_recurrence_interval) {
 

@@ -11,8 +11,10 @@
 
 namespace cms\job;
 
+use currentUser;
+
 class config extends \config {
-	const cms_job_db_version = 2.9;
+	const cms_job_db_version = 5;
 
 	const label = 'JOB';
 	const label_contractor_add = 'New Contractor';
@@ -49,13 +51,14 @@ class config extends \config {
 	const job_recurrence_interval_week = 1;
 	const job_recurrence_interval_month = 2;
 	const job_recurrence_interval_year = 3;
-	const job_recurrence_day_sunday = 1;
-	const job_recurrence_day_monday = 2;
-	const job_recurrence_day_tuesday = 3;
-	const job_recurrence_day_wednesday = 4;
-	const job_recurrence_day_thursday = 5;
-	const job_recurrence_day_friday = 6;
-	const job_recurrence_day_saturday = 7;
+	const job_recurrence_day_monday = 1;
+	const job_recurrence_day_tuesday = 2;
+	const job_recurrence_day_wednesday = 3;
+	const job_recurrence_day_thursday = 4;
+	const job_recurrence_day_friday = 5;
+	const job_recurrence_day_saturday = 6;
+	const job_recurrence_day_sunday = 7;
+	const job_recurrence_lookahead = 3;
 
 	const job_type_order = 0;
 	const job_type_recurring = 1;
@@ -179,6 +182,19 @@ class config extends \config {
 				self::$CONSOLE_FALLBACK = $j->console_fallback;
 			};
 		}
+	}
+
+	static function cms_job_recurrence_lookahead( int $set = null) : int {
+		if ( 0 === $set) $set = '';
+		// \sys::logger( sprintf('<%s> %s', $set, __METHOD__));
+
+		if ( $ret = (int)currentUser::option('job_recurrence_lookahead', $set)) {
+			return $ret;
+
+		}
+
+		return self::job_recurrence_lookahead;
+
 	}
 
 	static function cms_job_status_verbatim(int $status): string {
