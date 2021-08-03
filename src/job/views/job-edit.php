@@ -271,7 +271,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
                         <script>
                           (_ => {
-                            $('#<?= $_uid ?>-reset').on( 'click', function( e) {
+                            $('#<?= $_uid ?>-reset').on('click', function(e) {
                               e.stopPropagation();
 
                               $('#<?= $_uid ?>').val('');
@@ -1084,6 +1084,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
               $('#<?= $_uidRecurrenceOnBusinessDay ?>').addClass('d-none');
               $('input[name="job_recurrence_week_frequency"]', _form).attr('min', 1);
               $('input[name="job_recurrence_month_frequency"]', _form).attr('min', 0);
+              $('input[name="job_recurrence_year_frequency"]', _form).attr('min', 0);
 
             } else if (<?= config::job_recurrence_interval_month ?> == _data.job_recurrence_interval) {
 
@@ -1093,6 +1094,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
               $('#<?= $_uidRecurrenceOnBusinessDay ?>').removeClass('d-none');
               $('input[name="job_recurrence_week_frequency"]', _form).attr('min', 0);
               $('input[name="job_recurrence_month_frequency"]', _form).attr('min', 1);
+              $('input[name="job_recurrence_year_frequency"]', _form).attr('min', 0);
 
             } else if (<?= config::job_recurrence_interval_year ?> == _data.job_recurrence_interval) {
               $('#<?= $_uidRecurrenceDayOfWeek ?>, #<?= $_uidRecurrenceWeekFrequency ?>').addClass('d-none');
@@ -1101,6 +1103,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
               $('#<?= $_uidRecurrenceOnBusinessDay ?>').removeClass('d-none');
               $('input[name="job_recurrence_week_frequency"]', _form).attr('min', 0);
               $('input[name="job_recurrence_month_frequency"]', _form).attr('min', 0);
+              $('input[name="job_recurrence_year_frequency"]', _form).attr('min', 1);
 
             } else {
 
@@ -1110,6 +1113,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
               $('#<?= $_uidRecurrenceOnBusinessDay ?>').removeClass('d-none');
               $('input[name="job_recurrence_week_frequency"]', _form).attr('min', 0);
               $('input[name="job_recurrence_month_frequency"]', _form).attr('min', 0);
+              $('input[name="job_recurrence_year_frequency"]', _form).attr('min', 0);
 
             }
 
@@ -1118,6 +1122,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
             $('input[name="job_recurrence_interval"]', _form).prop('required', false);
             $('input[name="job_recurrence_week_frequency"]', _form).attr('min', 0);
             $('input[name="job_recurrence_month_frequency"]', _form).attr('min', 0);
+            $('input[name="job_recurrence_year_frequency"]', _form).attr('min', 0);
 
           }
 
