@@ -125,7 +125,7 @@ class job extends _dao {
     }
 
     if (!$archived) {
-      $_where[] = sprintf(
+      $where[] = sprintf(
         '(COALESCE(job.`archived`,%s) = %s OR DATE( job.`archived`) <= %s)',
         $this->quote(''),
         $this->quote(''),
@@ -134,7 +134,7 @@ class job extends _dao {
     }
 
     if ($where) {
-      $where = sprintf('WHERE %s', implode(' AND ', $_where));
+      $where = sprintf('WHERE %s', implode(' AND ', $where));
     } else {
       $where = '';
     }
