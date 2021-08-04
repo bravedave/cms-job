@@ -251,29 +251,100 @@ class job extends _dao {
             // \sys::logger(sprintf('<%s> %s', 'weekly', __METHOD__));
 
             if (strtotime($dto->due) > 0) {
-              $interval = new DateInterval(sprintf('P%sW', (int)$dto->job_recurrence_week_frequency));
 
+              $interval = new DateInterval(sprintf('P%sW', (int)$dto->job_recurrence_week_frequency));
               $due = new DateTime($dto->due);
               $daysOfWeek = explode(',', $dto->job_recurrence_day_of_week);
-              // \sys::logger(sprintf('<%s ? %s> %s', $due->format('Y-m-d'), $lookAhead, __METHOD__));
-
               $due->add($interval);
-              while ($due->format('Y-m-d') <= $lookAhead && ( strtotime($dto->job_recurrence_end) < 1 || $due->format('Y-m-d') <= $dto->job_recurrence_end)) {
+
+              while ($due->format('Y-m-d') <= $lookAhead && (strtotime($dto->job_recurrence_end) < 1 || $due->format('Y-m-d') <= $dto->job_recurrence_end)) {
 
                 for ($i = 0; $i < 7; $i++) {
                   $_time = strtotime(sprintf('+%s days', $i), $due->getTimestamp());
                   if (in_array(date('N', $_time), $daysOfWeek)) {
                     $a['due'] = date('Y-m-d', $_time);
                     $a['job_recurrence_parent'] = $dto->id;
-                    $this->db->Insert( 'matrix', $a);
+                    $this->db->Insert('matrix', $a);
 
                     // \sys::logger(sprintf('<%s> %s', date('Y-m-d : D', $_time), __METHOD__));
                   }
                 }
                 $due->add($interval);
               }
-            // } else {
-            //   \sys::logger(sprintf('<%s> %s', 'due is missing', __METHOD__));
+              // } else {
+              //   \sys::logger(sprintf('<%s> %s', 'due is missing', __METHOD__));
+            }
+          }
+        } elseif ($dto->job_recurrence_interval == config::job_recurrence_interval_month) {
+          if ((int)$dto->job_recurrence_month_frequency) {
+
+            // \sys::logger(sprintf('<%s> %s', 'weekly', __METHOD__));
+
+            if (strtotime($dto->due) > 0) {
+
+              $interval = new DateInterval(sprintf('P%sM', (int)$dto->job_recurrence_month_frequency));
+              $due = new DateTime($dto->due);
+              $due->add($interval);
+
+              while ($due->format('Y-m-d') <= $lookAhead && (strtotime($dto->job_recurrence_end) < 1 || $due->format('Y-m-d') <= $dto->job_recurrence_end)) {
+                $_due = clone $due;
+                if ( $dto->job_recurrence_on_business_day) {
+                  // \sys::logger(sprintf('<%s> %s', $_due->format('Y-m-d > D(N)'), __METHOD__));
+                  if (6 == (int)$_due->format('N')) {
+                    $_due->add(new DateInterval('P2D'));
+                    // \sys::logger(sprintf('<..%s> %s', $due->format('N'), __METHOD__));
+
+                  }
+                  elseif (7 == (int)$due->format('N')) {
+                    $_due->add(new DateInterval('P1D'));
+                    // \sys::logger(sprintf('<.%s> %s', $due->format('N'), __METHOD__));
+
+                  }
+
+                }
+
+                $a['due'] = $_due->format('Y-m-d');
+                $a['job_recurrence_parent'] = $dto->id;
+                $this->db->Insert('matrix', $a);
+
+                $due->add($interval);
+              }
+            }
+          }
+        } elseif ($dto->job_recurrence_interval == config::job_recurrence_interval_year) {
+          if ((int)$dto->job_recurrence_year_frequency) {
+
+            // \sys::logger(sprintf('<%s> %s', 'weekly', __METHOD__));
+
+            if (strtotime($dto->due) > 0) {
+
+              $interval = new DateInterval(sprintf('P%sY', (int)$dto->job_recurrence_year_frequency));
+              $due = new DateTime($dto->due);
+              $due->add($interval);
+
+              while ($due->format('Y-m-d') <= $lookAhead && (strtotime($dto->job_recurrence_end) < 1 || $due->format('Y-m-d') <= $dto->job_recurrence_end)) {
+                $_due = clone $due;
+                if ( $dto->job_recurrence_on_business_day) {
+                  // \sys::logger(sprintf('<%s> %s', $_due->format('Y-m-d > D(N)'), __METHOD__));
+                  if (6 == (int)$_due->format('N')) {
+                    $_due->add(new DateInterval('P2D'));
+                    // \sys::logger(sprintf('<..%s> %s', $due->format('N'), __METHOD__));
+
+                  }
+                  elseif (7 == (int)$due->format('N')) {
+                    $_due->add(new DateInterval('P1D'));
+                    // \sys::logger(sprintf('<.%s> %s', $due->format('N'), __METHOD__));
+
+                  }
+
+                }
+
+                $a['due'] = $_due->format('Y-m-d');
+                $a['job_recurrence_parent'] = $dto->id;
+                $this->db->Insert('matrix', $a);
+
+                $due->add($interval);
+              }
             }
           }
         } else {
@@ -429,7 +500,7 @@ class job extends _dao {
 
     // get lines for recurring jobs from their parents
     $sql =
-    'SELECT
+      'SELECT
         m.*,
         jl.item_id,
         ji.item,

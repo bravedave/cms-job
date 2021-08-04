@@ -27,6 +27,7 @@ else
   [[ ! -f $access_log ]] || rm $access_log
   if [[ ! -f $config ]]; then
     cp $WD/httpd-minimal.conf $config
+    echo "ErrorLogFormat \"[%t] %M\"" >>$config
     echo "Listen $PORT" >>$config
     echo "ErrorLog $error_log" >>$config
     echo "CustomLog $access_log common" >>$config
@@ -47,6 +48,7 @@ else
     httpd \
       -f $config \
       -c "PidFile $pidFile"
+    tail -f src/dev/data/error.log
 
   fi
 

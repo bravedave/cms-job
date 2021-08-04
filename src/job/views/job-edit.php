@@ -1102,7 +1102,8 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
             } else if (<?= config::job_recurrence_interval_month ?> == jobRecurrenceInterval) {
 
               $('#<?= $_uidRecurrenceDayOfWeek ?>, #<?= $_uidRecurrenceWeekFrequency ?>').addClass('d-none');
-              $('#<?= $_uidRecurrenceDayOfMonth ?>, #<?= $_uidRecurrenceMonthFrequency ?>').removeClass('d-none');
+              // $('#<?= $_uidRecurrenceDayOfMonth ?>').removeClass('d-none');
+              $('#<?= $_uidRecurrenceMonthFrequency ?>').removeClass('d-none');
               $('#<?= $_uidRecurrenceYearFrequency ?>').addClass('d-none');
               $('#<?= $_uidRecurrenceOnBusinessDay ?>').removeClass('d-none');
               $('input[name="job_recurrence_week_frequency"]', this).attr('min', 0);
