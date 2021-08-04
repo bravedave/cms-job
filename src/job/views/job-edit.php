@@ -1079,13 +1079,15 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
         })
         .on('check-recurrence', function(e) {
 
+
           // the form may be readonly, so you can't rely on getting it's data
           let jobType = $('input[name="job_type"]:checked', this).val();
 
           if (<?= config::job_type_recurring ?> == jobType) {
             $('#<?= $_uidRecurrenceCell ?>').removeClass('d-none');
             $('input[name="job_recurrence_interval"]', this).prop('required', true);
-            let jobRecurrenceInterval = $('input[name="job_recurrence_interval"]', this).val();
+            let jobRecurrenceInterval = $('input[name="job_recurrence_interval"]:checked', this).val();
+            // console.log('check-recurrence', jobType, '=', <?= config::job_type_recurring ?>, jobRecurrenceInterval);
 
             if (<?= config::job_recurrence_interval_week ?> == jobRecurrenceInterval) {
 
