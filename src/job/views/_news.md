@@ -4,6 +4,8 @@
 
 ### 4 August, 2021
 
+* **Recurring** Job types
+  * Now calculate out for week, month and year recurring types
 * **due date** has been added to matrix, the default sort order is due date ascending and due is a click and sort column
 * **Refresh Icon** (Property Tab) - when make changes to the scheduling or recurring jobs, the projected scheduling is not refreshed, although not a problem in matrix, because you can reload the page, it's awkward in the property tab. This icon allows facilitates the refresh.
 
