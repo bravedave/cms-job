@@ -19,7 +19,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 ?>
 
 <form id="<?= $_form = strings::rand() ?>" autocomplete="off">
-  <input type="hidden" name="action" value="job-save">
+  <input type="hidden" name="action" value="<?= $readonly && config::job_type_recurring == $dto->job_type ? 'job-save-recurrence' : 'job-save' ?>">
   <input type="hidden" name="id" value="<?= $dto->id ?>">
   <input type="hidden" name="properties_id" value="<?= $dto->properties_id ?>">
   <input type="hidden" name="contractor_id" value="<?= $dto->contractor_id ?>">
@@ -216,6 +216,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
             </div>
 
+            <!-- --[recurrence]-- -->
             <div class="col-xl" id="<?= $_uidRecurrenceCell = strings::rand() ?>">
               <div class="form-row">
 
@@ -225,21 +226,21 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                     <div class="col">
 
                       <div class="form-check form-check-inline">
-                        <input type="radio" class="form-check-input" name="job_recurrence_interval" <?= $readonly ? 'disabled' : '' ?> value="<?= config::job_recurrence_interval_week ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_recurrence_interval_week == $dto->job_recurrence_interval ? 'checked' : ''; ?>>
+                        <input type="radio" class="form-check-input" name="job_recurrence_interval" value="<?= config::job_recurrence_interval_week ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_recurrence_interval_week == $dto->job_recurrence_interval ? 'checked' : ''; ?>>
 
                         <label class="form-check-label" for="<?= $_uid ?>">Week</label>
 
                       </div>
 
                       <div class="form-check form-check-inline">
-                        <input type="radio" class="form-check-input" name="job_recurrence_interval" <?= $readonly ? 'disabled' : '' ?> value="<?= config::job_recurrence_interval_month ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_recurrence_interval_month == $dto->job_recurrence_interval ? 'checked' : ''; ?>>
+                        <input type="radio" class="form-check-input" name="job_recurrence_interval" value="<?= config::job_recurrence_interval_month ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_recurrence_interval_month == $dto->job_recurrence_interval ? 'checked' : ''; ?>>
 
                         <label class="form-check-label" for="<?= $_uid ?>">Month</label>
 
                       </div>
 
                       <div class="form-check form-check-inline">
-                        <input type="radio" class="form-check-input" name="job_recurrence_interval" <?= $readonly ? 'disabled' : '' ?> value="<?= config::job_recurrence_interval_year ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_recurrence_interval_year == $dto->job_recurrence_interval ? 'checked' : ''; ?>>
+                        <input type="radio" class="form-check-input" name="job_recurrence_interval" value="<?= config::job_recurrence_interval_year ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_recurrence_interval_year == $dto->job_recurrence_interval ? 'checked' : ''; ?>>
 
                         <label class="form-check-label" for="<?= $_uid ?>">Year</label>
 
@@ -504,7 +505,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
             <div class="col pt-2">
               <div class="form-check form-check-inline">
-                <input type="radio" class="form-check-input" name="job_payment" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_payment_owner ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_payment_owner == $dto->job_payment ? 'checked' : ''; ?>>
+                <input type="radio" class="form-check-input" name="job_payment" value="<?= config::job_payment_owner ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_payment_owner == $dto->job_payment ? 'checked' : ''; ?>>
 
                 <label class="form-check-label" for="<?= $_uid ?>">
                   Owner
@@ -514,7 +515,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
               </div>
 
               <div class="form-check form-check-inline">
-                <input type="radio" class="form-check-input" name="job_payment" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_payment_tenant ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_payment_tenant == $dto->job_payment ? 'checked' : ''; ?>>
+                <input type="radio" class="form-check-input" name="job_payment" value="<?= config::job_payment_tenant ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_payment_tenant == $dto->job_payment ? 'checked' : ''; ?>>
 
                 <label class="form-check-label" for="<?= $_uid ?>">
                   Tenant
@@ -739,6 +740,20 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
         </div>
 
         <div class="modal-footer">
+          <?php if ($readonly) { ?>
+            <?php if ($this->data->hasWorkorder) { ?>
+              <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>" disabled order-button><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
+              <script>
+                $('#<?= $_uid ?>').on('click', e => $('#<?= $_form ?>').trigger('view-workorder'));
+              </script>
+            <?php }
+          } else { ?>
+            <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>" disabled order-button><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
+            <script>
+              $('#<?= $_uid ?>').on('click', e => $('#<?= $_form ?>').trigger('submit-and-workorder'));
+            </script>
+          <?php } ?>
+
           <button type="button" class="btn btn-outline-secondary d-none" id="<?= $_btnInvoice = strings::rand() ?>">
             Invoice
           </button>
@@ -817,19 +832,13 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
           <?php } ?>
 
           <?php if ($readonly) { ?>
-            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">close</button>
-            <?php if ($this->data->hasWorkorder) { ?>
-              <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>" disabled order-button><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
-              <script>
-                $('#<?= $_uid ?>').on('click', e => $('#<?= $_form ?>').trigger('view-workorder'));
-              </script>
-            <?php } ?>
-          <?php } else { ?>
+            <?php if (config::job_type_recurring == $dto->job_type) { ?>
+              <button type="submit" class="btn btn-primary" accesskey="S"><span style="text-decoration: underline;">S</span>ave</button>
+            <?php } else {  ?>
+              <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">close</button>
+            <?php }
+          } else { ?>
             <button type="submit" class="btn btn-primary" accesskey="S"><span style="text-decoration: underline;">S</span>ave</button>
-            <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>" disabled order-button><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
-            <script>
-              $('#<?= $_uid ?>').on('click', e => $('#<?= $_form ?>').trigger('submit-and-workorder'));
-            </script>
           <?php } ?>
 
         </div>
@@ -1069,41 +1078,43 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
         })
         .on('check-recurrence', function(e) {
-          let _form = $(this);
-          let _data = _form.serializeFormJSON();
 
-          if (<?= config::job_type_recurring ?> == _data.job_type) {
+          // the form may be readonly, so you can't rely on getting it's data
+          let jobType = $('input[name="job_type"]:checked', this).val();
+
+          if (<?= config::job_type_recurring ?> == jobType) {
             $('#<?= $_uidRecurrenceCell ?>').removeClass('d-none');
-            $('input[name="job_recurrence_interval"]', _form).prop('required', true);
+            $('input[name="job_recurrence_interval"]', this).prop('required', true);
+            let jobRecurrenceInterval = $('input[name="job_recurrence_interval"]', this).val();
 
-            if (<?= config::job_recurrence_interval_week ?> == _data.job_recurrence_interval) {
+            if (<?= config::job_recurrence_interval_week ?> == jobRecurrenceInterval) {
 
               $('#<?= $_uidRecurrenceDayOfWeek ?>, #<?= $_uidRecurrenceWeekFrequency ?>').removeClass('d-none');
               $('#<?= $_uidRecurrenceDayOfMonth ?>, #<?= $_uidRecurrenceMonthFrequency ?>').addClass('d-none');
               $('#<?= $_uidRecurrenceYearFrequency ?>').addClass('d-none');
               $('#<?= $_uidRecurrenceOnBusinessDay ?>').addClass('d-none');
-              $('input[name="job_recurrence_week_frequency"]', _form).attr('min', 1);
-              $('input[name="job_recurrence_month_frequency"]', _form).attr('min', 0);
-              $('input[name="job_recurrence_year_frequency"]', _form).attr('min', 0);
+              $('input[name="job_recurrence_week_frequency"]', this).attr('min', 1);
+              $('input[name="job_recurrence_month_frequency"]', this).attr('min', 0);
+              $('input[name="job_recurrence_year_frequency"]', this).attr('min', 0);
 
-            } else if (<?= config::job_recurrence_interval_month ?> == _data.job_recurrence_interval) {
+            } else if (<?= config::job_recurrence_interval_month ?> == jobRecurrenceInterval) {
 
               $('#<?= $_uidRecurrenceDayOfWeek ?>, #<?= $_uidRecurrenceWeekFrequency ?>').addClass('d-none');
               $('#<?= $_uidRecurrenceDayOfMonth ?>, #<?= $_uidRecurrenceMonthFrequency ?>').removeClass('d-none');
               $('#<?= $_uidRecurrenceYearFrequency ?>').addClass('d-none');
               $('#<?= $_uidRecurrenceOnBusinessDay ?>').removeClass('d-none');
-              $('input[name="job_recurrence_week_frequency"]', _form).attr('min', 0);
-              $('input[name="job_recurrence_month_frequency"]', _form).attr('min', 1);
-              $('input[name="job_recurrence_year_frequency"]', _form).attr('min', 0);
+              $('input[name="job_recurrence_week_frequency"]', this).attr('min', 0);
+              $('input[name="job_recurrence_month_frequency"]', this).attr('min', 1);
+              $('input[name="job_recurrence_year_frequency"]', this).attr('min', 0);
 
-            } else if (<?= config::job_recurrence_interval_year ?> == _data.job_recurrence_interval) {
+            } else if (<?= config::job_recurrence_interval_year ?> == jobRecurrenceInterval) {
               $('#<?= $_uidRecurrenceDayOfWeek ?>, #<?= $_uidRecurrenceWeekFrequency ?>').addClass('d-none');
               $('#<?= $_uidRecurrenceDayOfMonth ?>, #<?= $_uidRecurrenceMonthFrequency ?>').addClass('d-none');
               $('#<?= $_uidRecurrenceYearFrequency ?>').removeClass('d-none');
               $('#<?= $_uidRecurrenceOnBusinessDay ?>').removeClass('d-none');
-              $('input[name="job_recurrence_week_frequency"]', _form).attr('min', 0);
-              $('input[name="job_recurrence_month_frequency"]', _form).attr('min', 0);
-              $('input[name="job_recurrence_year_frequency"]', _form).attr('min', 1);
+              $('input[name="job_recurrence_week_frequency"]', this).attr('min', 0);
+              $('input[name="job_recurrence_month_frequency"]', this).attr('min', 0);
+              $('input[name="job_recurrence_year_frequency"]', this).attr('min', 1);
 
             } else {
 
@@ -1111,18 +1122,18 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
               $('#<?= $_uidRecurrenceDayOfMonth ?>, #<?= $_uidRecurrenceMonthFrequency ?>').addClass('d-none');
               $('#<?= $_uidRecurrenceYearFrequency ?>').addClass('d-none');
               $('#<?= $_uidRecurrenceOnBusinessDay ?>').removeClass('d-none');
-              $('input[name="job_recurrence_week_frequency"]', _form).attr('min', 0);
-              $('input[name="job_recurrence_month_frequency"]', _form).attr('min', 0);
-              $('input[name="job_recurrence_year_frequency"]', _form).attr('min', 0);
+              $('input[name="job_recurrence_week_frequency"]', this).attr('min', 0);
+              $('input[name="job_recurrence_month_frequency"]', this).attr('min', 0);
+              $('input[name="job_recurrence_year_frequency"]', this).attr('min', 0);
 
             }
 
           } else {
             $('#<?= $_uidRecurrenceCell ?>').addClass('d-none');
-            $('input[name="job_recurrence_interval"]', _form).prop('required', false);
-            $('input[name="job_recurrence_week_frequency"]', _form).attr('min', 0);
-            $('input[name="job_recurrence_month_frequency"]', _form).attr('min', 0);
-            $('input[name="job_recurrence_year_frequency"]', _form).attr('min', 0);
+            $('input[name="job_recurrence_interval"]', this).prop('required', false);
+            $('input[name="job_recurrence_week_frequency"]', this).attr('min', 0);
+            $('input[name="job_recurrence_month_frequency"]', this).attr('min', 0);
+            $('input[name="job_recurrence_year_frequency"]', this).attr('min', 0);
 
           }
 

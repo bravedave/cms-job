@@ -478,7 +478,7 @@ class job extends _dao {
 
     // $this->Result('DROP TABLE IF EXISTS _matrix');
     // $this->Result('CREATE TABLE _matrix AS SELECT * FROM `matrix`');
-    return $this->Result('SELECT * FROM `matrix`');
+    return $this->Result('SELECT * FROM `matrix` ORDER BY `due` asc');
   }
 
   public function getQuotePath(dto\job $job): string {

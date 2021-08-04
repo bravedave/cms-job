@@ -121,6 +121,32 @@ use strings;  ?>
 
   </div>
 
+  <?php if ($this->data->showRefreshIcon) { ?>
+    <!-- --[refresh icon]-- -->
+    <div class="col-auto">
+      <button type="button" class="btn btn-light" title="reload jobs" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-arrow-repeat"></i></button>
+      <script>
+        (_ => {
+          $('#<?= $_uid ?>')
+            .on('click', function(e) {
+              e.preventDefault();
+
+              $(this)
+              .html('<div class="spinner-border spinner-border-sm"></div>')
+              .prop('disabled', true);
+
+              $(document)
+                .trigger('job-matrix-reload');
+
+            });
+
+        })(_brayworth_);
+      </script>
+
+    </div>
+
+  <?php } ?>
+
   <!-- --[add new job]-- -->
   <div class="col-auto">
     <button type="button" class="btn btn-light" title="add new job" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-journal-plus"></i></button>
@@ -1435,7 +1461,7 @@ use strings;  ?>
             }).then(d => {
               if ('ack' == d.response) {
                 // console.log('matrix-refresh-row');
-                console.log(d.data);
+                // console.log(d.data);
 
                 let pm = String(d.data.property_manager).initials();
                 let archived = false;
@@ -1450,6 +1476,7 @@ use strings;  ?>
                   address_street: d.data.address_street,
                   line_count: d.data.lines.length,
                   contractor: d.data.contractor_id,
+                  due: d.data.due,
                   pm: pm,
                   job_type: d.data.job_type,
                   status: d.data.status,
@@ -1470,6 +1497,16 @@ use strings;  ?>
                 $('[invoiced]', _tr).html(1 == Number(d.data.has_quote) ? 'q' : (1 == Number(d.data.has_invoice) ? '&check;' : ''));
                 $('[type]', _tr).html(String(d.data.type_verbatim).initials());
                 $('[pm]', _tr).html(pm);
+
+                let due = _.dayjs(d.data.due);
+                if ( due.isValid() && due.unix() > 0) {
+                  $('[due]', _tr).html(due.format('L'));
+
+                }
+                else {
+                  $('[due]', _tr).html('&nbsp;');
+
+                }
 
                 if (!!d.data.email_sent) {
                   let dateSent = _.dayjs(d.data.email_sent);
@@ -1550,7 +1587,7 @@ use strings;  ?>
           });
 
         if (!_.browser.isMobileDevice) {
-          if ( _data.id > 0) {
+          if (_data.id > 0) {
             _tr
               .addClass('pointer')
               .on('click', function(e) {

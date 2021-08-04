@@ -43,7 +43,6 @@ class controller extends \Controller {
     parent::before();
   }
 
-
   protected function postHandler() {
     $action = $this->getPost('action');
 
@@ -658,7 +657,6 @@ class controller extends \Controller {
           'job_recurrence_week_frequency' => (int)$this->getPost('job_recurrence_week_frequency'),
           'job_recurrence_month_frequency' => (int)$this->getPost('job_recurrence_month_frequency'),
           'job_recurrence_year_frequency' => (int)$this->getPost('job_recurrence_year_frequency'),
-          'status' => (int)$this->getPost('status'),
           'due' => $this->getPost('due'),
           'job_payment' => (int)$this->getPost('job_payment'),
           'description' => (string)$this->getPost('description'),
@@ -695,6 +693,32 @@ class controller extends \Controller {
             }
           }
         }
+
+        Json::ack($action)
+          ->add('id', $id);
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('job-save-recurrence' == $action) {
+
+      if ($id = (int)$this->getPost('id')) {
+        $a = [
+          'updated' => \db::dbTimeStamp(),
+          'updated_by' => currentuser::id(),
+          'job_recurrence_interval' => (int)$this->getPost('job_recurrence_interval'),
+          'job_recurrence_end' => date('Y-m-d', strtotime($this->getPost('job_recurrence_end'))),
+          'job_recurrence_day_of_week' => implode(',', (array)$this->getPost('job_recurrence_day_of_week')),
+          'job_recurrence_day_of_month' => implode(',', (array)$this->getPost('job_recurrence_day_of_month')),
+          'job_recurrence_on_business_day' => (int)$this->getPost('job_recurrence_on_business_day'),
+          'job_recurrence_week_frequency' => (int)$this->getPost('job_recurrence_week_frequency'),
+          'job_recurrence_month_frequency' => (int)$this->getPost('job_recurrence_month_frequency'),
+          'job_recurrence_year_frequency' => (int)$this->getPost('job_recurrence_year_frequency'),
+          'job_payment' => (int)$this->getPost('job_payment'),
+
+        ];
+
+        $dao = new dao\job;
+        $dao->UpdateByID($a, $id);
 
         Json::ack($action)
           ->add('id', $id);
@@ -1025,7 +1049,8 @@ class controller extends \Controller {
       'idx' => $this->getParam('idx'),
       'trigger' => $this->getParam('v'),
       'archived' => $archived,
-      'hidepropertycolumn' => false
+      'hidepropertycolumn' => false,
+      'showRefreshIcon' => false
     ];
 
     $this->render([
@@ -1050,7 +1075,8 @@ class controller extends \Controller {
       'idx' => $this->getParam('idx'),
       'trigger' => $this->getParam('v'),
       'archived' => $archived,
-      'hidepropertycolumn' => true
+      'hidepropertycolumn' => true,
+      'showRefreshIcon' => true
     ];
 
     $this->load('matrix');
