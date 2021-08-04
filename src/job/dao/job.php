@@ -18,7 +18,7 @@ use dao\{
 };
 
 use DateTime, DateInterval;
-use strings;
+use currentUser, strings;
 // use sys;
 
 class job extends _dao {
@@ -288,19 +288,17 @@ class job extends _dao {
 
               while ($due->format('Y-m-d') <= $lookAhead && (strtotime($dto->job_recurrence_end) < 1 || $due->format('Y-m-d') <= $dto->job_recurrence_end)) {
                 $_due = clone $due;
-                if ( $dto->job_recurrence_on_business_day) {
+                if ($dto->job_recurrence_on_business_day) {
                   // \sys::logger(sprintf('<%s> %s', $_due->format('Y-m-d > D(N)'), __METHOD__));
                   if (6 == (int)$_due->format('N')) {
                     $_due->add(new DateInterval('P2D'));
                     // \sys::logger(sprintf('<..%s> %s', $due->format('N'), __METHOD__));
 
-                  }
-                  elseif (7 == (int)$due->format('N')) {
+                  } elseif (7 == (int)$due->format('N')) {
                     $_due->add(new DateInterval('P1D'));
                     // \sys::logger(sprintf('<.%s> %s', $due->format('N'), __METHOD__));
 
                   }
-
                 }
 
                 $a['due'] = $_due->format('Y-m-d');
@@ -324,19 +322,17 @@ class job extends _dao {
 
               while ($due->format('Y-m-d') <= $lookAhead && (strtotime($dto->job_recurrence_end) < 1 || $due->format('Y-m-d') <= $dto->job_recurrence_end)) {
                 $_due = clone $due;
-                if ( $dto->job_recurrence_on_business_day) {
+                if ($dto->job_recurrence_on_business_day) {
                   // \sys::logger(sprintf('<%s> %s', $_due->format('Y-m-d > D(N)'), __METHOD__));
                   if (6 == (int)$_due->format('N')) {
                     $_due->add(new DateInterval('P2D'));
                     // \sys::logger(sprintf('<..%s> %s', $due->format('N'), __METHOD__));
 
-                  }
-                  elseif (7 == (int)$due->format('N')) {
+                  } elseif (7 == (int)$due->format('N')) {
                     $_due->add(new DateInterval('P1D'));
                     // \sys::logger(sprintf('<.%s> %s', $due->format('N'), __METHOD__));
 
                   }
-
                 }
 
                 $a['due'] = $_due->format('Y-m-d');
@@ -687,6 +683,58 @@ class job extends _dao {
     ]);
 
     return $path;
+  }
+
+  public function recur(dto\job $job, $due): int {
+    $a = [
+      'updated' => \db::dbTimeStamp(),
+      'updated_by' => currentuser::id(),
+      'contractor_id' => $job->contractor_id,
+      'properties_id' => $job->properties_id,
+      'job_type' => $job->job_type,
+      'job_recurrence_interval' => $job->job_recurrence_interval,
+      'job_recurrence_end' => $job->job_recurrence_end,
+      'job_recurrence_day_of_week' => $job->job_recurrence_day_of_week,
+      'job_recurrence_day_of_month' => $job->job_recurrence_day_of_month,
+      'job_recurrence_on_business_day' => $job->job_recurrence_on_business_day,
+      'job_recurrence_week_frequency' => $job->job_recurrence_week_frequency,
+      'job_recurrence_month_frequency' => $job->job_recurrence_month_frequency,
+      'job_recurrence_year_frequency' => $job->job_recurrence_year_frequency,
+      'job_recurrence_parent' => $job->id,
+      'due' => $due,
+      'job_payment' => $job->job_payment,
+      'description' => $job->description,
+      'on_site_contact' => $job->on_site_contact,
+
+    ];
+
+    $a['created'] = $a['updated'];
+    $a['created_by'] = $a['updated_by'];
+    $id = $this->Insert($a);
+
+    $this->UpdateByID([
+      'job_recurrence_disable' => 1,
+      'job_recurrence_child' => $id
+    ], $job->id);
+
+    $sql = sprintf(
+      'INSERT INTO
+        job_lines(`job_id`,`item_id`,`updated`,`created`)
+        SELECT
+          %d, `item_id`, %s `updated`, %s `created`
+        FROM
+          `job_lines`
+        WHERE
+          `job_id` = %d',
+      $id,
+      $this->quote(\db::dbTimeStamp()),
+      $this->quote(\db::dbTimeStamp()),
+      $job->id
+
+    );
+    $this->Q($sql);
+
+    return $id;
   }
 
   public function store(dto\job $job): string {

@@ -132,8 +132,8 @@ use strings;  ?>
               e.preventDefault();
 
               $(this)
-              .html('<div class="spinner-border spinner-border-sm"></div>')
-              .prop('disabled', true);
+                .html('<div class="spinner-border spinner-border-sm"></div>')
+                .prop('disabled', true);
 
               $(document)
                 .trigger('job-matrix-reload');
@@ -280,6 +280,7 @@ use strings;  ?>
           '<tr
             class="%s"
             data-id="%s"
+            data-job_recurrence_parent="%s"
             data-properties_id="%s"
             data-address_street="%s"
             data-street_index="%s"
@@ -299,6 +300,7 @@ use strings;  ?>
             data-paid="%s">',
           $dto->id ? (strtotime($dto->archived) > 0 ? 'text-muted' : '') : 'text-info',
           $dto->id,
+          $dto->job_recurrence_parent,
           $dto->properties_id,
           htmlentities($dto->address_street),
           htmlentities($dto->street_index),
@@ -358,7 +360,22 @@ use strings;  ?>
 
         </td>
 
-        <td class="text-center" type><?= strings::initials(config::cms_job_type_verbatim($dto->job_type)) ?></td>
+        <td class="text-center" type>
+          <?php
+          $_type = substr(config::cms_job_type_verbatim($dto->job_type), 0, 1);
+          if (config::job_type_recurring == $dto->job_type) {
+            if ($dto->job_recurrence_child) {
+              print '<i class="bi bi-arrow-repeat text-success"></i>';
+            } elseif ($dto->job_recurrence_disable) {
+              print '<i class="bi bi-arrow-repeat text-warning"></i>';
+            } else {
+              print '<i class="bi bi-arrow-repeat"></i>';
+            }
+          } else {
+            print $_type;
+          }
+
+          ?></td>
 
         <td class="text-center icon-width" email-sent>
           <?php
@@ -520,6 +537,38 @@ use strings;  ?>
               }
 
             });
+
+          })
+          .on('confirm-recurrence-and-edit', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            if (Number(_data.job_recurrence_parent) > 0) {
+              _.post({
+                url: _.url('<?= $this->route ?>'),
+                data: {
+                  action: 'confirm-recurrence',
+                  due: _data.due,
+                  job_recurrence_parent: _data.job_recurrence_parent,
+                },
+
+              }).then(d => {
+                if ('ack' == d.response) {
+                  console.log('issue reload', d.id, 'view')
+                  $(document)
+                    .trigger('job-matrix-reload', {
+                      view: 'view',
+                      idx: d.id
+                    });
+
+                } else {
+                  _.growl(d);
+
+                }
+
+              });
+
+            }
 
           })
           .on('edit', function(e) {
@@ -801,10 +850,20 @@ use strings;  ?>
               );
 
             } else {
-              _context.append('its a recurring job, figuring out what to do next :)')
+              _context.append(
+                $('<a href="#">Confirm recurrence and Edit</a>')
+                .on('click', e => {
+                  e.stopPropagation();
+                  e.preventDefault();
+
+                  _tr.trigger('confirm-recurrence-and-edit');
+                  _context.close();
+
+                })
+
+              );
 
             }
-
 
             if (Number(_data.properties_id) > 0) {
               _context.append(
@@ -1495,15 +1554,27 @@ use strings;  ?>
                 $('[tradingname]', _tr).html(d.data.contractor_trading_name);
                 $('[status]', _tr).html(d.data.status_verbatim);
                 $('[invoiced]', _tr).html(1 == Number(d.data.has_quote) ? 'q' : (1 == Number(d.data.has_invoice) ? '&check;' : ''));
-                $('[type]', _tr).html(String(d.data.type_verbatim).initials());
+
+                let _type = String(d.data.type_verbatim).initials();
+                if (<?= config::job_type_recurring ?> == d.data.job_type) {
+                  if (Number(d.data.job_recurrence_child) > 0) {
+                    $('[type]', _tr).html('<i class="bi bi-arrow-repeat text-success"></i>');
+                  } else if (1 == Number(d.data.job_recurrence_disable)) {
+                    $('[type]', _tr).html('<i class="bi bi-arrow-repeat text-warning"></i>');
+                  } else {
+                    $('[type]', _tr).html('<i class="bi bi-arrow-repeat"></i>');
+                  }
+                } else {
+                  $('[type]', _tr).html(_type);
+                }
+
                 $('[pm]', _tr).html(pm);
 
                 let due = _.dayjs(d.data.due);
-                if ( due.isValid() && due.unix() > 0) {
+                if (due.isValid() && due.unix() > 0) {
                   $('[due]', _tr).html(due.format('L'));
 
-                }
-                else {
+                } else {
                   $('[due]', _tr).html('&nbsp;');
 
                 }
@@ -1905,6 +1976,8 @@ use strings;  ?>
           if (!!opt.idx) {
             if ('workorder' == opt.view) {
               _.nav('<?= $this->route ?>/matrix?v=workorder&idx=' + opt.idx);
+            } else if ('view' == opt.view) {
+              _.nav('<?= $this->route ?>/matrix?v=view&idx=' + opt.idx);
             } else {
               _.nav('<?= $this->route ?>/matrix?idx=' + opt.idx);
             }

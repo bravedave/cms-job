@@ -16,10 +16,26 @@ use theme;
 $dto = $this->data->dto;
 $categories = $this->data->categories;
 $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 || $this->data->hasInvoice;
-?>
+
+$validActions = [
+  'job-save',
+  'job-save-recurrence',
+  'job-save-payment'
+];
+
+$action = 'job-save';
+if (config::job_status_paid == $dto->status) {
+  $action = 'job-invalid-action';
+} elseif ($readonly) {
+  if (config::job_type_recurring == $dto->job_type) {
+    $action = 'job-save-recurrence';
+  } else {
+    $action = 'job-save-payment';
+  }
+} ?>
 
 <form id="<?= $_form = strings::rand() ?>" autocomplete="off">
-  <input type="hidden" name="action" value="<?= $readonly && config::job_type_recurring == $dto->job_type ? 'job-save-recurrence' : 'job-save' ?>">
+  <input type="hidden" name="action" value="<?= $action ?>">
   <input type="hidden" name="id" value="<?= $dto->id ?>">
   <input type="hidden" name="properties_id" value="<?= $dto->properties_id ?>">
   <input type="hidden" name="contractor_id" value="<?= $dto->contractor_id ?>">
@@ -224,28 +240,47 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                 <div class="col-lg pt-2">
                   <div class="form-row mb-2">
                     <div class="col">
+                      <?php
 
-                      <div class="form-check form-check-inline">
-                        <input type="radio" class="form-check-input" name="job_recurrence_interval" value="<?= config::job_recurrence_interval_week ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_recurrence_interval_week == $dto->job_recurrence_interval ? 'checked' : ''; ?>>
+                      $_template = '<div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" name="job_recurrence_interval" value="%s" id="%s" %s %s>
+                        <label class="form-check-label" for="%s">%s</label>
+                      </div>';
 
-                        <label class="form-check-label" for="<?= $_uid ?>">Week</label>
+                      printf(
+                        $_template,
+                        config::job_recurrence_interval_week,
+                        $_uid = strings::rand(),
+                        config::job_recurrence_interval_week == $dto->job_recurrence_interval ? 'checked' : '',
+                        $dto->job_recurrence_disable ? 'disabled' : '',
+                        $_uid,
+                        'Week'
 
-                      </div>
+                      );
 
-                      <div class="form-check form-check-inline">
-                        <input type="radio" class="form-check-input" name="job_recurrence_interval" value="<?= config::job_recurrence_interval_month ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_recurrence_interval_month == $dto->job_recurrence_interval ? 'checked' : ''; ?>>
+                      printf(
+                        $_template,
+                        config::job_recurrence_interval_month,
+                        $_uid = strings::rand(),
+                        config::job_recurrence_interval_month == $dto->job_recurrence_interval ? 'checked' : '',
+                        $dto->job_recurrence_disable ? 'disabled' : '',
+                        $_uid,
+                        'Month'
 
-                        <label class="form-check-label" for="<?= $_uid ?>">Month</label>
+                      );
 
-                      </div>
+                      printf(
+                        $_template,
+                        config::job_recurrence_interval_year,
+                        $_uid = strings::rand(),
+                        config::job_recurrence_interval_year == $dto->job_recurrence_interval ? 'checked' : '',
+                        $dto->job_recurrence_disable ? 'disabled' : '',
+                        $_uid,
+                        'Year'
 
-                      <div class="form-check form-check-inline">
-                        <input type="radio" class="form-check-input" name="job_recurrence_interval" value="<?= config::job_recurrence_interval_year ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_recurrence_interval_year == $dto->job_recurrence_interval ? 'checked' : ''; ?>>
+                      );
 
-                        <label class="form-check-label" for="<?= $_uid ?>">Year</label>
-
-                      </div>
-
+                      ?>
                     </div>
 
                   </div>
@@ -260,27 +295,31 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
                         <?php
                         printf(
-                          '<input type="date" class="form-control" name="job_recurrence_end" value="%s" id="%s">',
+                          '<input type="date" class="form-control" name="job_recurrence_end" value="%s" id="%s" %s>',
                           strtotime($dto->job_recurrence_end) > 0 ? $dto->job_recurrence_end : '',
-                          $_uid = strings::rand()
+                          $_uid = strings::rand(),
+                          $dto->job_recurrence_disable ? 'disabled' : ''
 
                         );  ?>
 
-                        <div class="input-group-append">
-                          <button type="button" class="btn input-group-text" id="<?= $_uid ?>-reset" title="clear end date field"><i class="bi bi-x"></i></button>
-                        </div>
+                        <?php if (!$dto->job_recurrence_disable) { ?>
+                          <div class="input-group-append">
+                            <button type="button" class="btn input-group-text" id="<?= $_uid ?>-reset" title="clear end date field"><i class="bi bi-x"></i></button>
+                          </div>
 
-                        <script>
-                          (_ => {
-                            $('#<?= $_uid ?>-reset').on('click', function(e) {
-                              e.stopPropagation();
+                          <script>
+                            (_ => {
+                              $('#<?= $_uid ?>-reset').on('click', function(e) {
+                                e.stopPropagation();
 
-                              $('#<?= $_uid ?>').val('');
+                                $('#<?= $_uid ?>').val('');
 
-                            });
+                              });
 
-                          })(_brayworth_);
-                        </script>
+                            })(_brayworth_);
+                          </script>
+
+                        <?php } ?>
 
                       </div>
 
@@ -297,8 +336,9 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
                         <?php
                         printf(
-                          '<input type="number" class="form-control" name="job_recurrence_week_frequency" value="%s" min="1" max="9">',
-                          $dto->job_recurrence_week_frequency
+                          '<input type="number" class="form-control" name="job_recurrence_week_frequency" value="%s" min="1" max="9" %s>',
+                          $dto->job_recurrence_week_frequency,
+                          $dto->job_recurrence_disable ? 'disabled' : ''
 
                         );
                         ?>
@@ -322,8 +362,9 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
                         <?php
                         printf(
-                          '<input type="number" class="form-control" name="job_recurrence_month_frequency" value="%s" min="1" max="9">',
-                          $dto->job_recurrence_month_frequency
+                          '<input type="number" class="form-control" name="job_recurrence_month_frequency" value="%s" min="1" max="9" %s>',
+                          $dto->job_recurrence_month_frequency,
+                          $dto->job_recurrence_disable ? 'disabled' : ''
 
                         );
                         ?>
@@ -347,8 +388,9 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
                         <?php
                         printf(
-                          '<input type="number" class="form-control" name="job_recurrence_year_frequency" value="%s" min="1" max="9">',
-                          $dto->job_recurrence_year_frequency
+                          '<input type="number" class="form-control" name="job_recurrence_year_frequency" value="%s" min="1" max="9" %s>',
+                          $dto->job_recurrence_year_frequency,
+                          $dto->job_recurrence_disable ? 'disabled' : ''
 
                         );
                         ?>
@@ -366,7 +408,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                   <div class="form-row mb-2 d-none" id="<?= $_uidRecurrenceDayOfWeek = strings::rand() ?>">
                     <div class="col">
                       <?php
-                      $_template = '<div class="form-check form-check-inline"><input type="checkbox" class="form-check-input" name="job_recurrence_day_of_week[]" value="%s" id="%s" %s><label class="form-check-label" for="%s">%s</label></div>';
+                      $_template = '<div class="form-check form-check-inline"><input type="checkbox" class="form-check-input" name="job_recurrence_day_of_week[]" value="%s" id="%s" %s %s><label class="form-check-label" for="%s">%s</label></div>';
                       $recurrenceDays = explode(',', $dto->job_recurrence_day_of_week);
 
                       printf(
@@ -374,6 +416,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                         config::job_recurrence_day_monday,
                         $_uid = strings::rand(),
                         in_array(config::job_recurrence_day_monday, $recurrenceDays) ? 'checked' : '',
+                        $dto->job_recurrence_disable ? 'disabled' : '',
                         $_uid,
                         'Mon'
 
@@ -384,6 +427,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                         config::job_recurrence_day_tuesday,
                         $_uid = strings::rand(),
                         in_array(config::job_recurrence_day_tuesday, $recurrenceDays) ? 'checked' : '',
+                        $dto->job_recurrence_disable ? 'disabled' : '',
                         $_uid,
                         'Tue'
 
@@ -394,6 +438,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                         config::job_recurrence_day_wednesday,
                         $_uid = strings::rand(),
                         in_array(config::job_recurrence_day_wednesday, $recurrenceDays) ? 'checked' : '',
+                        $dto->job_recurrence_disable ? 'disabled' : '',
                         $_uid,
                         'Wed'
 
@@ -404,6 +449,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                         config::job_recurrence_day_thursday,
                         $_uid = strings::rand(),
                         in_array(config::job_recurrence_day_thursday, $recurrenceDays) ? 'checked' : '',
+                        $dto->job_recurrence_disable ? 'disabled' : '',
                         $_uid,
                         'Thur'
 
@@ -414,6 +460,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                         config::job_recurrence_day_friday,
                         $_uid = strings::rand(),
                         in_array(config::job_recurrence_day_friday, $recurrenceDays) ? 'checked' : '',
+                        $dto->job_recurrence_disable ? 'disabled' : '',
                         $_uid,
                         'Fri'
 
@@ -424,6 +471,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                         config::job_recurrence_day_saturday,
                         $_uid = strings::rand(),
                         in_array(config::job_recurrence_day_saturday, $recurrenceDays) ? 'checked' : '',
+                        $dto->job_recurrence_disable ? 'disabled' : '',
                         $_uid,
                         'Sat'
 
@@ -434,13 +482,13 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                         config::job_recurrence_day_sunday,
                         $_uid = strings::rand(),
                         in_array(config::job_recurrence_day_sunday, $recurrenceDays) ? 'checked' : '',
+                        $dto->job_recurrence_disable ? 'disabled' : '',
                         $_uid,
                         'Sun'
 
                       );
 
                       ?>
-
                     </div>
 
                   </div>
@@ -450,10 +498,11 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                       <div class="form-check">
                         <?php
                         printf(
-                          '<input type="checkbox" class="form-check-input" name="%s" value="1" id="%s" %s>',
+                          '<input type="checkbox" class="form-check-input" name="%s" value="1" id="%s" %s %s>',
                           'job_recurrence_on_business_day',
                           $_uid = strings::rand(),
-                          1 == $dto->job_recurrence_on_business_day ? 'checked' : ''
+                          1 == $dto->job_recurrence_on_business_day ? 'checked' : '',
+                          $dto->job_recurrence_disable ? 'disabled' : ''
 
                         );
                         ?>
@@ -470,7 +519,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                   <div class="form-row mb-2 d-none" id="<?= $_uidRecurrenceDayOfMonth = strings::rand() ?>">
                     <div class="col-6 col-lg-3 pb-2">
                       <?php
-                      $_template = '<div class="form-check"><input type="checkbox" class="form-check-input" name="job_recurrence_day_of_month[]" value="%s" id="%s" %s><label class="form-check-label" for="%s">%s</label></div>';
+                      $_template = '<div class="form-check"><input type="checkbox" class="form-check-input" name="job_recurrence_day_of_month[]" value="%s" id="%s" %s %s><label class="form-check-label" for="%s">%s</label></div>';
                       $recurrenceDays = explode(',', $dto->job_recurrence_day_of_month);
 
                       for ($i = 1; $i <= 31; $i++) {
@@ -479,6 +528,7 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
                           $i,
                           $_uid = strings::rand(),
                           in_array($i, $recurrenceDays) ? 'checked' : '',
+                          $dto->job_recurrence_disable ? 'disabled' : '',
                           $_uid,
                           $i
 
@@ -504,26 +554,36 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
             <div class="col-3 col-xl-2 col-form-label">payment</div>
 
             <div class="col pt-2">
-              <div class="form-check form-check-inline">
-                <input type="radio" class="form-check-input" name="job_payment" value="<?= config::job_payment_owner ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_payment_owner == $dto->job_payment ? 'checked' : ''; ?>>
+              <?php
+              $_template =
+                '<div class="form-check form-check-inline">
+                  <input type="radio" class="form-check-input" name="job_payment" value="%s" id="%s" %s %s>
+                  <label class="form-check-label" for="%s">%s</label>
+                </div>';
 
-                <label class="form-check-label" for="<?= $_uid ?>">
-                  Owner
+              printf(
+                $_template,
+                config::job_payment_owner,
+                $_uid = strings::rand(),
+                config::job_payment_owner == $dto->job_payment ? 'checked' : '',
+                config::job_status_paid == $dto->status ? 'disabled' : '',
+                $_uid,
+                'Owner'
 
-                </label>
+              );
 
-              </div>
+              printf(
+                $_template,
+                config::job_payment_tenant,
+                $_uid = strings::rand(),
+                config::job_payment_tenant == $dto->job_payment ? 'checked' : '',
+                config::job_status_paid == $dto->status ? 'disabled' : '',
+                $_uid,
+                'Tenant'
 
-              <div class="form-check form-check-inline">
-                <input type="radio" class="form-check-input" name="job_payment" value="<?= config::job_payment_tenant ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_payment_tenant == $dto->job_payment ? 'checked' : ''; ?>>
+              );
 
-                <label class="form-check-label" for="<?= $_uid ?>">
-                  Tenant
-
-                </label>
-
-              </div>
-
+              ?>
             </div>
 
           </div>
@@ -831,14 +891,10 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
           <?php } ?>
 
-          <?php if ($readonly) { ?>
-            <?php if (config::job_type_recurring == $dto->job_type) { ?>
-              <button type="submit" class="btn btn-primary" accesskey="S"><span style="text-decoration: underline;">S</span>ave</button>
-            <?php } else {  ?>
-              <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">close</button>
-            <?php }
-          } else { ?>
+          <?php if (in_array($action, $validActions)) { ?>
             <button type="submit" class="btn btn-primary" accesskey="S"><span style="text-decoration: underline;">S</span>ave</button>
+          <?php } else {  ?>
+            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">close</button>
           <?php } ?>
 
         </div>
@@ -1078,7 +1134,6 @@ $readonly = $dto->complete || $dto->status > 0 || strtotime($dto->archived) > 0 
 
         })
         .on('check-recurrence', function(e) {
-
 
           // the form may be readonly, so you can't rely on getting it's data
           let jobType = $('input[name="job_type"]:checked', this).val();

@@ -22,6 +22,7 @@ $dbc->defineField('job_recurrence_day_of_week', 'varchar');
 $dbc->defineField('job_recurrence_day_of_month', 'varchar', 100);
 $dbc->defineField('job_recurrence_on_business_day', 'tinyint');
 $dbc->defineField('job_recurrence_parent', 'bigint');
+$dbc->defineField('job_recurrence_child', 'bigint');
 $dbc->defineField('job_recurrence_disable', 'tinyint');
 $dbc->defineField('properties_id', 'bigint');
 $dbc->defineField('contractor_id', 'bigint');

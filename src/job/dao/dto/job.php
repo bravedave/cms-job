@@ -29,6 +29,9 @@ class job extends _dto {
   public $job_recurrence_day_of_week = '';
   public $job_recurrence_day_of_month = '';
   public $job_recurrence_on_business_day = 1;
+  public $job_recurrence_child = 0;
+  public $job_recurrence_parent = 0;
+  public $job_recurrence_disable = 0;
   public $brief = '';
   public $description = '';
   public $status = 0;

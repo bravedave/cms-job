@@ -110,6 +110,26 @@ class controller extends \Controller {
       } else {
         Json::nak(sprintf('%s - missing id', $action));
       }
+    } elseif ('confirm-recurrence' == $action) {
+      if ($parent = (int)$this->getPost('job_recurrence_parent')) {
+        if ((strtotime($due = $this->getPost('due'))) > 0) {
+          $dao = new dao\job;
+          if ($dtoParent = $dao->getByID($parent)) {
+            if ($id = $dao->recur($dtoParent, $due)) {
+              Json::ack($action)
+                ->add('id', $id);
+            } else {
+              Json::nak(sprintf('%s - cannot find parent', $action));
+            }
+          } else {
+            Json::nak(sprintf('%s - cannot find parent', $action));
+          }
+        } else {
+          Json::nak($action);
+        }
+      } else {
+        Json::nak($action);
+      }
     } elseif ('comment-post' == $action) {
       $a = [
         'comment' => $this->getPost('comment'),
@@ -693,6 +713,24 @@ class controller extends \Controller {
             }
           }
         }
+
+        Json::ack($action)
+          ->add('id', $id);
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('job-save-payment' == $action) {
+
+      if ($id = (int)$this->getPost('id')) {
+        $a = [
+          'updated' => \db::dbTimeStamp(),
+          'updated_by' => currentuser::id(),
+          'job_payment' => (int)$this->getPost('job_payment'),
+
+        ];
+
+        $dao = new dao\job;
+        $dao->UpdateByID($a, $id);
 
         Json::ack($action)
           ->add('id', $id);

@@ -4,10 +4,28 @@
 
 ### 4 August, 2021
 
+* **Recurring** Job types _**confirming**_
+
+<blockquote>
+<h5>Confirming a JOB recurrence</h5>
+
+The _authoritative_ record is the most recent occurrence, so to start with, the original record is authoritative ... what happens next ...
+
+* Property Manager can confirm any recurrence at any time
+* Once it's confirmed
+  1. the originating job is no longer authoritative, it recurrence is disabled
+  2. this job (the confirmed job) is now authoratitive, and the recurring progresses of this job
+
+_note_ if you _confirm_ a recurrence _NOT_ the first occurence _(e.g. the second occurence)_ then the first reccurence will disappear - because on the originating record is recurrence is now disabled (hard to explain but makes sense to me)
+
+</blockquote>
+
 * **Recurring** Job types
   * Now calculate out for week, month and year recurring types
+  * Recurrence Parameters can be modified at anytime until the recurrence has been _used (i.e. a subsequent job is created off the recurrence)_
 * **due date** has been added to matrix, the default sort order is due date ascending and due is a click and sort column
 * **Refresh Icon** (Property Tab) - when make changes to the scheduling or recurring jobs, the projected scheduling is not refreshed, although not a problem in matrix, because you can reload the page, it's awkward in the property tab. This icon allows facilitates the refresh.
+* **Payment** - can be modified at any time until the job is marked as paid
 
 ### 3 August, 2021
 
