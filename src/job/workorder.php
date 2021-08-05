@@ -151,6 +151,110 @@ abstract class workorder {
       );
     }
 
+    if ( config::job_type_recurring == $dto->job_type) {
+
+      $LeftWidth = '120';
+      $recurrence = [];
+      if ( config::job_recurrence_interval_week == $dto->job_recurrence_interval) {
+
+        $frequency = 'week';
+        if ( in_array( (int)$dto->job_recurrence_week_frequency, [2])) {
+          $frequency = sprintf( '%dnd week', (int)$dto->job_recurrence_week_frequency);
+
+        }
+        elseif ( in_array( (int)$dto->job_recurrence_week_frequency, [3])) {
+          $frequency = sprintf( '%drd week', (int)$dto->job_recurrence_week_frequency);
+        }
+        elseif ( in_array( (int)$dto->job_recurrence_week_frequency, [4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20])) {
+          $frequency = sprintf( '%dth week', (int)$dto->job_recurrence_week_frequency);
+        }
+        else {
+          $frequency = sprintf( '%d week/s', (int)$dto->job_recurrence_week_frequency);
+        }
+
+        $recurrence[] = sprintf('<tr><td style="width: %dpx">Job repeats every</td><td>%s</td></tr>', $LeftWidth, $frequency);
+        $recurrence[] = sprintf('<tr><td style="width: %dpx">commencing</td><td>%s</td></tr>', $LeftWidth, strings::asLocalDate($dto->due));
+
+        $days = [];
+        $daysOfWeek = explode(',', $dto->job_recurrence_day_of_week);
+        if ( in_array(1, $daysOfWeek)) $days[] = 'Monday';
+        if ( in_array(2, $daysOfWeek)) $days[] = 'Tuesday';
+        if ( in_array(3, $daysOfWeek)) $days[] = 'Wednesday';
+        if ( in_array(4, $daysOfWeek)) $days[] = 'Thursday';
+        if ( in_array(5, $daysOfWeek)) $days[] = 'Friday';
+        if ( in_array(6, $daysOfWeek)) $days[] = 'Saturday';
+        if ( in_array(7, $daysOfWeek)) $days[] = 'Sunday';
+        if ( $days) {
+          $recurrence[] = sprintf('<tr><td style="width: %dpx">on</td><td>%s</td></tr>', $LeftWidth, implode( ',', $days));
+
+        }
+
+        if (strtotime($dto->job_recurrence_end) > 0) {
+          $recurrence[] = sprintf('<tr><td style="width: %dpx">until</td><td>%s</td></tr>', $LeftWidth, strings::asLocalDate($dto->job_recurrence_end));
+
+        }
+
+      } else if ( config::job_recurrence_interval_month == $dto->job_recurrence_interval) {
+
+        $frequency = 'month';
+        if (in_array((int)$dto->job_recurrence_month_frequency, [2])) {
+          $frequency = sprintf('%dnd month', (int)$dto->job_recurrence_month_frequency);
+        } elseif (in_array((int)$dto->job_recurrence_month_frequency, [3])) {
+          $frequency = sprintf('%drd month', (int)$dto->job_recurrence_month_frequency);
+        } elseif (in_array((int)$dto->job_recurrence_month_frequency, [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])) {
+          $frequency = sprintf('%dth month', (int)$dto->job_recurrence_month_frequency);
+        } else {
+          $frequency = sprintf('%d month/s', (int)$dto->job_recurrence_month_frequency);
+        }
+
+        $businessDay = '';
+        if ($dto->job_recurrence_on_business_day) {
+          $businessDay = ', on the next business day';
+        }
+
+        $recurrence[] = sprintf('<tr><td style="width: %dpx">Job repeats every</td><td>%s</td></tr>', $LeftWidth, $frequency . $businessDay);
+        $recurrence[] = sprintf('<tr><td style="width: %dpx">commencing</td><td>%s</td></tr>', $LeftWidth, strings::asLocalDate($dto->due));
+
+        if (strtotime($dto->job_recurrence_end) > 0) {
+          $recurrence[] = sprintf('<tr><td style="width: %dpx">until</td><td>%s</td></tr>', $LeftWidth, strings::asLocalDate($dto->job_recurrence_end));
+        }
+
+      } else if ( config::job_recurrence_interval_year == $dto->job_recurrence_interval) {
+
+        $frequency = 'year';
+        if (in_array((int)$dto->job_recurrence_year_frequency, [2])) {
+          $frequency = sprintf('%dnd year', (int)$dto->job_recurrence_year_frequency);
+        } elseif (in_array((int)$dto->job_recurrence_year_frequency, [3])) {
+          $frequency = sprintf('%drd year', (int)$dto->job_recurrence_year_frequency);
+        } elseif (in_array((int)$dto->job_recurrence_year_frequency, [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])) {
+          $frequency = sprintf('%dth year', (int)$dto->job_recurrence_year_frequency);
+        } else {
+          $frequency = sprintf('%d year/s', (int)$dto->job_recurrence_year_frequency);
+        }
+
+        $businessDay = '';
+        if ( $dto->job_recurrence_on_business_day) {
+          $businessDay = ', on the next business day';
+        }
+
+        $recurrence[] = sprintf('<tr><td style="width: %dpx">Job repeats every</td><td>%s</td></tr>', $LeftWidth, $frequency . $businessDay);
+        $recurrence[] = sprintf('<tr><td style="width: %dpx">commencing</td><td>%s</td></tr>', $LeftWidth, strings::asLocalDate($dto->due));
+
+        if (strtotime($dto->job_recurrence_end) > 0) {
+          $recurrence[] = sprintf('<tr><td style="width: %dpx">until</td><td>%s</td></tr>', $LeftWidth, strings::asLocalDate($dto->job_recurrence_end));
+        }
+
+      }
+
+      $content[] = sprintf(
+        '<h3 class="mb-0 pl-1">Recurrence Schedule</h3>
+        <table class="table mt-1"><tbody>%s</tbody></table>',
+        implode($recurrence)
+
+      );
+
+    }
+
     $content[] = sprintf(
       '<h3 class="mb-0 pl-1">Description</h3>
       <div class="p-1">%s</div>',
