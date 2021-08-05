@@ -799,7 +799,7 @@ if (config::job_status_paid == $dto->status) {
 
         </div>
 
-        <div class="modal-footer">
+        <div class="modal-footer justify-content-start">
           <?php if ($readonly) { ?>
             <?php if ($this->data->hasWorkorder) { ?>
               <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>" disabled order-button><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
@@ -834,16 +834,14 @@ if (config::job_status_paid == $dto->status) {
               (_ => {
                 $('#<?= $_uid ?>')
                   .on('click', e => {
-                    $('#<?= $_modal ?>')
-                      .trigger('add-comment')
-                      .modal('hide');
-
+                    e.stopPropagation();
+                    $('#<?= $_form ?>').trigger('add-comment')
                   });
 
               })(_brayworth_);
             </script>
 
-            <div class="form-check mr-auto">
+            <div class="form-check">
               <?php
 
               printf(
@@ -892,9 +890,9 @@ if (config::job_status_paid == $dto->status) {
           <?php } ?>
 
           <?php if (in_array($action, $validActions)) { ?>
-            <button type="submit" class="btn btn-primary" accesskey="S"><span style="text-decoration: underline;">S</span>ave</button>
+            <button type="submit" class="btn btn-primary ml-auto" accesskey="S"><span style="text-decoration: underline;">S</span>ave and close</button>
           <?php } else {  ?>
-            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">close</button>
+            <button type="button" class="btn btn-outline-secondary ml-auto" data-dismiss="modal">close</button>
           <?php } ?>
 
         </div>
@@ -1127,7 +1125,76 @@ if (config::job_status_paid == $dto->status) {
 
       }
 
+      let saveForm = () => {
+        <?php if (in_array($action, $validActions)) { ?>
+          return new Promise(resolve => {
+            let _form = $('#<?= $_form ?>');
+            let _data = _form.serializeFormJSON();
+
+            if (Number(_data.properties_id) < 1) {
+              $('#<?= $_uidAddress ?>')
+                .popover({
+                  title: 'Missing',
+                  content: 'Please fill this field'
+
+                })
+                .popover('show')
+                .focus();
+
+              return;
+
+            } else {
+              for (var i = 0; i < _form[0].elements.length; i++) {
+                if (_form[0].elements[i].value === '' && _form[0].elements[i].hasAttribute('required')) {
+
+                  $(_form[0].elements[i])
+                    .popover({
+                      title: 'Missing',
+                      content: 'Please fill this field'
+
+                    })
+                    .popover('show')
+                    .focus();
+                  return;
+                }
+              }
+
+            }
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: _data,
+
+            }).then(resolve);
+
+          });
+
+        <?php } else { ?>
+          return new Promise(resolve => resolve({
+            response: 'ack',
+            description: '<?= $action ?>'
+          }));
+
+        <?php } ?>
+
+      };
+
       $('#<?= $_form ?>')
+        .on('add-comment', function(e) {
+          saveForm()
+            .then(d => {
+              if ('ack' != d.response) {
+                _.growl(d);
+
+              }
+
+              $('#<?= $_modal ?>')
+                .trigger('add-comment')
+                .modal('hide');
+
+            });
+
+        })
         .on('check-job-type', function(e) {
           $('#<?= $_uidInvoice ?>').trigger('reconcile');
           $(this).trigger('check-recurrence');
@@ -1630,8 +1697,22 @@ if (config::job_status_paid == $dto->status) {
         .on('quote-view', function(e) {
           e.stopPropagation();
 
-          $('#<?= $_modal ?>').modal('hide');
-          $('#<?= $_modal ?>').trigger('quote-view');
+          saveForm()
+            .then(d => {
+              if ('ack' == d.response) {
+                $('#<?= $_modal ?>')
+                  .trigger('success', d);
+
+              } else {
+                _.growl(d);
+
+              }
+
+              $('#<?= $_modal ?>')
+                .trigger('quote-view')
+                .modal('hide');
+
+            });
 
         })
         .on('quote-upload', function(e) {
@@ -1643,64 +1724,38 @@ if (config::job_status_paid == $dto->status) {
         .on('reload', function(e) {
           e.stopPropagation();
 
-          $('#<?= $_modal ?>')
-            .trigger('edit-workorder')
-            .modal('hide');
+          saveForm()
+            .then(d => {
+              if ('ack' != d.response) {
+                _.growl(d);
+
+              }
+
+              $('#<?= $_modal ?>')
+                .trigger('edit-workorder')
+                .modal('hide');
+
+            });
 
         })
         .on('submit-and-workorder', function(e) {
           e.stopPropagation();
 
-          let _form = $(this);
-          let _data = _form.serializeFormJSON();
+          saveForm()
+            .then(d => {
+              if ('ack' == d.response) {
+                $('#<?= $_modal ?>')
+                  .trigger('success-and-workorder', d);
 
-          if (Number(_data.properties_id) < 1) {
-            $('#<?= $_uidAddress ?>')
-              .popover({
-                title: 'Missing',
-                content: 'Please fill this field'
+              } else {
+                _.growl(d);
 
-              })
-              .popover('show')
-              .focus();
-            return;
-
-          } else {
-            for (var i = 0; i < _form[0].elements.length; i++) {
-              if (_form[0].elements[i].value === '' && _form[0].elements[i].hasAttribute('required')) {
-
-                $(_form[0].elements[i])
-                  .popover({
-                    title: 'Missing',
-                    content: 'Please fill this field'
-
-                  })
-                  .popover('show')
-                  .focus();
-                return;
               }
-            }
 
-          }
-
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: _data,
-
-          }).then(d => {
-            if ('ack' == d.response) {
               $('#<?= $_modal ?>')
-                .trigger('success-and-workorder', d);
+                .modal('hide');
 
-            } else {
-              _.growl(d);
-
-            }
-
-            $('#<?= $_modal ?>')
-              .modal('hide');
-
-          });
+            });
 
           // console.table( _data);
           return false;
@@ -1709,40 +1764,21 @@ if (config::job_status_paid == $dto->status) {
         .on('submit', function(e) {
           e.stopPropagation();
 
-          let _form = $(this);
-          let _data = _form.serializeFormJSON();
+          saveForm()
+            .then(d => {
+              if ('ack' == d.response) {
+                $('#<?= $_modal ?>')
+                  .trigger('success', d);
 
-          if (Number(_data.properties_id) < 1) {
-            $('#<?= $_uidAddress ?>')
-              .popover({
-                title: 'Missing',
-                content: 'Please fill this field'
+              } else {
+                _.growl(d);
 
-              })
-              .popover('show')
-              .focus();
-            return false;
+              }
 
-          }
-
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: _data,
-
-          }).then(d => {
-            if ('ack' == d.response) {
               $('#<?= $_modal ?>')
-                .trigger('success', d);
+                .modal('hide');
 
-            } else {
-              _.growl(d);
-
-            }
-
-            $('#<?= $_modal ?>')
-              .modal('hide');
-
-          });
+            });
 
           // console.table( _data);
           return false;
@@ -1770,8 +1806,22 @@ if (config::job_status_paid == $dto->status) {
         .on('view-workorder', function(e) {
           e.stopPropagation();
 
-          $('#<?= $_modal ?>').modal('hide');
-          $('#<?= $_modal ?>').trigger('view-workorder');
+          saveForm()
+            .then(d => {
+              if ('ack' == d.response) {
+                $('#<?= $_modal ?>')
+                  .trigger('success', d);
+
+              } else {
+                _.growl(d);
+
+              }
+
+              $('#<?= $_modal ?>')
+                .trigger('view-workorder')
+                .modal('hide');
+
+            });
 
         })
         .on('update-required-services', function(e) {
