@@ -26,6 +26,11 @@ abstract class workorder {
     return $path;
   }
 
+  static function reference( int $id) : string {
+    return 'DEA' . str_pad($id, 6, '0', STR_PAD_LEFT);
+
+  }
+
   static function create(dao\dto\job $dto): bool {
 
     $t = new template(__DIR__ . '/templates/workorder.html');
@@ -33,7 +38,7 @@ abstract class workorder {
 
 
     $t->replace('title', config::cms_job_PDF_title($dto->job_type));
-    $t->replace('reference', 'DEA' . str_pad($dto->id, 6, '0', STR_PAD_LEFT));
+    $t->replace('reference', self::reference($dto->id));
 
     $t->replace(
       'logo',

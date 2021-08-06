@@ -83,6 +83,7 @@ class config extends \config {
 		15 => 'invoiced',
 		20 => 'reviewed',
 		30 => 'paid',
+		99 => 'ghost',
 
 	];
 
@@ -94,6 +95,7 @@ class config extends \config {
 	const job_status_invoiced = 15;
 	const job_status_reviewed = 20;
 	const job_status_paid = 30;
+	const job_status_ghost = 99;
 
 	const job_templates = [
 		'template-workorder-send'

@@ -1339,4 +1339,55 @@ class controller extends \Controller {
       print file_get_contents(__DIR__ . '/views/invalid.html');
     }
   }
+
+  public function zipInvoices() {
+    if ($ids = $this->getParam(('ids'))) {
+      $ids = explode(',', $ids);
+      $dao = new dao\job;
+
+      $zipFileName = sprintf('%sjob-invoices-%s.zip', config::tempdir(), date('Ymdhis'));
+      if (file_exists($zipFileName)) {
+        unlink($zipFileName);
+      }
+
+      $iFiles = 0;
+      $zip = new \ZipArchive;
+
+      if ($zip->open($zipFileName, \ZipArchive::CREATE) !== TRUE) {
+        \sys::logger(sprintf('<cannot open %s> : %s', $zipFileName, __METHOD__));
+        printf('<cannot open archive> %s', __METHOD__);
+      } else {
+
+        foreach ($ids as $id) {
+          if ($id = (int)$id) {
+            if ($dto = $dao->getByID($id)) {
+              $dto = $dao->getRichData($dto);
+
+              if (file_exists($path = $dao->getInvoicePath($dto))) {
+                $parts = pathinfo($path);
+                $fileName = sprintf(
+                  '%s-%s.%s',
+                  workorder::reference($dto->id),
+                  preg_replace('@[^0-9a-zA-Z]@', '_', $dto->address_street),
+                  $parts['extension']
+                );
+
+                $zip->addFile($path, $fileName);
+                $iFiles++;
+              }
+            }
+          }
+        }
+      }
+      $zip->close();
+
+      if ($iFiles) {
+        sys::serve($zipFileName);
+      } else {
+        printf('<empty archive> %s', __METHOD__);
+      }
+
+      if (file_exists($zipFileName)) unlink($zipFileName);
+    }
+  }
 }

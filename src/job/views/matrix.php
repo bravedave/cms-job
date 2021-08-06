@@ -251,7 +251,7 @@ use strings;  ?>
   <table class="table table-sm fade" id="<?= $tblID = strings::rand() ?>">
     <thead class="small">
       <tr>
-        <td line-number>#</td>
+        <td class="text-center" line-number>#</td>
         <td class="constrain <?= $this->data->hidepropertycolumn ? 'd-none' : '' ?>" data-role="sort-header" data-key="street_index">Property</td>
         <td class="d-none d-md-table-cell constrain" data-role="sort-header" data-key="contractor_name">Contractor</td>
         <td class="d-none d-md-table-cell">Items</td>
@@ -321,7 +321,7 @@ use strings;  ?>
 
         );
       ?>
-        <td class="small" line-number></td>
+        <td class="small text-center" line-number></td>
         <td class="constrain <?= $this->data->hidepropertycolumn ? 'd-none' : '' ?>">
           <div class="constrained text-truncate" address>
             <?= $dto->address_street ?>
@@ -423,7 +423,132 @@ use strings;  ?>
     let jobTypes = <?= json_encode(config::job_types) ?>;
     let jobStatuses = <?= json_encode(config::job_status) ?>;
 
+    $('#<?= $tblID ?> > thead > tr >td[line-number]')
+      .on('contextmenu', function(e) {
+        if (e.shiftKey)
+          return;
+
+        e.stopPropagation();
+        e.preventDefault();
+
+        _.hideContexts();
+
+        let _context = _.context();
+
+        _context.append(
+          $('<a href="#">select all</a>').on('click', e => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            $('#<?= $tblID ?>').trigger('select-visible');
+            _context.close();
+
+          }));
+
+        _context.append(
+          $('<a href="#" class="d-none"></a>')
+          .on('click', e => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            $('#<?= $tblID ?>').trigger('download-invoices');
+            _context.close();
+
+          })
+          .on('recon', function(e) {
+            let _me = $(this);
+            let tot = 0;
+
+            $('#<?= $tblID ?> > tbody > tr:not(.d-none)>td[line-number]>i').each((i, el) => {
+              let _el = $(el);
+              let _tr = _el.closest('tr');
+              let _data = _tr.data();
+
+              if (Number(_data.id) > 0 && 'yes' == _data.invoiced) {
+                tot++;
+
+              }
+
+            });
+
+            if (tot > 0) {
+              _me
+                .html('download invoices')
+                .removeClass('d-none');
+
+            }
+
+          })
+          .trigger('recon')
+        );
+
+        _context.append('<hr>');
+        _context.append(
+          $('<a href="#">clear</a>').on('click', e => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            $('#<?= $tblID ?>').trigger('update-line-numbers');
+            _context.close();
+
+          }));
+
+        _context.open(e);
+      });
+
     $('#<?= $tblID ?>')
+      .on('download-invoices', function(e) {
+        let ids = [];
+
+        $('#<?= $tblID ?> > tbody > tr:not(.d-none)>td[line-number]>i').each((i, el) => {
+          let _el = $(el);
+          let _tr = _el.closest('tr');
+          let _data = _tr.data();
+
+          if (Number(_data.id) > 0 && 'yes' == _data.invoiced) {
+            ids.push(_data.id);
+
+          }
+
+        });
+
+        if (ids.length > 0) {
+          window.location.href = _.url('<?= $this->route ?>/zipInvoices?ids=' + ids.join(','));
+
+        }
+
+      })
+      .on('select-visible', function(e) {
+        let _me = $(this);
+
+        $('> tbody > tr', this)
+          .each((i, e) => {
+            let _e = $(e);
+            let _data = _e.data();
+
+            if (_data.id > 0) {
+              $('>td[line-number]', e)
+                .html($(e).hasClass('d-none') ? '' : '<i class="bi bi-check"></i>')
+
+            }
+
+          });
+
+        _me.trigger('total-selected');
+
+      })
+      .on('total-selected', function(e) {
+        let tot = $('> tbody > tr:not(.d-none)>td[line-number]>i', this).length;
+        if (tot > 0) {
+          $('> thead > tr >td[line-number]', this).html(tot);
+
+        } else {
+          let td = $('> thead > tr >td[line-number]', this);
+          td.html(td.data('lines'));
+
+        }
+
+      })
       .on('update-line-numbers', function(e) {
         let tot = 0;
         let stats = {};
@@ -432,8 +557,15 @@ use strings;  ?>
           let _e = $(e);
           let _data = _e.data();
           // console.log(_data);
-          if (!stats[_data.status]) stats[_data.status] = 0;
-          stats[_data.status]++;
+          if (Number(_data.id) > 0) {
+            if (!stats[_data.status]) stats[_data.status] = 0;
+            stats[_data.status]++;
+
+          } else {
+            if (!stats[<?= config::job_status_ghost ?>]) stats[<?= config::job_status_ghost ?>] = 0;
+            stats[<?= config::job_status_ghost ?>]++;
+
+          }
 
           $('>td[line-number]', e)
             .data('line', i + 1)
@@ -441,28 +573,33 @@ use strings;  ?>
           tot++;
         });
 
-        $('> thead > tr >td[line-number]', this).html(tot);
+        $('> thead > tr >td[line-number]', this)
+          .data('lines', tot)
+          .html(tot);
 
         $('#<?= $stats ?>')
           .html('');
 
         // console.log(stats);
         $.each(stats, (i, s) => {
-          let ig = $('<div class="input-group input-group-sm"></div>');
-          $('<div class="input-group-prepend"></div>')
-            .append(
-              $('<div class="input-group-text"></div>')
-              .html(jobStatuses[i])
-            )
-            .appendTo(ig);
+          if (Number(s) > 0) {
+            let ig = $('<div class="input-group input-group-sm"></div>');
+            $('<div class="input-group-prepend"></div>')
+              .append(
+                $('<div class="input-group-text"></div>')
+                .html(jobStatuses[i])
+              )
+              .appendTo(ig);
 
-          $('<div class="form-control"></div>')
-            .html(s)
-            .appendTo(ig);
+            $('<div class="form-control"></div>')
+              .html(s)
+              .appendTo(ig);
 
-          $('<div class="col-auto"></div>')
-            .append(ig)
-            .appendTo('#<?= $stats ?>');
+            $('<div class="col-auto"></div>')
+              .append(ig)
+              .appendTo('#<?= $stats ?>');
+
+          }
 
         });
 
@@ -1667,6 +1804,27 @@ use strings;  ?>
 
                 _.hideContexts();
                 $(this).trigger('edit');
+
+              });
+
+            $('td[line-number]', _tr)
+              .addClass('pointer')
+              .on('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                let _me = $(this);
+                let _data = _me.data();
+
+                if ($('i', this).length > 0) {
+                  _me.html(_data.line);
+
+                } else {
+                  _me.html('<i class="bi bi-check"></i>');
+
+                }
+
+                $('#<?= $tblID ?>').trigger('total-selected');
 
               });
 

@@ -37,6 +37,7 @@
     }
   },
   "require": {
+    "ext-zip": "*",
     "bravedave/cms-console": "*",
     "bravedave/dvc": "*",
     "bravedave/green": "*",

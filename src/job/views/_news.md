@@ -4,7 +4,23 @@
 
 ### 6 August, 2021
 
-* **Item Search** - new item search field, search for item, press enter to add
+* **Select Lines** - as with other areas
+  * click the index cell (the cell at start of line with number), it toggles between select/unselected and marks the line with a &check;
+  * the index cell header will display the number of items selected, if none are selected it display the number of items reported
+* **Download Invoices** - a _multistep_ process
+
+<blockquote>
+_PreRequisite_ this option only shows up if some of the items selected have invoices.
+
+_Quirk_ if you have items selected which do and don't have invoices, the download will contain a different number of files than selected items
+
+1. Select some items - be sure to include some with invoices
+2. Right Click the _Index Header Cell_, if there are some invoices, the option _download invoices_ will be available
+
+</blockquote>
+
+
+* **Item Search** - new item search field - search for item, press enter to add
 
 ### 5 August, 2021
 
