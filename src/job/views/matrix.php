@@ -1873,35 +1873,38 @@ use strings;  ?>
         let _me = $(this);
 
         $.each(jobTypes, (i, jt) => {
-          _context.append(
-            $('<a href="#"></a>')
-            .html(jt)
-            .on('click', function(e) {
-              e.stopPropagation();
-              e.preventDefault();
-              _context.close();
+          if ( <?= config::job_status_ghost ?> != i) {
+            _context.append(
+              $('<a href="#"></a>')
+              .html(jt)
+              .on('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                _context.close();
 
-              filterType = i;
-              _me
-                .html('')
-                .append(
-                  $('<div class="badge badge-primary"></div>')
-                  .html(jt)
+                filterType = i;
+                _me
+                  .html('')
+                  .append(
+                    $('<div class="badge badge-primary"></div>')
+                    .html(jt)
 
-                );
+                  );
 
-              $('#<?= $srch ?>').trigger('search');
-              sessionStorage.setItem('job-matrix-filter-type', i);
+                $('#<?= $srch ?>').trigger('search');
+                sessionStorage.setItem('job-matrix-filter-type', i);
 
-            })
-            .on('reconcile', function() {
-              // console.log(i, filterType, String(i) === String(filterType));
-              if (String(i) === String(filterType)) $(this).prepend('<i class="bi bi-check"></i>')
+              })
+              .on('reconcile', function() {
+                // console.log(i, filterType, String(i) === String(filterType));
+                if (String(i) === String(filterType)) $(this).prepend('<i class="bi bi-check"></i>')
 
-            })
-            .trigger('reconcile')
+              })
+              .trigger('reconcile')
 
-          );
+            );
+
+          }
 
         });
 
