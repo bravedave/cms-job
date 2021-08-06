@@ -19,7 +19,6 @@ _Quirk_ if you have items selected which do and don't have invoices, the downloa
 
 </blockquote>
 
-
 * **Item Search** - new item search field - search for item, press enter to add
 
 ### 5 August, 2021
