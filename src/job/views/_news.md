@@ -10,12 +10,18 @@
 * **Download Invoices** - a _multistep_ process
 
 <blockquote>
+
 _PreRequisite_ this option only shows up if some of the items selected have invoices.
 
 _Quirk_ if you have items selected which do and don't have invoices, the download will contain a different number of files than selected items
 
 1. Select some items - be sure to include some with invoices
-2. Right Click the _Index Header Cell_, if there are some invoices, the option _download invoices_ will be available
+2. _Right Click_ the _Index Header Cell_, if there are some invoices, the option _download invoices_ will be available
+
+* **Example**
+  1. _Right Click_ the _Type_ header and filter either invoiced or paid
+  1. _Right Click_ The _Index Header_ and _Select All_
+  1. _Right Click_ The _Index Header_ again and _download invoices_
 
 </blockquote>
 
