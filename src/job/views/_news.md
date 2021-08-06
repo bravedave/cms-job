@@ -1,6 +1,8 @@
 # Job - Workorder Managerment
 
-## Latest News
+## Release Notes
+
+<p>&nbsp;</p>
 
 ### 6 August, 2021
 
@@ -22,6 +24,15 @@ _Quirk_ if you have items selected which do and don't have invoices, the downloa
   1. _Right Click_ the _Type_ header and filter either invoiced or paid
   1. _Right Click_ The _Index Header_ and _Select All_
   1. _Right Click_ The _Index Header_ again and _download invoices_
+
+</blockquote>
+
+* **Archive Multiple JOBS** - a _multistep_ process
+
+<blockquote>
+
+1. Select some items
+2. _Right Click_ the _Index Header Cell_, select _archive selected_
 
 </blockquote>
 

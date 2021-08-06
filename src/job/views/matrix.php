@@ -446,6 +446,23 @@ use strings;  ?>
           }));
 
         _context.append(
+          $('<a href="#">archive selected</a>')
+          .on('click', e => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            _context.close();
+
+            $('#<?= $tblID ?> > tbody > tr:not(.d-none)>td[line-number]>i').each((i, el) => {
+              let _el = $(el);
+              _el.closest('tr').trigger('archive');
+
+            });
+
+          })
+        );
+
+        _context.append(
           $('<a href="#" class="d-none"></a>')
           .on('click', e => {
             e.stopPropagation();
@@ -496,6 +513,7 @@ use strings;  ?>
         _context.open(e);
       });
 
+    let lineidx = 0;
     $('#<?= $tblID ?>')
       .on('download-invoices', function(e) {
         let ids = [];
@@ -550,10 +568,13 @@ use strings;  ?>
 
       })
       .on('update-line-numbers', function(e) {
+        let idx = ++lineidx;
         let tot = 0;
         let stats = {};
 
         $('> tbody > tr:not(.d-none)', this).each((i, e) => {
+          if (idx != lineidx) return false;
+
           let _e = $(e);
           let _data = _e.data();
           // console.log(_data);
@@ -573,36 +594,38 @@ use strings;  ?>
           tot++;
         });
 
-        $('> thead > tr >td[line-number]', this)
-          .data('lines', tot)
-          .html(tot);
+        if (idx == lineidx) {
+          $('> thead > tr >td[line-number]', this)
+            .data('lines', tot)
+            .html(tot);
 
-        $('#<?= $stats ?>')
-          .html('');
+          $('#<?= $stats ?>')
+            .html('');
 
-        // console.log(stats);
-        $.each(stats, (i, s) => {
-          if (Number(s) > 0) {
-            let ig = $('<div class="input-group input-group-sm"></div>');
-            $('<div class="input-group-prepend"></div>')
-              .append(
-                $('<div class="input-group-text"></div>')
-                .html(jobStatuses[i])
-              )
-              .appendTo(ig);
+          // console.log(stats);
+          $.each(stats, (i, s) => {
+            if (Number(s) > 0) {
+              let ig = $('<div class="input-group input-group-sm"></div>');
+              $('<div class="input-group-prepend"></div>')
+                .append(
+                  $('<div class="input-group-text"></div>')
+                  .html(jobStatuses[i])
+                )
+                .appendTo(ig);
 
-            $('<div class="form-control"></div>')
-              .html(s)
-              .appendTo(ig);
+              $('<div class="form-control"></div>')
+                .html(s)
+                .appendTo(ig);
 
-            $('<div class="col-auto"></div>')
-              .append(ig)
-              .appendTo('#<?= $stats ?>');
+              $('<div class="col-auto"></div>')
+                .append(ig)
+                .appendTo('#<?= $stats ?>');
 
-          }
+            }
 
-        });
+          });
 
+        }
 
       });
 
@@ -643,6 +666,7 @@ use strings;  ?>
                 } else {
                   _tr
                     .remove();
+                  $('#<?= $tblID ?>').trigger('update-line-numbers');
 
                 }
 
