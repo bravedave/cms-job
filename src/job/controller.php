@@ -298,6 +298,39 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
+    } elseif ('get-invoice-as-attachment' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+
+          if (file_exists($src = $dao->getInvoicePath($dto))) {
+
+            $dto = $dao->getRichData($dto);
+
+            if (!($tmpdir = $this->getPost('tmpdir'))) {
+              $tmpdir = strings::rand('email_') . '_' . time();
+            }
+
+            $_dir = config::tempdir() . $tmpdir;
+            if (!is_dir($_dir)) {
+              mkdir($_dir, 0777);
+              chmod($_dir, 0777);
+            }
+
+            $target = sprintf('%s/%s', $_dir, basename($src));
+            copy($src, $target);
+
+            Json::ack($action)
+              ->add('tmpdir', $tmpdir);
+          } else {
+            Json::nak(sprintf('%s - not found', $action));
+          }
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak(sprintf('%s - missing id', $action));
+      }
     } elseif ('get-workorder-and-attachment' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job;

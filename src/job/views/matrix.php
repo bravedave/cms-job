@@ -1349,6 +1349,56 @@ use strings;  ?>
             });
 
           })
+          .on('email-invoice', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            if (!!window.EmailClass) {
+              let f = o => {
+                _.post({
+                  url: _.url('<?= $this->route ?>'),
+                  data: {
+                    action: 'get-invoice-as-attachment',
+                    id: _data.id
+                  },
+
+                }).then(d => {
+                  if ('ack' == d.response) {
+                    o.tmpDir = d.tmpdir;
+                    if (!!window.EmailClass) {
+                      _.email.activate(o);
+                    } else {
+                      console.log(o);
+                      _.ask.alert({
+                        text: 'no email program'
+                      });
+
+                    }
+
+                  } else {
+                    _.growl(d);
+
+                  }
+
+                });
+
+              }
+
+              // console.log(_data);
+              let mailer = _.email.mailer({
+                subject: _data.address_street + ' invoice',
+              });
+
+              f(mailer);
+
+            } else {
+              _.ask.alert({
+                text: 'no email program'
+              });
+
+            }
+
+          })
           .on('email-workorder', function(e) {
             let _tr = $(this);
             let _data = _tr.data();
@@ -1386,7 +1436,6 @@ use strings;  ?>
 
               }
 
-              // console.log('email-workorder');
               // console.log(_data);
               let mailer = _.email.mailer({
                 subject: _data.address_street + ' workorder',
@@ -1482,6 +1531,11 @@ use strings;  ?>
               .then(m => m.on('edit-workorder', e => {
                 e.stopPropagation();
                 _tr.trigger('edit');
+
+              }))
+              .then(m => m.on('email-invoice', e => {
+                e.stopPropagation();
+                _tr.trigger('email-invoice');
 
               }))
               .then(m => m.on('job-mark-invoice-reviewed', e => {

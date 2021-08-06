@@ -65,6 +65,32 @@ $_modal = strings::rand();
             </script>
           <?php } ?>
 
+          <?php if ($this->data->hasWorkorder) { ?>
+            <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
+            <script>
+              $('#<?= $_uid ?>').on('click', e => {
+                $('#<?= $_modal ?>').modal('hide');
+                $('#<?= $_modal ?>').trigger('view-workorder');
+              });
+            </script>
+          <?php } ?>
+
+          <button type="button" class="btn btn-outline-secondary" id="<?= $_EmailInvoice = strings::rand() ?>"><i class="bi bi-cursor"></i> email invoice</button>
+          <script>
+            (_ => {
+              $('#<?= $_EmailInvoice ?>')
+                .on('click', function(e) {
+                  e.stopPropagation();
+
+                  $('#<?= $_modal ?>')
+                    .trigger('email-invoice')
+                    .modal('hide');
+
+                });
+
+            })(_brayworth_);
+          </script>
+
           <button type="button" class="btn btn-outline-secondary" id="<?= $_gotoJob = strings::rand() ?>"><?= config::label_job_view ?></button>
 
           <div class="form-check">
@@ -96,15 +122,6 @@ $_modal = strings::rand();
           </div>
 
           <button type="button" class="btn btn-outline-secondary ml-auto" data-dismiss="modal">close</button>
-          <?php if ($this->data->hasWorkorder) { ?>
-            <button type="button" class="btn btn-outline-secondary" accesskey="O" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-file-pdf text-danger"></i> <span style="text-decoration: underline;">O</span>rder</button>
-            <script>
-              $('#<?= $_uid ?>').on('click', e => {
-                $('#<?= $_modal ?>').modal('hide');
-                $('#<?= $_modal ?>').trigger('view-workorder');
-              });
-            </script>
-          <?php } ?>
         </div>
       </div>
     </div>
