@@ -2,6 +2,14 @@
 
 ## Latest News
 
+### 6 August, 2021
+
+* **Item Search** - new item search field, search for item, press enter to add
+
+### 5 August, 2021
+
+* **Recurring Instructions** now included on PDF WorkOrder
+
 ### 4 August, 2021
 
 * **Recurring** Job types _**confirming**_

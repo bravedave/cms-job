@@ -772,6 +772,15 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
+    } elseif ('search-job-items' == $action) {
+      if ($term = $this->getPost('term')) {
+        $dao = new dao\job_items;
+        Json::ack($action)
+          ->add('term', $term)
+          ->add('data', $dao->search($term));
+      } else {
+        Json::nak($action);
+      }
     } elseif ('search-properties' == $action) {
       if ($term = $this->getPost('term')) {
         Json::ack($action)

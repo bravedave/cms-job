@@ -20,7 +20,12 @@ class job_items extends _dao {
 
   public function getAll($fields = 'job_items.*, cat.category', $order = 'ORDER BY cat.category ASC, job_items.item ASC') {
     $sql = sprintf(
-      'SELECT %s FROM `job_items` LEFT JOIN `job_categories` cat on cat.id = job_items.job_categories_id %s',
+      'SELECT
+        %s
+      FROM
+        `job_items`
+          LEFT JOIN
+        `job_categories` cat ON cat.id = job_items.job_categories_id %s',
       $fields,
       $order,
 
@@ -142,5 +147,85 @@ class job_items extends _dao {
       \sys::logger(sprintf('<missing import file> %s', $path, __METHOD__));
       \sys::logger(sprintf('<%s> %s', $path, __METHOD__));
     }
+  }
+
+  public function search(string $term): array {
+
+    $label = sprintf(
+      'CONCAT( job_items.`item`, %s, job_items.`description`) `label`',
+      $this->quote(' - ')
+    );
+
+    if ('sqlite' == \config::$DB_TYPE) {
+      $label = sprintf(
+        'job_items.`item` || %s || job_items.`description` `label`',
+        $this->quote(' - ')
+      );
+
+    }
+
+
+    $sql = sprintf(
+      'SELECT
+        job_items.`id`,
+        job_items.`job_categories_id`,
+        job_items.`item`,
+        cat.`category`,
+        job_items.`description`,
+        %s
+      FROM
+        `job_items`
+          LEFT JOIN
+        `job_categories` cat ON cat.id = job_items.job_categories_id
+      WHERE
+        `inactive` = 0
+        AND `description` LIKE %s
+      ORDER BY
+        cat.`category` ASC, job_items.`item` ASC
+      LIMIT 10',
+      $label,
+      $this->quote('%' . $term . '%')
+
+    );
+
+    $ret = [];
+    if ($res = $this->Result($sql)) {
+      $ret = $res->dtoSet();
+      if (count($ret) < 10) {
+        $sql = sprintf(
+          'SELECT
+            job_items.`id`,
+            job_items.`job_categories_id`,
+            job_items.`item`,
+            cat.`category`,
+            job_items.`description`,
+            %s
+          FROM
+            `job_items`
+              LEFT JOIN
+            `job_categories` cat ON cat.id = job_items.job_categories_id
+          WHERE
+            job_items.`inactive` = 0
+            AND (
+              job_items.`description` LIKE %s
+                OR
+              job_items.`item` LIKE %s)
+          ORDER BY
+            cat.`category` ASC, job_items.`item` ASC',
+          $label,
+          $this->quote('%' . $term . '%'),
+          $this->quote('%' . $term . '%')
+
+        );
+
+
+        if ($res = $this->Result($sql)) {
+          $ret = $res->dtoSet();
+        }
+      }
+    }
+
+    // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
+    return $ret;
   }
 }

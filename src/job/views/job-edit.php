@@ -729,11 +729,43 @@ if (config::job_status_paid == $dto->status) {
 
           </div>
 
-          <div class="form-row">
-            <div class="col col-form-label font-weight-bold">items..</div>
+          <!-- items - add item -->
+          <div class="form-row mb-1">
+            <div class="col <?php if (!$readonly) print 'col-md-3'; ?> pt-2 font-weight-bold">items..</div>
             <?php if (!$readonly) { ?>
-              <div class="col-auto">
-                <button type="button" class="btn btn-sm btn-outline-secondary" accesskey="I" id="<?= $_btnAddItem = strings::rand() ?>">
+              <div class="col-auto col-md-7">
+                <input type="search" class="form-control" placeholder="search for item" id="<?= $_uidSearch = strings::rand() ?>">
+                <script>
+                  (_ => {
+                    if (!!_.search.jobitems) {
+                      $('#<?= $_uidSearch ?>').autofill({
+                        autoFocus: true,
+                        source: _.search.jobitems,
+                        select: (e, ui) => {
+                          let o = ui.item;
+
+                          $('#<?= $_form ?>')
+                            .trigger('items-auto-add', o);
+
+                          $('#<?= $_uidSearch ?>').val('');
+
+                        },
+
+                      });
+
+                    } else {
+                      $('#<?= $_uidSearch ?>').prop('disabled', true);
+                      console.log('missing line sarch function ...');
+
+                    }
+
+                  })(_brayworth_);
+                </script>
+
+              </div>
+
+              <div class="col-auto col-md-2 text-md-right">
+                <button type="button" class="btn btn-outline-secondary" accesskey="I" id="<?= $_btnAddItem = strings::rand() ?>">
                   <i class="bi bi-plus d-none d-sm-inline"></i> <span style="text-decoration: underline;">I</span>tem
                 </button>
                 <script>
@@ -1546,6 +1578,28 @@ if (config::job_status_paid == $dto->status) {
 
           $(this)
             .trigger('validate-order-button');
+
+        })
+        .on('items-auto-add', function(e, _item) {
+          e.stopPropagation();
+
+          let row = newRow();
+          let jobline = $('input[name="job_line_id\[\]"]', row);
+          let cat = $('select[name="item_job_categories_id\[\]"]', row);
+          let itemSub = $('select[name="item_sub\[\]"]', row);
+          let item = $('select[name="item_id\[\]"]', row);
+
+          // console.log(_item);
+          cat.val(_item.job_categories_id);
+          row
+            .trigger('category-change', () => {
+              itemSub.val(_item.item);
+              row
+                .trigger('item-sub-change', () => {
+                  item.val(_item.id);
+                });
+            });
+          // jobline.val(_item.id);
 
         })
         .one('items-init', function(e) {
