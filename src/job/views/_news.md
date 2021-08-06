@@ -36,6 +36,7 @@ _Quirk_ if you have items selected which do and don't have invoices, the downloa
 
 </blockquote>
 
+* **Email Invoice** - from the invoice viewer select _Email Invoice_
 * **Item Search** - new item search field - search for item, press enter to add
 
 ### 5 August, 2021
