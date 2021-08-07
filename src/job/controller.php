@@ -679,6 +679,7 @@ class controller extends \Controller {
             ]
             :
             [
+              'archived' => \db::dbTimeStamp(),
               'invoice_senttoowner' => \db::dbTimeStamp(),
               'invoice_senttoowner_by' => currentuser::id()
 

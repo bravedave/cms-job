@@ -43,10 +43,10 @@ $_modal = strings::rand();
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body p-2">
           <iframe class="w-100" id="<?= $_modal ?>iframe" src="<?= strings::url(sprintf('%s/workorderpdf/%d%s', $this->route, $dto->id, $t)) ?>"></iframe>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer px-2">
           <?php if ((int)$dto->paid_by < 1) {  ?>
             <button type="button" class="btn btn-outline-secondary" id="<?= $_RefreshWorkOrder = strings::rand() ?>">refresh order</button>
             <button type="button" class="btn btn-outline-secondary" id="<?= $_EmailOrder = strings::rand() ?>"><i class="bi bi-cursor"></i> email order</button>

@@ -578,6 +578,9 @@ class job extends _dao {
         $job->address_street = $prop->address_street;
         $job->address_suburb = $prop->address_suburb;
         $job->address_postcode = $prop->address_postcode;
+        $job->maintenance_directly_to_owner = 'yes' == $dao->option( $prop, 'maintenance-directly-to-owner');
+
+        \sys::logger( sprintf('<%s> %s', $job->maintenance_directly_to_owner ? 'send invoices to owner' : 'DO NOT send invoices to owner', __METHOD__));
 
         if ($prop->people_id) {
           $dao = new people;

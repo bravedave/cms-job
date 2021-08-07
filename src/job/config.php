@@ -58,7 +58,7 @@ class config extends \config {
 	const job_recurrence_day_friday = 5;
 	const job_recurrence_day_saturday = 6;
 	const job_recurrence_day_sunday = 7;
-	const job_recurrence_lookahead = 3;
+	const job_recurrence_lookahead = 1;
 
 	const job_type_order = 0;
 	const job_type_recurring = 1;

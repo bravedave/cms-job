@@ -43,10 +43,13 @@ $_modal = strings::rand();
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body p-2">
           <iframe class="w-100" id="<?= $_modal ?>iframe" src="<?= strings::url(sprintf('%s/invoiceview/%d%s', $this->route, $dto->id, $t)) ?>"></iframe>
+          <?php if ($dto->maintenance_directly_to_owner) {  ?>
+            <div class="alert alert-warning my-0">send maintenance invoices directly to owner for payment</div>
+          <?php }  ?>
         </div>
-        <div class="modal-footer justify-content-start">
+        <div class="modal-footer px-2 justify-content-start">
           <?php if ((int)$dto->paid_by < 1) {  ?>
             <button type="button" class="btn btn-outline-secondary" id="<?= $_delete = strings::rand() ?>"><i class="bi bi-trash"></i> delete</button>
             <script>
@@ -109,13 +112,13 @@ $_modal = strings::rand();
               $_uidReviewed,
               $dto->invoice_reviewed_by ?
                 sprintf(
-                  'Reviewed by %s - %s',
+                  'reviewed by %s - %s',
                   $dto->invoice_reviewed_by_name,
                   strings::asShortDate($dto->invoice_reviewed, $time = true)
 
                 )
                 :
-                'Reviewed'
+                'reviewed'
             );
             ?>
 
@@ -137,13 +140,13 @@ $_modal = strings::rand();
               $_uidSentToOwner,
               $dto->invoice_senttoowner_by ?
                 sprintf(
-                  'Sent to Owner by %s - %s',
+                  'sent to owner by %s - %s',
                   $dto->invoice_senttoowner_by_name,
                   strings::asShortDate($dto->invoice_senttoowner, $time = true)
 
                 )
                 :
-                'Sent to Owner'
+                'sent to owner'
             );
             ?>
 
@@ -163,7 +166,7 @@ $_modal = strings::rand();
           $('#<?= $_modal ?>')
             .trigger(_me.prop('checked') ? 'job-mark-invoice-reviewed' : 'job-mark-invoice-reviewed-undo');
 
-          $('#<?= $_uidReviewed ?>label').html('Reviewed')
+          $('#<?= $_uidReviewed ?>label').html('reviewed')
 
         });
 
@@ -174,7 +177,7 @@ $_modal = strings::rand();
           $('#<?= $_modal ?>')
             .trigger(_me.prop('checked') ? 'job-mark-invoice-senttoowner' : 'job-mark-invoice-senttoowner-undo');
 
-          $('#<?= $_uidSentToOwner ?>label').html('Sent to Owner')
+          $('#<?= $_uidSentToOwner ?>label').html('sent to owner')
 
         });
 

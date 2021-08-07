@@ -4,6 +4,14 @@
 
 <p>&nbsp;</p>
 
+### 7 August, 2021
+
+* **sent to owner** - when viewing the invoice new check box to indicate invoice has been sent to owner, with this checked status is advanced to paid
+  * setting _sent to owner_ marks the job as _archived_, **note** clearing the flag does not _unarchive_ the job
+* **send maintenance invoices directly to owner**
+  * in the _Property > Tenant Tab_ note the option _send maintenance invoices directly to owner_
+  * if the flag is set, when viewing the invoice and alert is shown to the same effect
+
 ### 6 August, 2021
 
 * **Select Lines** - as with other areas

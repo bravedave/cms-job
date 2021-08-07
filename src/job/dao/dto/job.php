@@ -43,6 +43,7 @@ class job extends _dto {
   public $invoice_senttoowner = '';
   public $invoice_senttoowner_by = 0;
   public $invoice_senttoowner_by_name = '';
+  public $maintenance_directly_to_owner = false;
   public $due = '';
   public $job_payment = 0;
   public $archived = '';

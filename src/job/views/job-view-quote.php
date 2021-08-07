@@ -43,10 +43,10 @@ $_modal = strings::rand();
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body p-2">
           <iframe class="w-100" id="<?= $_modal ?>iframe" src="<?= strings::url(sprintf('%s/quoteview/%d%s', $this->route, $dto->id, $t)) ?>"></iframe>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer px-2">
           <button type="button" class="btn btn-outline-secondary" id="<?= $_delete = strings::rand() ?>"><i class="bi bi-trash"></i> delete</button>
           <script>
             (_ => {
