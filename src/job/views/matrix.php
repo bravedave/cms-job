@@ -424,6 +424,33 @@ use strings;  ?>
     let jobStatuses = <?= json_encode(config::job_status) ?>;
 
     $('#<?= $tblID ?> > thead > tr >td[line-number]')
+      .on('archive-selected', function(e) {
+        let _me = $(this);
+
+        _.ask.alert({
+          title: 'confirm action',
+          text: 'archive selected JOBs ?',
+          buttons: {
+            yes: function(e) {
+              _me.trigger('archive-selected-confirmed');
+              $(this).modal('hide');
+
+            }
+
+          }
+
+        });
+      })
+      .on('archive-selected-confirmed', function(e) {
+        let _me = $(this);
+
+        $('#<?= $tblID ?> > tbody > tr:not(.d-none)>td[line-number]>i').each((i, el) => {
+          let _el = $(el);
+          _el.closest('tr').trigger('archive');
+
+        });
+
+      })
       .on('contextmenu', function(e) {
         if (e.shiftKey)
           return;
@@ -433,6 +460,7 @@ use strings;  ?>
 
         _.hideContexts();
 
+        let _me = $(this);
         let _context = _.context();
 
         _context.append(
@@ -452,12 +480,7 @@ use strings;  ?>
             e.preventDefault();
 
             _context.close();
-
-            $('#<?= $tblID ?> > tbody > tr:not(.d-none)>td[line-number]>i').each((i, el) => {
-              let _el = $(el);
-              _el.closest('tr').trigger('archive');
-
-            });
+            _me.trigger('archive-selected');
 
           })
         );
