@@ -667,6 +667,31 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
+    } elseif ('job-mark-invoice-senttoowner' == $action || 'job-mark-invoice-senttoowner-undo' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          $a = 'job-mark-invoice-senttoowner-undo' == $action ?
+            [
+              'invoice_senttoowner' => '',
+              'invoice_senttoowner_by' => 0
+
+            ]
+            :
+            [
+              'invoice_senttoowner' => \db::dbTimeStamp(),
+              'invoice_senttoowner_by' => currentuser::id()
+
+            ];
+
+          $dao->UpdateByID($a, $dto->id);
+          Json::ack($action);
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak($action);
+      }
     } elseif ('job-mark-paid' == $action || 'job-mark-paid-undo' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job;

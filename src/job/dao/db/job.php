@@ -37,6 +37,8 @@ $dbc->defineField('email_sent', 'datetime');
 $dbc->defineField('email_sent_by', 'bigint');
 $dbc->defineField('invoice_reviewed', 'datetime');
 $dbc->defineField('invoice_reviewed_by', 'bigint');
+$dbc->defineField('invoice_senttoowner', 'datetime');
+$dbc->defineField('invoice_senttoowner_by', 'bigint');
 $dbc->defineField('paid', 'datetime');
 $dbc->defineField('paid_by', 'bigint');
 $dbc->defineField('archived', 'datetime');

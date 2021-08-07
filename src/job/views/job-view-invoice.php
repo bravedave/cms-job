@@ -46,7 +46,7 @@ $_modal = strings::rand();
         <div class="modal-body">
           <iframe class="w-100" id="<?= $_modal ?>iframe" src="<?= strings::url(sprintf('%s/invoiceview/%d%s', $this->route, $dto->id, $t)) ?>"></iframe>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer justify-content-start">
           <?php if ((int)$dto->paid_by < 1) {  ?>
             <button type="button" class="btn btn-outline-secondary" id="<?= $_delete = strings::rand() ?>"><i class="bi bi-trash"></i> delete</button>
             <script>
@@ -93,7 +93,7 @@ $_modal = strings::rand();
 
           <button type="button" class="btn btn-outline-secondary" id="<?= $_gotoJob = strings::rand() ?>"><?= config::label_job_view ?></button>
 
-          <div class="form-check">
+          <div class="form-check form-check-inline">
             <?php
             printf(
               '<input type="checkbox" class="form-check-input" id="%s" %s %s>',
@@ -121,6 +121,34 @@ $_modal = strings::rand();
 
           </div>
 
+          <div class="form-check form-check-inline">
+            <?php
+            printf(
+              '<input type="checkbox" class="form-check-input" id="%s" %s %s>',
+              $_uidSentToOwner = strings::rand(),
+              $dto->invoice_senttoowner_by ? 'checked' : '',
+              (int)$dto->paid_by > 0 ? 'disabled' : ''
+
+            );
+
+            printf(
+              '<label class="form-check-label" for="%s" id="%slabel">%s</label>',
+              $_uidSentToOwner,
+              $_uidSentToOwner,
+              $dto->invoice_senttoowner_by ?
+                sprintf(
+                  'Sent to Owner by %s - %s',
+                  $dto->invoice_senttoowner_by_name,
+                  strings::asShortDate($dto->invoice_senttoowner, $time = true)
+
+                )
+                :
+                'Sent to Owner'
+            );
+            ?>
+
+          </div>
+
           <button type="button" class="btn btn-outline-secondary ml-auto" data-dismiss="modal">close</button>
         </div>
       </div>
@@ -136,6 +164,17 @@ $_modal = strings::rand();
             .trigger(_me.prop('checked') ? 'job-mark-invoice-reviewed' : 'job-mark-invoice-reviewed-undo');
 
           $('#<?= $_uidReviewed ?>label').html('Reviewed')
+
+        });
+
+      $('#<?= $_uidSentToOwner ?>')
+        .on('change', function(e) {
+          let _me = $(this);
+
+          $('#<?= $_modal ?>')
+            .trigger(_me.prop('checked') ? 'job-mark-invoice-senttoowner' : 'job-mark-invoice-senttoowner-undo');
+
+          $('#<?= $_uidSentToOwner ?>label').html('Sent to Owner')
 
         });
 

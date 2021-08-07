@@ -93,6 +93,8 @@ class job extends _dao {
       } elseif (1 == $dto->has_invoice && $dto->status < config::job_status_reviewed) {
         if ($dto->paid && strtotime($dto->paid) > 0) {
           $dto->status = config::job_status_paid; // auto advance status
+        } elseif ($dto->invoice_senttoowner_by) {
+          $dto->status = config::job_status_paid; // auto advance status
         } elseif ($dto->invoice_reviewed_by) {
           $dto->status = config::job_status_reviewed; // auto advance status
         } else {
@@ -228,6 +230,8 @@ class job extends _dao {
           'complete',
           'invoice_reviewed',
           'invoice_reviewed_by',
+          'invoice_senttoowner',
+          'invoice_senttoowner_by',
           'paid',
           'paid_by',
           'updated_by',
@@ -371,6 +375,7 @@ class job extends _dao {
         `status`,
         `complete`,
         `invoice_reviewed_by`,
+        `invoice_senttoowner_by`,
         `paid_by`,
         `properties_id`,
         `address_street`,
@@ -396,7 +401,7 @@ class job extends _dao {
           $set[] = '`has_invoice` = 1';
 
           if ($dto->status < config::job_status_reviewed) {
-            if ($dto->paid_by) {
+            if ($dto->paid_by || $dto->invoice_senttoowner_by) {
               $dto->status = config::job_status_paid; // auto advance status
             } elseif ($dto->invoice_reviewed_by) {
               $dto->status = config::job_status_reviewed; // auto advance status
@@ -657,6 +662,12 @@ class job extends _dao {
     if ($job->invoice_reviewed_by) {
       if ($udto = $dao->getByID($job->invoice_reviewed_by)) {
         $job->invoice_reviewed_by_name = $udto->name;
+      }
+    }
+
+    if ($job->invoice_senttoowner_by) {
+      if ($udto = $dao->getByID($job->invoice_senttoowner_by)) {
+        $job->invoice_senttoowner_by_name = $udto->name;
       }
     }
 

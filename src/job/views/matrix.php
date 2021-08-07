@@ -1548,6 +1548,16 @@ use strings;  ?>
                 _tr.trigger('mark-reviewed-undo');
 
               }))
+              .then(m => m.on('job-mark-invoice-senttoowner', e => {
+                e.stopPropagation();
+                _tr.trigger('mark-senttoowner');
+
+              }))
+              .then(m => m.on('job-mark-invoice-senttoowner-undo', e => {
+                e.stopPropagation();
+                _tr.trigger('mark-senttoowner-undo');
+
+              }))
               .then(m => m.on('view-workorder', e => {
                 e.stopPropagation();
                 _tr.trigger('view-workorder');
@@ -1658,6 +1668,46 @@ use strings;  ?>
               url: _.url('<?= $this->route ?>'),
               data: {
                 action: 'job-mark-invoice-reviewed-undo',
+                id: _data.id
+              },
+
+            }).then(d => {
+              _.growl(d);
+              if ('ack' == d.response) {
+                _tr.trigger('refresh');
+
+              }
+
+            });
+          })
+          .on('mark-senttoowner', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'job-mark-invoice-senttoowner',
+                id: _data.id
+              },
+
+            }).then(d => {
+              _.growl(d);
+              if ('ack' == d.response) {
+                _tr.trigger('refresh');
+
+              }
+
+            });
+          })
+          .on('mark-senttoowner-undo', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'job-mark-invoice-senttoowner-undo',
                 id: _data.id
               },
 
