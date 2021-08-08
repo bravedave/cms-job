@@ -11,6 +11,7 @@
 * **send maintenance invoices directly to owner**
   * in the _Property > Tenant Tab_ note the option _send maintenance invoices directly to owner_
   * if the flag is set, when viewing the invoice and alert is shown to the same effect
+* **Order Number** - a shortend version if the order number is shown on left column
 
 ### 6 August, 2021
 

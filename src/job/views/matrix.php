@@ -10,11 +10,16 @@
 
 namespace cms\job;
 
-use strings;  ?>
+use strings;
+
+$tblID = strings::rand();
+?>
 <style>
   .icon-width {
     width: 1.8em;
   }
+
+  #<?= $tblID ?> td[status] { display: block; width: 45px; }
 
   @media (max-width: 768px) {
     .constrain {
@@ -38,24 +43,13 @@ use strings;  ?>
 
   }
 
-  @media (min-width: 1024px) and (max-width: 1199px) {
+  @media (min-width: 1024px) and (max-width: 1439px) {
     .constrain {
-      width: 188px;
+      width: 178px;
     }
 
     .constrained {
-      max-width: 180px;
-    }
-
-  }
-
-  @media (min-width: 1200px) and (max-width: 1439px) {
-    .constrain {
-      width: 208px;
-    }
-
-    .constrained {
-      max-width: 200px;
+      max-width: 170px;
     }
 
   }
@@ -248,10 +242,11 @@ use strings;  ?>
 <div class="form-row mb-2 d-print-none" id="<?= $stats = strings::rand() ?>"></div>
 
 <div class="table-responsive">
-  <table class="table table-sm fade" id="<?= $tblID = strings::rand() ?>">
+  <table class="table table-sm fade" id="<?= $tblID ?>">
     <thead class="small">
       <tr>
         <td class="text-center" line-number>#</td>
+        <td>Refer</td>
         <td class="constrain <?= $this->data->hidepropertycolumn ? 'd-none' : '' ?>" data-role="sort-header" data-key="street_index">Property</td>
         <td class="d-none d-md-table-cell constrain" data-role="sort-header" data-key="contractor_name">Contractor</td>
         <td class="d-none d-md-table-cell">Items</td>
@@ -322,6 +317,7 @@ use strings;  ?>
         );
       ?>
         <td class="small text-center" line-number></td>
+        <td><?= str_pad( $dto->id, 4, '0', STR_PAD_LEFT) ?></td>
         <td class="constrain <?= $this->data->hidepropertycolumn ? 'd-none' : '' ?>">
           <div class="constrained text-truncate" address>
             <?= $dto->address_street ?>
@@ -401,7 +397,9 @@ use strings;  ?>
           }
           ?></td>
 
-        <td class="text-center" status><?= config::cms_job_status_verbatim($dto->status) ?></td>
+        <td class="text-center text-truncate" status>
+          <?= config::cms_job_status_verbatim($dto->status) ?>
+        </td>
 
         <td class="text-center" due><?= strings::asLocalDate($dto->due) ?></td>
         <td class="text-center" pm><?= $pm ?></td>
