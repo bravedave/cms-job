@@ -152,13 +152,15 @@ class job_items extends _dao {
   public function search(string $term): array {
 
     $label = sprintf(
-      'CONCAT( job_items.`item`, %s, job_items.`description`) `label`',
+      'CONCAT( cat.`category`, %s, job_items.`item`, %s, job_items.`description`) `label`',
+      $this->quote(' - '),
       $this->quote(' - ')
     );
 
     if ('sqlite' == \config::$DB_TYPE) {
       $label = sprintf(
-        'job_items.`item` || %s || job_items.`description` `label`',
+        'cat.`category` || %s || job_items.`item` || %s || job_items.`description` `label`',
+        $this->quote(' - '),
         $this->quote(' - ')
       );
 
