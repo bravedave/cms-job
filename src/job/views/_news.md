@@ -4,6 +4,21 @@
 
 <p>&nbsp;</p>
 
+### 9 August, 2021
+
+* **Email Save to JOB** - this is a feature of _CMS &gt; Email_
+
+<blockquote>
+
+* When an invoice is opened it comes from someone - we access that person and provide a link to the person - this feature expands that feature to check whether they are a primary contact for a job-contractor
+* If they are a job-contractor, and a PDF attachment is identified, then it is assumed this could either be a QUOTE or an INVOICE, so Save to JOB is an option
+* Selecting Save to JOB will
+  1. Check what JOB contractors are relevant
+  2. present a list of invoices
+  3. and file the Invoice
+
+</blockquote>
+
 ### 7 August, 2021
 
 * **sent to owner** - when viewing the invoice new check box to indicate invoice has been sent to owner, with this checked status is advanced to paid
