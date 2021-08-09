@@ -57,7 +57,6 @@ else
 
     else
       echo "this application is available at http://localhost:$PORT"
-        # -D FOREGROUND \
       httpd \
         -f $config \
         -c "PidFile $pidFile"
