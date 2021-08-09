@@ -140,13 +140,13 @@ $_modal = strings::rand();
               $_uidSentToOwner,
               $dto->invoice_senttoowner_by ?
                 sprintf(
-                  'sent to owner by %s - %s',
+                  'sent to owner for direct payment by %s - %s',
                   $dto->invoice_senttoowner_by_name,
                   strings::asShortDate($dto->invoice_senttoowner, $time = true)
 
                 )
                 :
-                'sent to owner'
+                'sent to owner for direct payment'
             );
             ?>
 
@@ -177,7 +177,7 @@ $_modal = strings::rand();
           $('#<?= $_modal ?>')
             .trigger(_me.prop('checked') ? 'job-mark-invoice-senttoowner' : 'job-mark-invoice-senttoowner-undo');
 
-          $('#<?= $_uidSentToOwner ?>label').html('sent to owner')
+          $('#<?= $_uidSentToOwner ?>label').html('sent to owner for direct payment')
 
         });
 
