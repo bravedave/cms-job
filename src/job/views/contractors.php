@@ -10,7 +10,7 @@
 
 namespace cms\console;
 
-use strings;
+use currentUser, strings;
 
 $categories = $this->data->categories;  ?>
 
@@ -92,79 +92,154 @@ $categories = $this->data->categories;  ?>
         });
       });
 
-    $('#<?= $tblID ?> > tbody > tr').each((i, tr) => {
-      $(tr)
-        .on('edit', function(e) {
-          let _me = $(this);
-          let _data = _me.data();
+    $('#<?= $tblID ?> > tbody > tr')
+      .each((i, tr) => {
+        $(tr)
+          .on('edit', function(e) {
+            let _me = $(this);
+            let _data = _me.data();
 
-          _.get.modal(_.url('<?= $this->route ?>/contractor_edit/' + _data.id))
-            .then(d => d.on('edit-primary-contact', e => {
-              e.stopPropagation();
-              _me.trigger('edit-primary-contact');
+            _.get.modal(_.url('<?= $this->route ?>/contractor_edit/' + _data.id))
+              .then(d => d.on('edit-primary-contact', e => {
+                e.stopPropagation();
+                _me.trigger('edit-primary-contact');
 
-            }))
-            .then(d => d.on('success', (e, d) => {
-              _.nav('<?= $this->route ?>/contractors?idx=' + d.id);
+              }))
+              .then(d => d.on('success', (e, d) => {
+                _.nav('<?= $this->route ?>/contractors?idx=' + d.id);
 
-            }))
-            .then(d => d.on('send-sms', () => _.ask.warning({
-              'title': 'not implemented',
-              'text': 'Feature not implented'
-            })));
+              }))
+              .then(d => d.on('send-sms', () => _.ask.warning({
+                'title': 'not implemented',
+                'text': 'Feature not implented'
+              })));
 
-        })
-        .on('edit-primary-contact', function(e) {
-          let _me = $(this);
-          let _data = _me.data();
+          })
+          .on('edit-primary-contact', function(e) {
+            let _me = $(this);
+            let _data = _me.data();
 
-          _.get.modal(_.url('people/getPerson'))
-            .then(m => m.on('success', (e, person) => {
-              _.post({
-                url: _.url('<?= $this->route ?>'),
-                data: {
-                  action: 'set-primary-contact',
-                  id: _data.id,
-                  people_id: person.id
+            _.get.modal(_.url('people/getPerson'))
+              .then(m => m.on('success', (e, person) => {
+                _.post({
+                  url: _.url('<?= $this->route ?>'),
+                  data: {
+                    action: 'set-primary-contact',
+                    id: _data.id,
+                    people_id: person.id
 
-                },
+                  },
 
-              }).then(d => {
-                if ('ack' == d.response) {
-                  $('td[data-role="primary_contact"]', _me).html(person.name)
-                  if (String(person.mobile).IsMobilePhone()) {
-                    $('td[data-role="phone"]', _me).html(String(person.mobile).AsMobilePhone())
+                }).then(d => {
+                  if ('ack' == d.response) {
+                    $('td[data-role="primary_contact"]', _me).html(person.name)
+                    if (String(person.mobile).IsMobilePhone()) {
+                      $('td[data-role="phone"]', _me).html(String(person.mobile).AsMobilePhone())
 
-                  } else if (String(person.mobile).IsPhone()) {
-                    $('td[data-role="phone"]', _me).html(String(person.mobile).AsLocalPhone())
+                    } else if (String(person.mobile).IsPhone()) {
+                      $('td[data-role="phone"]', _me).html(String(person.mobile).AsLocalPhone())
+
+                    } else {
+                      $('td[data-role="phone"]', _me).html('&nbsp;')
+
+                    }
 
                   } else {
-                    $('td[data-role="phone"]', _me).html('&nbsp;')
+                    _.growl(d);
 
                   }
 
-                } else {
-                  _.growl(d);
+                });
+
+              }))
+              .then(m => m.on('hidden.bs.modal', (e) => _me.trigger('edit')));
+
+          })
+          .addClass('pointer')
+          .on('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            _.hideContexts();
+            $(this).trigger('edit');
+
+          })
+          .on('contextmenu', function(e) {
+            if (e.shiftKey)
+              return;
+
+            e.stopPropagation();
+            e.preventDefault();
+
+            _.hideContexts();
+
+            let _tr = $(this);
+            let _context = _.context();
+
+            <?php if (currentUser::isadmin()) { ?>
+
+              _context.append(
+                $('<a href="#"><i class="bi bi-trash"></i>delete</a>')
+                .on('click', e => {
+                  e.stopPropagation();
+
+                  _context.close();
+                  _tr.trigger('delete');
+
+                })
+
+              );
+
+            <?php } ?>
+
+            _context.open(e);
+          })
+          .on('delete', function(e) {
+            let _tr = $(this);
+
+            _.ask.alert({
+              text: 'Are you sure ?',
+              title: 'Confirm Delete',
+              buttons: {
+                yes: function(e) {
+
+                  $(this).modal('hide');
+                  _tr.trigger('delete-confirmed');
 
                 }
 
-              });
+              }
 
-            }))
-            .then(m => m.on('hidden.bs.modal', (e) => _me.trigger('edit')));
+            });
 
-        })
-        .addClass('pointer')
-        .on('click', function(e) {
-          e.stopPropagation();
-          e.preventDefault();
+          })
+          .on('delete-confirmed', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
 
-          _.hideContexts();
-          $(this).trigger('edit');
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'contractor-delete',
+                id: _data.id
 
-        });
+              },
 
-    });
+            }).then(d => {
+              if ('ack' == d.response) {
+                _tr.remove();
+                $('#<?= $tblID ?>').trigger('update-line-numbers');
+
+              } else {
+                _.growl(d);
+
+              }
+
+            });
+
+          });
+
+      });
 
     let srchidx = 0;
     $('#<?= $srch ?>')

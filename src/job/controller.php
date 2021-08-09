@@ -164,6 +164,14 @@ class controller extends \Controller {
       }
       Json::ack($action)
         ->add('id', $id);
+    } elseif ('contractor-delete' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job_contractors;
+        $dao->delete($id);
+        Json::ack($action);
+      } else {
+        Json::nak($action);
+      }
     } elseif ('create-workorder' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job;
