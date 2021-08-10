@@ -34,6 +34,7 @@ class config extends \config {
 	const label_item_edit = 'Edit Item';
 	const label_job = 'Job';
 	const label_job_add = 'New Job';
+	const label_job_bump = 'Bump Job';
 	const label_job_edit = 'Edit Job';
 	const label_job_view = 'View Job';
 	const label_job_viewworkorder = 'View Workorder';

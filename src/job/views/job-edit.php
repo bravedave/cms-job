@@ -166,9 +166,24 @@ if (config::job_status_paid == $dto->status) {
 
             <div class="col-lg-3 col-xl-4">
               <div class="input-group">
-                <input name="due" class="form-control" type="date" <?= $readonly ? 'disabled' : 'required' ?> id="<?= $_uid = strings::rand() ?>" value="<?php if (strtotime($dto->due) > 0) print $dto->due; ?>">
+                <input name="due" class="form-control" type="date" <?= $readonly ? 'disabled' : 'required' ?> id="<?= $_uid = strings::rand() ?>" value="<?= strtotime($dto->due) > 0 ? $dto->due : '' ?>">
 
-                <?php if (!$readonly) { ?>
+                <?php if ($readonly) {
+                  if (!$dto->complete) { ?>
+                    <div class="input-group-append">
+                      <button type="button" class="btn input-group-text" id="<?= $_uid ?>bump">bump</button>
+                    </div>
+                    <script>
+                      $('#<?= $_uid ?>bump')
+                        .on('click', e => {
+                          e.stopPropagation();
+
+                          $('#<?= $_form ?>').trigger('bump');
+
+                        })
+                    </script>
+                  <?php }
+                } else { ?>
                   <div class="input-group-append d-none">
                     <button type="button" class="btn input-group-text" id="<?= $_uid ?>7">7</button>
                   </div>
@@ -182,12 +197,12 @@ if (config::job_status_paid == $dto->status) {
                   </div>
 
                   <script>
-                    (_ => {
-                      $('#<?= $_uid ?>7').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+7 days')) ?>'));
-                      $('#<?= $_uid ?>14').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+14 days')) ?>'));
-                      $('#<?= $_uid ?>28').on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+28 days')) ?>'));
-
-                    })(_brayworth_);
+                    $('#<?= $_uid ?>7')
+                      .on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+7 days')) ?>'));
+                    $('#<?= $_uid ?>14')
+                      .on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+14 days')) ?>'));
+                    $('#<?= $_uid ?>28')
+                      .on('click', e => $('#<?= $_uid ?>').val('<?= date('Y-m-d', strtotime('+28 days')) ?>'));
                   </script>
                 <?php } ?>
 
@@ -1227,6 +1242,16 @@ if (config::job_status_paid == $dto->status) {
             });
 
         })
+        .on('bump', function(e) {
+          e.stopPropagation();
+
+
+          console.log('bump');
+          $('#<?= $_modal ?>')
+            .trigger('bump')
+            .modal('hide');
+
+        })
         .on('check-job-type', function(e) {
           $('#<?= $_uidInvoice ?>').trigger('reconcile');
           $(this).trigger('check-recurrence');
@@ -1559,8 +1584,9 @@ if (config::job_status_paid == $dto->status) {
         .on('invoice-view', function(e) {
           e.stopPropagation();
 
-          $('#<?= $_modal ?>').modal('hide');
-          $('#<?= $_modal ?>').trigger('invoice-view');
+          $('#<?= $_modal ?>')
+            .trigger('invoice-view')
+            .modal('hide');
 
         })
         .on('invoice-upload', function(e) {

@@ -19,7 +19,10 @@ $tblID = strings::rand();
     width: 1.8em;
   }
 
-  #<?= $tblID ?> td[status] { display: block; width: 45px; }
+  #<?= $tblID ?>td[status] {
+    display: block;
+    width: 45px;
+  }
 
   @media (max-width: 768px) {
     .constrain {
@@ -317,7 +320,7 @@ $tblID = strings::rand();
         );
       ?>
         <td class="small text-center" line-number></td>
-        <td><?= str_pad( $dto->id, 4, '0', STR_PAD_LEFT) ?></td>
+        <td><?= str_pad($dto->id, 4, '0', STR_PAD_LEFT) ?></td>
         <td class="constrain <?= $this->data->hidepropertycolumn ? 'd-none' : '' ?>">
           <div class="constrained text-truncate" address>
             <?= $dto->address_street ?>
@@ -721,6 +724,15 @@ $tblID = strings::rand();
             });
 
           })
+          .on('bump', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.get.modal(_.url('<?= $this->route ?>/bump/' + _data.id))
+              .then(m => m.on('success', e => _tr.trigger('refresh')))
+              .then(m => m.on('hidden.bs.modal', e => _tr.trigger('edit')));
+
+          })
           .on('confirm-recurrence-and-edit', function(e) {
             let _tr = $(this);
             let _data = _tr.data();
@@ -760,6 +772,12 @@ $tblID = strings::rand();
             _tr.addClass('bg-info');
 
             _.get.modal(_.url('<?= $this->route ?>/job_edit/' + _data.id))
+              .then(d => d.on('bump', e => {
+                e.stopPropagation();
+                _tr
+                  .trigger('bump');
+
+              }))
               .then(d => d.on('complete', e => {
                 e.stopPropagation();
                 _tr

@@ -786,6 +786,50 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
+    } elseif ('job-save-bump' == $action) {
+
+      if ($id = (int)$this->getPost('id')) {
+
+        $bump = $this->getPost('bump');
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          if (strtotime($bump) > strtotime($dto->due)) {
+            $a = [
+              'updated' => \db::dbTimeStamp(),
+              'updated_by' => currentuser::id(),
+              'due' => $this->getPost('bump'),
+
+            ];
+
+            $dao->UpdateByID($a, $id);
+
+            $a = [
+              'comment' => sprintf(
+                'Bump %s => %s',
+                strings::asLocalDate($dto->due),
+                strings::asLocalDate($bump)
+              ),
+              'job_id' => $dto->id,
+              'user_id' => currentUser::id(),
+              'created' => \db::dbTimeStamp(),
+
+            ];
+            $a['updated'] = $a['created'];
+
+            $dao = new dao\job_log;
+            $dao->Insert($a);
+
+            Json::ack($action)
+              ->add('id', $id);
+          } else {
+            Json::nak(sprintf('cannot bump backwards : %s', $action));
+          }
+        } else {
+          Json::nak(sprintf('job not found : %s', $action));
+        }
+      } else {
+        Json::nak($action);
+      }
     } elseif ('job-save-payment' == $action) {
 
       if ($id = (int)$this->getPost('id')) {
@@ -984,6 +1028,27 @@ class controller extends \Controller {
     $params['scripts'][] = sprintf('<script type="text/javascript" src="%s"></script>', strings::url($this->route . '/js/job'));
 
     parent::render($params);
+  }
+
+  public function bump($id) {
+    if ($id = (int)$id) {
+      $dao = new dao\job;
+      if ($dto = $dao->getByID($id)) {
+        $dto = $dao->getRichData($dto);
+
+        // \sys::logger(sprintf('<found street> <%s> %s', $dto->address_street, __METHOD__));
+
+        $this->data = (object)[
+          'title' => $this->title = config::label_job_bump,
+          'dto' => $dto,
+
+        ];
+
+        $this->load('job-bump');
+      } else {
+        $this->load('not-found');
+      }
+    }
   }
 
   public function categories() {
