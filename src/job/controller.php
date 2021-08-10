@@ -639,7 +639,7 @@ class controller extends \Controller {
           $a = [
             'complete' => 'job-mark-complete-undo' == $action ? 0 : 1
           ];
-          if ('job-mark-complete' == $action && config::job_type_quote == $dto->job_type) {
+          if ('job-mark-complete' == $action && (config::job_type_quote == $dto->job_type || config::job_payment_none == $dto->job_payment)) {
             $a['archived'] = \db::dbTimeStamp();
           }
           $dao->UpdateByID($a, $dto->id);

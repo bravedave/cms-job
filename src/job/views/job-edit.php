@@ -598,6 +598,17 @@ if (config::job_status_paid == $dto->status) {
 
               );
 
+              printf(
+                $_template,
+                config::job_payment_none,
+                $_uid = strings::rand(),
+                config::job_payment_none == $dto->job_payment ? 'checked' : '',
+                config::job_status_paid == $dto->status ? 'disabled' : '',
+                $_uid,
+                'Not required'
+
+              );
+
               ?>
             </div>
 
@@ -900,7 +911,7 @@ if (config::job_status_paid == $dto->status) {
               );
 
               printf(
-                '<label class="form-check-label" for="%s">Complete</label>',
+                '<label class="form-check-label user-select-none" for="%s">complete</label>',
                 $_uid
 
               );
@@ -909,29 +920,11 @@ if (config::job_status_paid == $dto->status) {
 
             </div>
             <script>
-              (_ => {
-                $('#<?= $_uid ?>')
-                  .on('change', function(e) {
-                    _.post({
-                      url: _.url('<?= $this->route ?>'),
-                      data: {
-                        action: $(this).prop('checked') ? 'job-mark-complete' : 'job-mark-complete-undo',
-                        id: '<?= $dto->id ?>'
-
-                      },
-
-                    }).then(d => {
-                      _.growl(d);
-                      $('#<?= $_form ?>')
-                        .trigger('complete')
-                        .trigger('reload');
-
-                    });
-
-
-                  });
-
-              })(_brayworth_);
+              $('#<?= $_uid ?>')
+                .on('change', function(e) {
+                  $('#<?= $_form ?>')
+                    .trigger($(this).prop('checked') ? 'mark-complete' : 'mark-complete-undo')
+                });
             </script>
 
           <?php } ?>
@@ -1317,12 +1310,6 @@ if (config::job_status_paid == $dto->status) {
             $('input[name="job_recurrence_year_frequency"]', this).attr('min', 0);
 
           }
-
-        })
-        .on('complete', function(e) {
-          e.stopPropagation();
-
-          $('#<?= $_modal ?>').trigger('complete');
 
         })
         .on('get-keyset', function(e) {
@@ -1800,6 +1787,60 @@ if (config::job_status_paid == $dto->status) {
           $('#<?= $_modal ?>').trigger('quote-upload');
 
         })
+        .on('mark-complete', function(e) {
+          e.stopPropagation();
+
+          saveForm()
+            .then(d => {
+              if ('ack' != d.response) _.growl(d);
+
+              _.post({
+                url: _.url('<?= $this->route ?>'),
+                data: {
+                  action: 'job-mark-complete',
+                  id: '<?= $dto->id ?>'
+
+                },
+
+              }).then(d => {
+                _.growl(d);
+                $('#<?= $_modal ?>')
+                  .trigger('complete')
+                  .trigger('edit-workorder')
+                  .modal('hide');
+
+              });
+
+            });
+
+        })
+        .on('mark-complete-undo', function(e) {
+          e.stopPropagation();
+
+          saveForm()
+            .then(d => {
+              if ('ack' != d.response) _.growl(d);
+
+              _.post({
+                url: _.url('<?= $this->route ?>'),
+                data: {
+                  action: 'job-mark-complete-undo',
+                  id: '<?= $dto->id ?>'
+
+                },
+
+              }).then(d => {
+                _.growl(d);
+                $('#<?= $_modal ?>')
+                  .trigger('complete')
+                  .trigger('edit-workorder')
+                  .modal('hide');
+
+              });
+
+            });
+
+        })
         .on('reload', function(e) {
           e.stopPropagation();
 
@@ -1916,6 +1957,9 @@ if (config::job_status_paid == $dto->status) {
         });
 
       <?php if ($dto->id) { ?>
+        $('input[name="job_payment"]', '#<?= $_form ?>')
+          .on('change', e => $('#<?= $_uidInvoice ?>').trigger('reconcile'));
+
         $('#<?= $_uidInvoice ?>')
           .on('reconcile', function(e) {
 
@@ -2079,65 +2123,78 @@ if (config::job_status_paid == $dto->status) {
                 <?php }  ?>
 
               <?php } else { ?>
-                if ($('select[name="item_id\[\]"]', '#<?= $_form ?>').length > 0) {
-                  let el = $('input[name="contractor_id"]', '#<?= $_form ?>');
-                  if (Number(el.val()) > 0) {
-                    // console.log('lines + contractor - so invoice upload ...');
-                    (c => {
+                let payment = (() => {
+                  let fld = $('input[name="job_payment"]:checked', '#<?= $_form ?>');
+                  if (fld.length == 1) return Number(fld.val());
 
-                      $('#<?= $_uidInvoice ?>')
-                        .append(c);
+                  return 0;
 
-                      _.fileDragDropHandler.call(c, {
-                        url: _.url('<?= $this->route ?>'),
-                        queue: false,
-                        multiple: false,
-                        postData: {
-                          action: 'upload-invoice',
-                          id: <?= $dto->id ?>
-                        },
-                        onError: d => {
+                })();
 
-                          $('#<?= $_uidInvoice ?>')
-                            .html('');
+                if (payment > 0 && payment != <?= config::job_payment_none ?>) {
+                  // console.log(payment, <?= config::job_payment_none ?>);
+                  if ($('select[name="item_id\[\]"]', '#<?= $_form ?>').length > 0) {
+                    let el = $('input[name="contractor_id"]', '#<?= $_form ?>');
+                    if (Number(el.val()) > 0) {
+                      // console.log('lines + contractor - so invoice upload ...');
+                      (c => {
 
-                          $('<div class="alert alert-danger m-1"></div>')
-                            .html(d.description)
-                            .appendTo('#<?= $_uidInvoice ?>');
+                        $('#<?= $_uidInvoice ?>')
+                          .append(c);
 
-                        },
-                        onUpload: d => {
-                          if ('ack' == d.response) {
-                            $('#<?= $_form ?>')
-                              .trigger('invoice-view')
-                              .trigger('invoice-upload');
+                        _.fileDragDropHandler.call(c, {
+                          url: _.url('<?= $this->route ?>'),
+                          queue: false,
+                          multiple: false,
+                          postData: {
+                            action: 'upload-invoice',
+                            id: <?= $dto->id ?>
+                          },
+                          onError: d => {
 
-                          } else {
-                            console.log(d);
+                            $('#<?= $_uidInvoice ?>')
+                              .html('');
+
+                            $('<div class="alert alert-danger m-1"></div>')
+                              .html(d.description)
+                              .appendTo('#<?= $_uidInvoice ?>');
+
+                          },
+                          onUpload: d => {
+                            if ('ack' == d.response) {
+                              $('#<?= $_form ?>')
+                                .trigger('invoice-view')
+                                .trigger('invoice-upload');
+
+                            } else {
+                              console.log(d);
+
+                            }
 
                           }
 
-                        }
+                        });
 
-                      });
+                      })(_.fileDragDropContainer({
+                        fileControl: true,
+                        accept: 'image/jpeg,image/png,application/pdf'
 
-                    })(_.fileDragDropContainer({
-                      fileControl: true,
-                      accept: 'image/jpeg,image/png,application/pdf'
+                      }));
 
-                    }));
+                    } else {
+                      // console.log('there is no contractor - so no invoice upload ...');
+                      $('#<?= $_uidInvoice ?>').html('');
 
+                    }
                   } else {
-                    // console.log('there is no contractor - so no invoice upload ...');
-                    $('#<?= $_uidInvoice ?>')
-                      .html('');
+                    // console.log('there are no lines - so no invoice upload ...');
+                    $('#<?= $_uidInvoice ?>').html('');
 
                   }
 
                 } else {
-                  // console.log('there are no lines - so no invoice upload ...');
-                  $('#<?= $_uidInvoice ?>')
-                    .html('');
+                  // console.log('no payment required - so no invoice upload ...');
+                  $('#<?= $_uidInvoice ?>').html('');
 
                 }
 

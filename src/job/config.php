@@ -74,6 +74,7 @@ class config extends \config {
 
 	const job_payment_owner = 0;
 	const job_payment_tenant = 1;
+	const job_payment_none = 2;
 
 	// 10 => 'assigned',
 	const job_status = [
