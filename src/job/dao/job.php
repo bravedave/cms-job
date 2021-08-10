@@ -10,7 +10,12 @@
 
 namespace cms\job\dao;
 
-use cms\job\config;
+use cms\job\{
+  config,
+  workorder
+
+};
+
 use dao\_dao;
 use dao\{
   properties,
@@ -111,6 +116,58 @@ class job extends _dao {
       }
     }
     return $dto;
+  }
+
+  public function getForProperty(int $pid): array {
+    if ( $res = $this->getMatrix( $archived = false, $pid)) {
+      return $res->dtoSet(function ($dto) {
+        if ( in_array( (int)$dto->status, [
+          config::job_status_paid,
+          config::job_status_reviewed,
+          config::job_status_invoiced
+
+        ])) {
+          return null;
+
+        }
+
+        return (object)[
+          'id' => $dto->id,
+          'job_type' => $dto->job_type,
+          'properties_id' => $dto->properties_id,
+          'address_street' => $dto->address_street,
+          'refer' => workorder::reference($dto->id)
+        ];
+
+      });
+
+    }
+
+    // $sql = sprintf(
+    //   'SELECT
+    //     j.`id`,
+    //     j.`job_type`,
+    //     j.`properties_id`,
+    //     p.`address_street`
+    //   FROM
+    //     `job` j
+    //       LEFT JOIN
+    //     properties p on p.`id` = j.`properties_id`
+    //   WHERE
+    //     j.`archived` = 0 AND j.`properties_id` = %d
+    //   ORDER BY
+    //     j.`id` ASC',
+    //   $pid
+    // );
+
+    // if ($res = $this->db->Result($sql)) {
+    //   return $res->dtoSet(function ($dto) {
+    //     $dto->refer = workorder::reference($dto->id);
+    //     return $dto;
+    //   });
+    // }
+
+    return [];
   }
 
   public function getInvoicePath(dto\job $job): string {
@@ -578,9 +635,9 @@ class job extends _dao {
         $job->address_street = $prop->address_street;
         $job->address_suburb = $prop->address_suburb;
         $job->address_postcode = $prop->address_postcode;
-        $job->maintenance_directly_to_owner = 'yes' == $dao->option( $prop, 'maintenance-directly-to-owner');
+        $job->maintenance_directly_to_owner = 'yes' == $dao->option($prop, 'maintenance-directly-to-owner');
 
-        \sys::logger( sprintf('<%s> %s', $job->maintenance_directly_to_owner ? 'send invoices to owner' : 'DO NOT send invoices to owner', __METHOD__));
+        \sys::logger(sprintf('<%s> %s', $job->maintenance_directly_to_owner ? 'send invoices to owner' : 'DO NOT send invoices to owner', __METHOD__));
 
         if ($prop->people_id) {
           $dao = new people;
