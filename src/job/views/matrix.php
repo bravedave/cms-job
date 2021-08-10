@@ -725,6 +725,8 @@ $tblID = strings::rand();
 
           })
           .on('bump', function(e) {
+            e.stopPropagation();
+
             let _tr = $(this);
             let _data = _tr.data();
 

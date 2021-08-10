@@ -1245,7 +1245,6 @@ if (config::job_status_paid == $dto->status) {
         .on('bump', function(e) {
           e.stopPropagation();
 
-
           console.log('bump');
           $('#<?= $_modal ?>')
             .trigger('bump')
