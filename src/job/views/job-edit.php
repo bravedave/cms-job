@@ -2131,7 +2131,7 @@ if (config::job_status_paid == $dto->status) {
 
                 })();
 
-                if (payment > 0 && payment != <?= config::job_payment_none ?>) {
+                if (payment != <?= config::job_payment_none ?>) {
                   // console.log(payment, <?= config::job_payment_none ?>);
                   if ($('select[name="item_id\[\]"]', '#<?= $_form ?>').length > 0) {
                     let el = $('input[name="contractor_id"]', '#<?= $_form ?>');
