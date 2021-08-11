@@ -1615,6 +1615,7 @@ $tblID = strings::rand();
 
               }))
               .then(m => m.on('tr-refresh', e => {
+                e.stopPropagation();
                 _tr.trigger('refresh');
               }))
               .then(m => m.on('view-workorder', e => {
