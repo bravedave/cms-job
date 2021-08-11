@@ -4,6 +4,12 @@
 
 <p>&nbsp;</p>
 
+### 11 August, 2021
+
+* **Merge JObs** - available from context menu
+* **New Payment option** - Invoice not required
+* **Due Date Bump** - Where the JOB is read-only new option to bump date with comment automatically added
+
 ### 9 August, 2021
 
 * **Email Save to JOB** - this is a feature of _CMS &gt; Email_
