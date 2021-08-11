@@ -119,7 +119,12 @@ class job extends _dao {
 
   public function getForContractor(int $cid, int $exclude = 0): array {
     $where = [
-      sprintf('COALESCE( j.`archived`,%s) = %s', $this->quote(''), $this->quote('')),
+      sprintf(
+        '(COALESCE( j.`archived`,%s) = %s OR j.`archived` = %s)',
+        $this->quote(''),
+        $this->quote(''),
+        $this->quote('0000-00-00 00:00:00')
+      ),
       sprintf('j.`contractor_id` = %d', $cid)
 
     ];
@@ -647,7 +652,7 @@ class job extends _dao {
         $job->address_postcode = $prop->address_postcode;
         $job->maintenance_directly_to_owner = 'yes' == $dao->option($prop, 'maintenance-directly-to-owner');
 
-        \sys::logger(sprintf('<%s> %s', $job->maintenance_directly_to_owner ? 'send invoices to owner' : 'DO NOT send invoices to owner', __METHOD__));
+        // \sys::logger(sprintf('<%s> %s', $job->maintenance_directly_to_owner ? 'send invoices to owner' : 'DO NOT send invoices to owner', __METHOD__));
 
         if ($prop->people_id) {
           $dao = new people;
