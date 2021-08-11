@@ -177,6 +177,7 @@ class job extends _dao {
           'job_type' => $dto->job_type,
           'properties_id' => $dto->properties_id,
           'address_street' => $dto->address_street,
+          'contractor' => $dto->contractor_trading_name,
           'refer' => workorder::reference($dto->id)
         ];
       });
