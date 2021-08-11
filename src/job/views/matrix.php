@@ -1604,16 +1604,6 @@ $tblID = strings::rand();
                 _tr.trigger('email-invoice');
 
               }))
-              .then(m => m.on('job-mark-invoice-reviewed', e => {
-                e.stopPropagation();
-                _tr.trigger('mark-reviewed');
-
-              }))
-              .then(m => m.on('job-mark-invoice-reviewed-undo', e => {
-                e.stopPropagation();
-                _tr.trigger('mark-reviewed-undo');
-
-              }))
               .then(m => m.on('job-mark-invoice-senttoowner', e => {
                 e.stopPropagation();
                 _tr.trigger('mark-senttoowner');
@@ -1623,6 +1613,9 @@ $tblID = strings::rand();
                 e.stopPropagation();
                 _tr.trigger('mark-senttoowner-undo');
 
+              }))
+              .then(m => m.on('tr-refresh', e => {
+                _tr.trigger('refresh');
               }))
               .then(m => m.on('view-workorder', e => {
                 e.stopPropagation();
@@ -1647,16 +1640,6 @@ $tblID = strings::rand();
                 _tr.trigger('edit');
 
               }))
-              // .then(m => m.on('job-mark-invoice-reviewed', e => {
-              //   e.stopPropagation();
-              //   _tr.trigger('mark-reviewed');
-
-              // }))
-              // .then(m => m.on('job-mark-invoice-reviewed-undo', e => {
-              //   e.stopPropagation();
-              //   _tr.trigger('mark-reviewed-undo');
-
-              // }))
               .then(m => m.on('view-workorder', e => {
                 e.stopPropagation();
                 _tr.trigger('view-workorder');
@@ -1693,47 +1676,6 @@ $tblID = strings::rand();
               url: _.url('<?= $this->route ?>'),
               data: {
                 action: 'job-mark-paid-undo',
-                id: _data.id
-              },
-
-            }).then(d => {
-              _.growl(d);
-              if ('ack' == d.response) {
-                _tr.trigger('refresh');
-
-              }
-
-            });
-          })
-          .on('mark-reviewed', function(e) {
-            let _tr = $(this);
-            let _data = _tr.data();
-
-            _.post({
-              url: _.url('<?= $this->route ?>'),
-              data: {
-                action: 'job-mark-invoice-reviewed',
-                id: _data.id
-              },
-
-            }).then(d => {
-              _.growl(d);
-              if ('ack' == d.response) {
-                _tr.trigger('refresh');
-
-              }
-
-            });
-
-          })
-          .on('mark-reviewed-undo', function(e) {
-            let _tr = $(this);
-            let _data = _tr.data();
-
-            _.post({
-              url: _.url('<?= $this->route ?>'),
-              data: {
-                action: 'job-mark-invoice-reviewed-undo',
                 id: _data.id
               },
 

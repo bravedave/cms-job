@@ -160,11 +160,49 @@ $_modal = strings::rand();
   <script>
     (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
       $('#<?= $_uidReviewed ?>')
+        .on('mark-reviewed', function(e) {
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'job-mark-invoice-reviewed',
+              id: <?= $dto->id ?>
+            },
+
+          }).then(d => {
+            _.growl(d);
+            if ('ack' == d.response) {
+              $('#<?= $_modal ?>')
+                .trigger('tr-refresh');
+
+            }
+
+          });
+
+        })
+        .on('mark-reviewed-undo', function(e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'job-mark-invoice-reviewed-undo',
+              id: <?= $dto->id ?>
+            },
+
+          }).then(d => {
+            _.growl(d);
+            if ('ack' == d.response) {
+              $('#<?= $_modal ?>')
+                .trigger('tr-refresh');
+
+            }
+
+          });
+        })
         .on('change', function(e) {
           let _me = $(this);
-
-          $('#<?= $_modal ?>')
-            .trigger(_me.prop('checked') ? 'job-mark-invoice-reviewed' : 'job-mark-invoice-reviewed-undo');
+          _me.trigger(_me.prop('checked') ? 'mark-reviewed' : 'mark-reviewed-undo')
 
           $('#<?= $_uidReviewed ?>label').html('reviewed')
 
