@@ -470,55 +470,6 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
-    } elseif ('mark-sent' == $action) {
-      if ($id = (int)$this->getPost('id')) {
-        $dao = new dao\job;
-        if ($dto = $dao->getByID($id)) {
-          $dao->UpdateByID([
-            'email_sent' => \db::dbTimeStamp(),
-            'email_sent_by' => currentuser::id()
-          ], $id);
-          Json::ack($action);
-        } else {
-          Json::nak(sprintf('%s - not found', $action));
-        }
-      } else {
-        Json::nak($action);
-      }
-    } elseif ('mark-sent-undo' == $action) {
-      if ($id = (int)$this->getPost('id')) {
-        $dao = new dao\job;
-        if ($dto = $dao->getByID($id)) {
-          $dao->UpdateByID([
-            'email_sent' => '',
-            'email_sent_by' => 0
-          ], $id);
-          Json::ack($action);
-        } else {
-          Json::nak(sprintf('%s - not found', $action));
-        }
-      } else {
-        Json::nak($action);
-      }
-    } elseif ('matrix-include-archives' == $action || 'matrix-include-archives-undo' == $action) {
-      session::edit();
-      session::set('job-matrix-archived', 'matrix-include-archives' == $action ? 'yes' : null);
-      session::close();
-
-      Json::ack($action);
-    } elseif ('matrix-refresh-row' == $action) {
-      if ($id = (int)$this->getPost('id')) {
-        $dao = new dao\job;
-        if ($dto = $dao->getByID($id)) {
-          $dto = $dao->getRichData($dto);
-          Json::ack($action)
-            ->add('data', $dto);
-        } else {
-          Json::nak($action);
-        }
-      } else {
-        Json::nak($action);
-      }
     } elseif ('job-archive' == $action || 'job-archive-undo' == $action) {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job;
@@ -873,6 +824,76 @@ class controller extends \Controller {
           ->add('id', $id);
       } else {
         Json::nak($action);
+      }
+    } elseif ('mark-sent' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          $dao->UpdateByID([
+            'email_sent' => \db::dbTimeStamp(),
+            'email_sent_by' => currentuser::id()
+          ], $id);
+          Json::ack($action);
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('mark-sent-undo' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          $dao->UpdateByID([
+            'email_sent' => '',
+            'email_sent_by' => 0
+          ], $id);
+          Json::ack($action);
+        } else {
+          Json::nak(sprintf('%s - not found', $action));
+        }
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('matrix-include-archives' == $action || 'matrix-include-archives-undo' == $action) {
+      session::edit();
+      session::set('job-matrix-archived', 'matrix-include-archives' == $action ? 'yes' : null);
+      session::close();
+
+      Json::ack($action);
+    } elseif ('matrix-refresh-row' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job;
+        if ($dto = $dao->getByID($id)) {
+          $dto = $dao->getRichData($dto);
+          Json::ack($action)
+            ->add('data', $dto);
+        } else {
+          Json::nak($action);
+        }
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('merge-jobs' == $action) {
+      if ($src = (int)$this->getPost('src')) {
+        if ($target = (int)$this->getPost('target')) {
+          $dao = new dao\job;
+          if ($dtoSrc = $dao->getByID($src)) {
+            if ($dtoTarget = $dao->getByID($target)) {
+              $dao->merge($dtoSrc, $dtoTarget);
+              Json::ack($action)
+                ->add('target', $dtoTarget->id);
+            } else {
+              Json::nak(sprintf('target not found : %s', $action));
+            }
+          } else {
+            Json::nak(sprintf('source not found : %s', $action));
+          }
+        } else {
+          Json::nak(sprintf('invalid target : %s', $action));
+        }
+      } else {
+        Json::nak(sprintf('invalid source : %s', $action));
       }
     } elseif ('search-contractor' == $action) {
       if ($term = $this->getPost('term')) {
@@ -1375,6 +1396,36 @@ class controller extends \Controller {
       }
     } else {
       parent::js($lib);
+    }
+  }
+
+  public function merge($id = 0) {
+    if ($id = (int)$id) {
+      $dao = new dao\job;
+      if ($dto = $dao->getByID($id)) {
+        if ($dto->contractor_id) {
+          $dto = $dao->getRichData($dto);
+
+          $this->data = (object)[
+            'title' => $this->title = config::label_job_merge,
+            'dto' => $dto,
+            'otherjobs' => $dao->getForContractor($dto->contractor_id, $exclude = $dto->id),
+
+          ];
+
+          if ($this->data->otherjobs) {
+            $this->load('merge');
+          } else {
+            $this->load('job-has-no-merge-possibilities');
+          }
+        } else {
+          $this->load('job-has-no-contractor');
+        }
+      } else {
+        $this->load('not-found');
+      }
+    } else {
+      $this->load('invalid');
     }
   }
 

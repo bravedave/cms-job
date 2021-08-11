@@ -863,6 +863,22 @@ $tblID = strings::rand();
             let _tr = $(this);
             let _data = _tr.data();
 
+            let mergeCtrl = $('<a href="#" class="d-none"><i class="bi bi-union"></i>merge</a>')
+              .on('activate', function(e) {
+                e.stopPropagation();
+
+                $(this).removeClass('d-none')
+
+              })
+              .on('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                _context.close();
+                _tr.trigger('merge');
+
+              });
+
             if (Number(_data.id) > 0) {
               _context.append(
                 $('<a href="#"><i class="bi bi-pencil"></i>edit</a>')
@@ -937,6 +953,9 @@ $tblID = strings::rand();
 
                           paidCtrl.trigger('reconcile');
 
+                        } else {
+                          mergeCtrl.trigger('activate');
+
                         }
                       } else {
                         _.growl(d);
@@ -1007,6 +1026,7 @@ $tblID = strings::rand();
 
               }
 
+              // view quote
               _context.append(
                 $('<a href="#" class="d-none"></a>')
                 .on('reconcile', function(e) {
@@ -1168,31 +1188,36 @@ $tblID = strings::rand();
 
                 );
 
-              } else if ('yes' == _data.archived) {
-                _context.append(
-                  $('<a href="#"><i class="bi bi-archive-fill"></i>archived</a>')
-                  .on('click', e => {
-                    e.stopPropagation();
-                    _tr.trigger('archive-undo');
-                    _context.close();
-
-                  })
-
-                );
-
               } else {
-                _context.append(
-                  $('<a href="#"><i class="bi bi-archive"></i>archive</a>')
-                  .on('click', e => {
-                    e.stopPropagation();
-                    _tr.trigger('archive');
-                    _context.close();
+                if ('yes' == _data.archived) {
+                  _context.append(
+                    $('<a href="#"><i class="bi bi-archive-fill"></i>archived</a>')
+                    .on('click', e => {
+                      e.stopPropagation();
+                      _tr.trigger('archive-undo');
+                      _context.close();
 
-                  })
+                    })
 
-                );
+                  );
+
+                } else {
+                  _context.append(
+                    $('<a href="#"><i class="bi bi-archive"></i>archive</a>')
+                    .on('click', e => {
+                      e.stopPropagation();
+                      _tr.trigger('archive');
+                      _context.close();
+
+                    })
+
+                  );
+
+                }
 
               }
+
+              _context.append(mergeCtrl);
 
             }
 
@@ -1809,6 +1834,23 @@ $tblID = strings::rand();
               }
 
             });
+
+          })
+          .on('merge', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.get
+              .modal(_.url('<?= $this->route ?>/merge/' + _data.id))
+              .then(m => m.on('success', e => {
+                e.stopPropagation();
+
+                $(document)
+                  .trigger('job-matrix-reload', {
+                    idx: _data.id
+                  });
+
+              }));
 
           })
           .on('refresh', function(e) {

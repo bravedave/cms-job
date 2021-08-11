@@ -13,7 +13,6 @@ namespace cms\job\dao;
 use cms\job\{
   config,
   workorder
-
 };
 
 use dao\_dao;
@@ -118,17 +117,54 @@ class job extends _dao {
     return $dto;
   }
 
-  public function getForProperty(int $pid): array {
-    if ( $res = $this->getMatrix( $archived = false, $pid)) {
+  public function getForContractor(int $cid, int $exclude = 0): array {
+    $where = [
+      sprintf('COALESCE( j.`archived`,%s) = %s', $this->quote(''), $this->quote('')),
+      sprintf('j.`contractor_id` = %d', $cid)
+
+    ];
+
+    if ($exclude) {
+      $where[] = sprintf('j.`id` != %d', $exclude);
+    }
+
+    $sql = sprintf(
+      'SELECT
+        j.`id`,
+        j.`job_type`,
+        j.`properties_id`,
+        p.`address_street`
+      FROM
+        `job` j
+          LEFT JOIN
+        properties p on p.`id` = j.`properties_id`
+      WHERE %s
+      ORDER BY j.`id` ASC',
+      implode(' AND ', $where)
+    );
+
+    // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
+
+    if ($res = $this->db->Result($sql)) {
       return $res->dtoSet(function ($dto) {
-        if ( in_array( (int)$dto->status, [
+        $dto->refer = workorder::reference($dto->id);
+        return $dto;
+      });
+    }
+
+    return [];
+  }
+
+  public function getForProperty(int $pid): array {
+    if ($res = $this->getMatrix($archived = false, $pid)) {
+      return $res->dtoSet(function ($dto) {
+        if (in_array((int)$dto->status, [
           config::job_status_paid,
           config::job_status_reviewed,
           config::job_status_invoiced
 
         ])) {
           return null;
-
         }
 
         return (object)[
@@ -138,34 +174,8 @@ class job extends _dao {
           'address_street' => $dto->address_street,
           'refer' => workorder::reference($dto->id)
         ];
-
       });
-
     }
-
-    // $sql = sprintf(
-    //   'SELECT
-    //     j.`id`,
-    //     j.`job_type`,
-    //     j.`properties_id`,
-    //     p.`address_street`
-    //   FROM
-    //     `job` j
-    //       LEFT JOIN
-    //     properties p on p.`id` = j.`properties_id`
-    //   WHERE
-    //     j.`archived` = 0 AND j.`properties_id` = %d
-    //   ORDER BY
-    //     j.`id` ASC',
-    //   $pid
-    // );
-
-    // if ($res = $this->db->Result($sql)) {
-    //   return $res->dtoSet(function ($dto) {
-    //     $dto->refer = workorder::reference($dto->id);
-    //     return $dto;
-    //   });
-    // }
 
     return [];
   }
@@ -754,6 +764,49 @@ class job extends _dao {
     ]);
 
     return $path;
+  }
+
+  public function merge(dto\job $src, dto\job $target): bool {
+    $separator = sprintf(
+      '%s--[due:%s]--%s',
+      PHP_EOL,
+      strings::asLocalDate($src->due),
+      PHP_EOL
+    );
+
+    $a = [
+      'description' => implode($separator, [$src->description, $target->description])
+
+    ];
+
+    $this->UpdateByID($a, $target->id);
+
+    $this->Q(sprintf('UPDATE `job_lines` SET job_id = %d WHERE job_id = %d', $target->id, $src->id));
+    $this->Q(sprintf('UPDATE `job_log` SET job_id = %d WHERE job_id = %d', $target->id, $src->id));
+
+    $dbts = \db::dbTimeStamp();
+
+    $dao = new job_log;
+    $dao->Insert([
+      'comment' => sprintf('merge from job %s : due %s', $src->id, strings::asLocalDate($src->due)),
+      'job_id' => $target->id,
+      'user_id' => currentUser::id(),
+      'created' => $dbts,
+      'updated' => $dbts,
+    ]);
+
+    $dao->Insert([
+      'comment' => sprintf('merged to job %s : due %s', $target->id, strings::asLocalDate($target->due)),
+      'job_id' => $src->id,
+      'user_id' => currentUser::id(),
+      'created' => $dbts,
+      'updated' => $dbts,
+    ]);
+
+    $a = ['archived' => $dbts];
+    $this->UpdateByID($a, $src->id);
+
+    return false;
   }
 
   public function recur(dto\job $job, $due): int {
