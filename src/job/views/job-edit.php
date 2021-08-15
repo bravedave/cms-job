@@ -1372,7 +1372,7 @@ if (config::job_status_paid == $dto->status) {
 
           if (Number(_data.properties_id) > 0) {
             _.post({
-              url: _.url('leasing'),
+              url: _.url('property_maintenance'),
               data: {
                 action: 'get-maintenance-instructions',
                 id: _data.properties_id
@@ -1382,10 +1382,21 @@ if (config::job_status_paid == $dto->status) {
             }).then(d => {
               // console.log(d);
 
+              let label = $('<div class="col-md-3 col-xl-2 col-form-label d-flex"><div class="text-truncate flex-fill">maintenance instructions</div><i class="bi bi-pencil"></i></div>');
+              label
+                .addClass('pointer')
+                .on('click', function(e) {
+                  e.stopPropagation();
+                  e.preventDefault();
+
+                  $('#<?= $_form ?>').trigger('property-maintenance');
+
+                });
+
               let col = $('<div class="col"></div>');
               $('#<?= $_uidMaintenanceRow ?>')
                 .html('')
-                .append('<div class="col-md-3 col-xl-2 text-truncate pt-1">maintenance instructions</div>')
+                .append(label)
                 .append(col)
                 .removeClass('d-none');
 
@@ -1395,11 +1406,11 @@ if (config::job_status_paid == $dto->status) {
                     let row = $('<div class="form-row"></div>');
 
                     let type = $('<div class="form-control form-control-sm" readonly></div>')
-                      .html(sched.Type);
+                      .html(sched.type);
                     let limit = $('<div class="form-control form-control-sm text-right" readonly></div>')
-                      .html(sched.Limit);
+                      .html(sched.limit);
                     let notes = $('<div class="form-control form-control-sm h-auto" readonly></div>')
-                      .html(sched.Notes);
+                      .html(sched.notes);
 
                     let fglimit = $('<div class="input-group input-group-sm"><div class="input-group-prepend"><div class="input-group-text">limit</div></div></div>')
                       .append(limit);
@@ -1837,6 +1848,23 @@ if (config::job_status_paid == $dto->status) {
                   .modal('hide');
 
               });
+
+            });
+
+        })
+        .on('property-maintenance', function(e) {
+          e.stopPropagation();
+
+          saveForm()
+            .then(d => {
+              if ('ack' != d.response) {
+                _.growl(d);
+
+              }
+
+              $('#<?= $_modal ?>')
+                .trigger('property-maintenance')
+                .modal('hide');
 
             });
 

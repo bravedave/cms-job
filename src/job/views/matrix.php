@@ -803,6 +803,12 @@ $tblID = strings::rand();
                   .trigger('comment');
 
               }))
+              .then(m => m.on('property-maintenance', e => {
+                e.stopPropagation();
+                _tr
+                  .trigger('property-maintenance');
+
+              }))
               .then(m => m.on('edit-workorder', e => {
                 e.stopPropagation();
                 _tr
@@ -1794,6 +1800,15 @@ $tblID = strings::rand();
                   });
 
               }));
+
+          })
+          .on('property-maintenance', function(e) {
+            e.stopPropagation();
+
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            _.get.modal(_.url('property_maintenance/property/' + _data.properties_id));
 
           })
           .on('refresh', function(e) {

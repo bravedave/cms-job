@@ -54,7 +54,8 @@
   },
   "autoload": {
     "psr-4": {
-      "cms\\job\\": "src/job/"
+      "cms\\job\\": "src/job/",
+      "cms\\property_maintenance\\": "src/property_maintenance/"
     }
   },
   "autoload-dev": {

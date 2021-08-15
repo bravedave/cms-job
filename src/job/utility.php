@@ -141,11 +141,12 @@ class utility extends service {
     config::route_register('postcodes', 'green\\postcodes\\controller');
     config::route_register('users', 'green\\users\\controller');
 
+    config::route_register('banklink', 'cms\\banklink\controller');
+    config::route_register('keyregister', 'cms\\keyregister\\controller');
     config::route_register('offertolease', 'dvc\\offertolease\\app');
     config::route_register('otl', 'dvc\\offertolease\\otlclient');
-    config::route_register('banklink', 'cms\\banklink\controller');
+    config::route_register('property_maintenance', 'cms\\property_maintenance\\controller');
     config::route_register('sms', 'sms\\controller');
-    config::route_register('keyregister', 'cms\\keyregister\\controller');
 
     echo (sprintf('%s : %s%s', 'updated (dev)', __METHOD__, PHP_EOL));
   }
