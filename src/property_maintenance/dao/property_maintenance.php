@@ -37,7 +37,7 @@ class property_maintenance extends _dao {
 
         );
 
-        \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
+        // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
         if ( $res = $this->Result($sql)) {
           if ( $dtoSet = $this->dtoSet($res)) {
             return $dtoSet;
