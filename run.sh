@@ -60,7 +60,7 @@ else
       httpd \
         -f $config \
         -c "PidFile $pidFile"
-      tail -f src/dev/data/error.log
+      tail -f $data/error.log
 
     fi
 
