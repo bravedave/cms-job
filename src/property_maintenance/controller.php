@@ -67,10 +67,10 @@ class controller extends \Controller {
         Json::nak($action);
       }
     } elseif ('import-from-console' == $action) {
-      \sys::logger(sprintf('<%s> %s', $action, __METHOD__));
+      // \sys::logger(sprintf('<%s> %s', $action, __METHOD__));
 
       if ($properties_id = $this->getPost('properties_id')) {
-        \sys::logger(sprintf('<%s . %s> %s', $action, $properties_id, __METHOD__));
+        // \sys::logger(sprintf('<%s . %s> %s', $action, $properties_id, __METHOD__));
 
         $dao = new dao\property_maintenance;
         $dao->importFromConsole($properties_id);

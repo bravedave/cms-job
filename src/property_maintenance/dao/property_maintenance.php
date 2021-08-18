@@ -97,7 +97,7 @@ class property_maintenance extends _dao {
     $dao = new leasing\dao\maintenance;
     if ($res = $dao->getSchedule($id)) {
 
-      \sys::logger(sprintf('<%s> %s', $id, __METHOD__));
+      // \sys::logger(sprintf('<%s> %s', $id, __METHOD__));
       $res->dtoSet(function ($dto) {
         $a = [
           'people_id' => $dto->people_id,
