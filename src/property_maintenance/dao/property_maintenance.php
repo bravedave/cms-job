@@ -24,11 +24,15 @@ class property_maintenance extends _dao {
         $sql = sprintf(
           'SELECT
             pm.*,
-            p.`address_street`
+            p.`address_street`,
+            people.`name` contact_name,
+            people.`mobile` contact_mobile
           FROM
             `property_maintenance` pm
               LEFT JOIN
             `properties` p ON p.`id` = pm.`properties_id`
+              LEFT JOIN
+            `people` ON people.`id` = pm.`contact_id`
           WHERE
             pm.`people_id` = %d
           ORDER BY
@@ -73,11 +77,24 @@ class property_maintenance extends _dao {
     return [];
   }
 
+  public function getRichData(dto\property_maintenance $pm): dto\property_maintenance {
+
+    if ($pm->contact_id) {
+      $dao = new \dao\people;
+      if ($dto = $dao->getByID($pm->contact_id)) {
+        $pm->contact_name = $dto->name;
+
+      }
+    }
+
+    return $pm;
+  }
+
   function importFromConsole(int $id): void {
     $dao = new leasing\dao\maintenance;
     if ($res = $dao->getSchedule($id)) {
 
-      // \sys::logger(sprintf('<%s> %s', $id, __METHOD__));
+      \sys::logger(sprintf('<%s> %s', $id, __METHOD__));
       $res->dtoSet(function ($dto) {
         $a = [
           'people_id' => $dto->people_id,

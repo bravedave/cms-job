@@ -26,11 +26,11 @@ use strings, theme;  ?>
           </button>
         </div>
         <div class="modal-body">
-          <div class="form-row mb-1">
-            <div class="col border-bottom">Type</div>
+          <div class="form-row mb-1 align-items-end">
+            <div class="col border-bottom">Type/ Address</div>
             <div class="col border-bottom">Limit</div>
-            <div class="col-2 border-bottom">Address</div>
-            <div class="col-6 border-bottom">Notes</div>
+            <div class="col-4 border-bottom">Contract</div>
+            <div class="col-4 border-bottom">Notes</div>
           </div>
 
           <?php
@@ -50,13 +50,36 @@ use strings, theme;  ?>
               );
             }
 
-            printf('<div class="col">%s</div>', $dto->type);
-            printf('<div class="col">%s</div>', $dto->limit);
             printf(
-              '<div class="col-2 text-truncate">%s</div>',
+              '<div class="col">
+                <div class="text-truncate">%s</div>
+                <div class="text-truncate">%s</div>
+              </div>',
+              $dto->type,
               $dto->properties_id > 0 ? $dto->address_street : ''
             );
-            printf('<div class="col-6">%s</div>', $dto->notes);
+
+            printf(
+              '<div class="col text-truncate">%s</div>',
+              $dto->limit
+            );
+
+            $contact = [];
+            if ($dto->contact_id > 0) {
+              $contact[] = $dto->contact_name;
+              if (strings::isMobilePhone($dto->contact_mobile)) {
+                $contact[] = $dto->contact_mobile;
+              }
+            }
+
+            printf(
+              '<div class="col-4">
+                <div class="text-truncate" title="%s">%s</div>
+              </div>',
+              htmlentities( implode( ' - ', $contact)),
+              implode( ' - ', $contact)
+            );
+            printf('<div class="col-4">%s</div>', $dto->notes);
 
             print '</div>';
           }

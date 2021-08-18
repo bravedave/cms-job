@@ -10,8 +10,8 @@
 
 namespace cms\property_maintenance;
 
-// use currentUser, Json, strings;
-use Json;
+// use currentUser, strings;
+use green, Json;
 
 use dao\properties as daoProperties;
 
@@ -67,7 +67,11 @@ class controller extends \Controller {
         Json::nak($action);
       }
     } elseif ('import-from-console' == $action) {
+      \sys::logger(sprintf('<%s> %s', $action, __METHOD__));
+
       if ($properties_id = $this->getPost('properties_id')) {
+        \sys::logger(sprintf('<%s . %s> %s', $action, $properties_id, __METHOD__));
+
         $dao = new dao\property_maintenance;
         $dao->importFromConsole($properties_id);
 
@@ -92,6 +96,7 @@ class controller extends \Controller {
             'limit' => $this->getPost('limit'),
             'notes' => $this->getPost('notes'),
             'properties_id' => $this->getPost('properties_id'),
+            'contact_id' => $this->getPost('contact_id'),
           ], $dto->id);
           Json::ack($action);
         } else {
@@ -105,10 +110,19 @@ class controller extends \Controller {
           'notes' => $this->getPost('notes'),
           'people_id' => $people_id,
           'properties_id' => $this->getPost('properties_id'),
+          'contact_id' => $this->getPost('contact_id'),
         ]);
         Json::ack($action);
       } else {
         Json::nak(sprintf('invalid person - ', $action));
+      }
+    } elseif ('search-people' == $action) {
+      if ($term = $this->getPost('term')) {
+        Json::ack($action)
+          ->add('term', $term)
+          ->add('data', green\search::people($term));
+      } else {
+        Json::nak($action);
       }
     } else {
       parent::postHandler();
@@ -172,6 +186,8 @@ class controller extends \Controller {
     if ($id = (int)$id) {
       $dao = new dao\property_maintenance;
       if ($dto = $dao->getByID($id)) {
+
+        $dto = $dao->getRichData($dto);
 
         $allProps = [];
         if ($dto->people_id) {

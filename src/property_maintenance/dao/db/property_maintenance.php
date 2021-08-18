@@ -14,6 +14,7 @@ $dbc->defineField('created', 'datetime');
 $dbc->defineField('updated', 'datetime');
 $dbc->defineField('properties_id', 'bigint');
 $dbc->defineField('people_id', 'bigint');
+$dbc->defineField('contact_id', 'bigint');
 $dbc->defineField('type', 'varchar');
 $dbc->defineField('limit', 'varchar');
 $dbc->defineField('notes', 'text');

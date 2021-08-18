@@ -18,6 +18,7 @@ $dto = $this->data->dto;  ?>
   <input type="hidden" name="action" value="property-maintenance-save">
   <input type="hidden" name="id" value="<?= $dto->id ?>">
   <input type="hidden" name="people_id" value="<?= $dto->people_id ?>">
+  <input type="hidden" name="contact_id" value="<?= $dto->contact_id ?>">
 
   <div class="modal fade" tabindex="-1" role="dialog" id="<?= $_modal = strings::rand() ?>" aria-labelledby="<?= $_modal ?>Label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -62,7 +63,6 @@ $dto = $this->data->dto;  ?>
                     $prop->address_street
 
                   );
-
                 }
 
                 ?>
@@ -72,8 +72,52 @@ $dto = $this->data->dto;  ?>
 
           </div>
 
+          <!-- --[contact]-- -->
+          <div class="form-row">
+            <div class="col-3 col-form-label">Contact</div>
+
+            <div class="col-md mb-2">
+              <input type="text" class="form-control" value="<?= $dto->contact_name ?>" id="<?= $_uidContactName = strings::rand() ?>">
+
+            </div>
+
+            <script>
+              (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
+                $('#<?= $_uidContactName ?>')
+                  .autofill({
+                    autoFocus: true,
+                    source: (request, response) => {
+                      console.log(request);
+
+                      _.post({
+                        url: _.url('<?= $this->route ?>'),
+                        data: {
+                          action: 'search-people',
+                          term: request.term
+
+                        },
+
+                      }).then(d => response('ack' == d.response ? d.data : []));
+
+                    },
+                    select: (e, ui) => {
+                      let o = ui.item;
+                      $('input[name="contact_id"]', '#<?= $_form ?>')
+                        .val(o.id);
+
+                    },
+
+                  });
+
+              }))(_brayworth_);
+            </script>
+
+          </div>
+
+          <!-- --[notes]-- -->
           <div class="form-row mb-2">
             <div class="col">
+              <label>notes</label>
               <textarea name="notes" class="form-control"><?= $dto->notes ?></textarea>
 
             </div>
@@ -90,34 +134,38 @@ $dto = $this->data->dto;  ?>
   </div>
 
   <script>
-    (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
+    (_ => {
 
-      $('textarea', '#<?= $_form ?>')
-        .autoResize();
+      $('#<?= $_modal ?>').on('shown.bs.modal', () => {
 
-      $('#<?= $_form ?>')
-        .on('submit', function(e) {
-          let _form = $(this);
-          let _data = _form.serializeFormJSON();
+        $('textarea', '#<?= $_form ?>')
+          .autoResize();
 
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: _data,
+        $('#<?= $_form ?>')
+          .on('submit', function(e) {
+            let _form = $(this);
+            let _data = _form.serializeFormJSON();
 
-          }).then(d => {
-            if ('ack' == d.response) {
-              $('#<?= $_modal ?>')
-                .trigger('success')
-                .modal('hide');
-            } else {
-              _.growl(d);
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: _data,
 
-            }
+            }).then(d => {
+              if ('ack' == d.response) {
+                $('#<?= $_modal ?>')
+                  .trigger('success')
+                  .modal('hide');
+              } else {
+                _.growl(d);
 
+              }
+
+            });
+
+            return false;
           });
+      })
 
-          return false;
-        });
-    }))(_brayworth_);
+    })(_brayworth_);
   </script>
 </form>

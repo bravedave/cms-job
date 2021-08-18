@@ -14,7 +14,7 @@ class config extends \config {
   const label = 'Maintenance Instructions';
   const label_add = 'Add Maintenance Instructions';
 
-  const property_maintenance_db_version = 0.2;
+  const property_maintenance_db_version = 0.5;
 
   static protected $_PROPERTY_MAINTENANCE_VERSION = 0;
 

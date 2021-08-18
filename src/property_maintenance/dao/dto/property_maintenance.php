@@ -16,7 +16,9 @@ class property_maintenance extends _dto {
 	public $id = 0;
 	public $properties_id = 0;
 	public $people_id = 0;
-	public $type = '';
+  public $contact_id = 0;
+  public $contact_name = '';
+  public $type = '';
 	public $limit = '';
 	public $notes = '';
 	public $source = '';
