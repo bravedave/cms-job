@@ -27,10 +27,10 @@ use strings, theme;  ?>
         </div>
         <div class="modal-body">
           <div class="form-row mb-1 align-items-end">
-            <div class="col border-bottom">Type/ Address</div>
-            <div class="col border-bottom">Limit</div>
-            <div class="col-4 border-bottom">Contract</div>
-            <div class="col-4 border-bottom">Notes</div>
+            <div class="col border-bottom small">Type/ Address</div>
+            <div class="col border-bottom small">Limit</div>
+            <div class="col-4 border-bottom small">Contract</div>
+            <div class="col-4 border-bottom small">Notes</div>
           </div>
 
           <?php
