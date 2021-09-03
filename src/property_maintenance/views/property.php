@@ -29,7 +29,7 @@ use strings, theme;  ?>
           <div class="form-row mb-1 align-items-end">
             <div class="col border-bottom small">Type/ Address</div>
             <div class="col border-bottom small">Limit</div>
-            <div class="col-4 border-bottom small">Contract</div>
+            <div class="col-4 border-bottom small">Contact</div>
             <div class="col-4 border-bottom small">Notes</div>
           </div>
 
