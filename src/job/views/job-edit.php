@@ -1167,6 +1167,7 @@ if (config::job_status_paid == $dto->status) {
 
       let saveForm = () => {
         <?php if (in_array($action, $validActions)) { ?>
+          // console.log('saveForm > validAction');
           return new Promise(resolve => {
             let _form = $('#<?= $_form ?>');
             let _data = _form.serializeFormJSON();
@@ -1210,6 +1211,7 @@ if (config::job_status_paid == $dto->status) {
           });
 
         <?php } else { ?>
+          // console.log('saveForm > invalidAction');
           return new Promise(resolve => resolve({
             response: 'ack',
             description: '<?= $action ?>'
@@ -1221,6 +1223,7 @@ if (config::job_status_paid == $dto->status) {
 
       $('#<?= $_form ?>')
         .on('add-comment', function(e) {
+          e.stopPropagation();
           saveForm()
             .then(d => {
               if ('ack' != d.response) {
@@ -1855,6 +1858,8 @@ if (config::job_status_paid == $dto->status) {
         .on('property-maintenance', function(e) {
           e.stopPropagation();
 
+          // console.log('form >property-maintenance');
+
           saveForm()
             .then(d => {
               if ('ack' != d.response) {
@@ -1862,8 +1867,10 @@ if (config::job_status_paid == $dto->status) {
 
               }
 
+              // console.log('form >property-maintenance [BAM]!');
+
               $('#<?= $_modal ?>')
-                .trigger('property-maintenance')
+                .trigger('property-maintenance', d)
                 .modal('hide');
 
             });

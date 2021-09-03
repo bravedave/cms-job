@@ -169,15 +169,30 @@ $tblID = strings::rand();
                   });
 
               }))
-              .then(d => d.on('success-and-workorder', (e, data) => {
+              .then(m => m.on('success-and-workorder', (e, data) => {
+                e.stopPropagation();
+
                 _me
                   .trigger('create-workorder', data.id)
+
+              }))
+              .then(m => m.on('property-maintenance', (e, data) => {
+                e.stopPropagation();
+
+                $(document)
+                  .trigger('job-matrix-reload', {
+                    view: 'maintenance',
+                    idx: data.id
+                  });
+
+                // _.get.modal(_.url('property_maintenance/property/' + _data.properties_id));
 
               }))
               .then(m => active = false);
 
           })
           .on('create-workorder', function(e, id) {
+            e.stopPropagation();
 
             let _me = $(this);
 
@@ -787,11 +802,13 @@ $tblID = strings::rand();
 
               }))
               .then(d => d.on('success', () => {
+                e.stopPropagation();
                 _tr
                   .trigger('refresh');
 
               }))
               .then(d => d.on('success-and-workorder', () => {
+                e.stopPropagation();
                 _tr
                   .trigger('refresh')
                   .trigger('create-workorder');
@@ -805,6 +822,7 @@ $tblID = strings::rand();
               }))
               .then(m => m.on('property-maintenance', e => {
                 e.stopPropagation();
+                // console.log('modal > property-maintenance');
                 _tr
                   .trigger('property-maintenance');
 
@@ -1805,6 +1823,8 @@ $tblID = strings::rand();
           .on('property-maintenance', function(e) {
             e.stopPropagation();
 
+            // console.log('tr > property-maintenance');
+
             let _tr = $(this);
             let _data = _tr.data();
 
@@ -2304,7 +2324,9 @@ $tblID = strings::rand();
       .on('job-matrix-reload', (e, opt) => {
         if (!!opt) {
           if (!!opt.idx) {
-            if ('workorder' == opt.view) {
+            if ('maintenance' == opt.view) {
+              _.nav('<?= $this->route ?>/matrix?v=maintenance&idx=' + opt.idx);
+            } else if ('workorder' == opt.view) {
               _.nav('<?= $this->route ?>/matrix?v=workorder&idx=' + opt.idx);
             } else if ('view' == opt.view) {
               _.nav('<?= $this->route ?>/matrix?v=view&idx=' + opt.idx);
@@ -2327,7 +2349,9 @@ $tblID = strings::rand();
               block: "center"
             });
 
-            <?php if ('workorder' == $this->data->trigger) {  ?>
+            <?php if ('maintenance' == $this->data->trigger) {  ?>
+              tr.trigger('property-maintenance');
+            <?php } elseif ('workorder' == $this->data->trigger) {  ?>
               tr.trigger('view-workorder');
             <?php } elseif ('view' == $this->data->trigger) {  ?>
               tr.trigger('edit');
