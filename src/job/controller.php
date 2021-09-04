@@ -29,7 +29,21 @@ class controller extends \Controller {
   protected $label = config::label;
   protected $viewPath = __DIR__ . '/views/';
 
-  protected function _index() {
+  protected function _hasImage($img = '') {
+
+    if (file_exists($__f = $this->viewPath . $img)) {
+      return $__f;
+    }
+
+    return false;
+  }
+
+  protected function _index($view = '') {
+    if (preg_match('@\.(png|jpg|svg)$@', $view) && $_img = $this->_hasImage($view)) {
+      sys::serve($_img);
+      return;
+    }
+
     $this->render([
       'title' => $this->title = $this->label,
       'primary' => '_news',
@@ -1232,6 +1246,12 @@ class controller extends \Controller {
 
       $this->load('job-edit');
     }
+  }
+
+  public function index($view = '') {
+    $this->isPost() ?
+      $this->postHandler() :
+      $this->_index($view);
   }
 
   public function invoiceto_edit() {
