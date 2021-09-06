@@ -191,6 +191,9 @@ class job extends _dao {
   }
 
   public function getMatrix(bool $archived = false, $pid = 0) {
+    $debug = false;
+    // $debug = true;
+
     $where = [];
     $whereRecurring = [];
 
@@ -441,6 +444,7 @@ class job extends _dao {
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `lines` TEXT');
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `has_invoice` INT');
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `has_quote` INT');
+    $this->Q('ALTER TABLE `matrix` ADD INDEX `matrix_idx`(`id` ASC)');
 
     $sql = 'SELECT
         `id`,
@@ -529,6 +533,8 @@ class job extends _dao {
       });
     }
 
+    if ($debug) \sys::logger(sprintf('<updated status .. %s> %s', \Application::app()->timer()->elapsed(), __METHOD__));
+
     // get lines for jobs
     $sql =
       'SELECT
@@ -545,6 +551,9 @@ class job extends _dao {
         m.id, ji.job_categories_id';
 
     if ($res = $this->Result($sql)) {
+
+      if ($debug) \sys::logger(sprintf('<extracted lines .. %s> %s', \Application::app()->timer()->elapsed(), __METHOD__));
+
       $items = [];
       $res->dtoSet(function ($dto) use (&$items) {
         if ($dto->item || $dto->description) {
@@ -559,6 +568,8 @@ class job extends _dao {
         return $dto;
       });
 
+      if ($debug) \sys::logger(sprintf('<got line dtoset .. %s> %s', \Application::app()->timer()->elapsed(), __METHOD__));
+
       foreach ($items as $k => $v) {
         $sql = sprintf(
           'UPDATE `matrix` SET `lines` = %s WHERE `id` = %d',
@@ -572,6 +583,7 @@ class job extends _dao {
       }
     }
 
+    if ($debug) \sys::logger(sprintf('<got lines .. %s> %s', \Application::app()->timer()->elapsed(), __METHOD__));
     // get lines for recurring jobs from their parents
     $sql =
       'SELECT
