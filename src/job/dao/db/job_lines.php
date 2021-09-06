@@ -17,6 +17,6 @@ $dbc->defineField('item_id', 'bigint');
 $dbc->defineField('updated', 'datetime');
 $dbc->defineField('created', 'datetime');
 
-$dbc->defineIndex('job_id', 'idx_job_lines_job_id');
+$dbc->defineIndex('idx_job_lines_job_id', 'job_id');
 
 $dbc->check();
