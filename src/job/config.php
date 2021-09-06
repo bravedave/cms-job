@@ -14,7 +14,7 @@ namespace cms\job;
 use currentUser;
 
 class config extends \config {
-	const cms_job_db_version = 5.3;
+	const cms_job_db_version = 5.4;
 
 	const label = 'JOB';
 	const label_contractor_add = 'New Contractor';
