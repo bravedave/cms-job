@@ -293,6 +293,7 @@ $tblID = strings::rand();
           '<tr
             class="%s"
             data-id="%s"
+            data-refer="%s"
             data-job_recurrence_parent="%s"
             data-properties_id="%s"
             data-address_street="%s"
@@ -313,6 +314,7 @@ $tblID = strings::rand();
             data-paid="%s">',
           $dto->id ? (strtotime($dto->archived) > 0 ? 'text-muted' : '') : 'text-info',
           $dto->id,
+          workorder::reference($dto->id),
           $dto->job_recurrence_parent,
           $dto->properties_id,
           htmlentities($dto->address_street),
@@ -1476,7 +1478,7 @@ $tblID = strings::rand();
 
               // console.log(_data);
               let mailer = _.email.mailer({
-                subject: _data.address_street + ' invoice',
+                subject: _data.address_street + ' invoice - ' + _data.refer,
               });
 
               f(mailer);
@@ -1528,7 +1530,7 @@ $tblID = strings::rand();
 
               // console.log(_data);
               let mailer = _.email.mailer({
-                subject: _data.address_street + ' workorder',
+                subject: _data.address_street + ' workorder -' + _data.refer,
                 onSend: d => _tr.trigger('mark-sent')
               });
 

@@ -380,9 +380,10 @@ class controller extends \Controller {
               ->add(
                 'subject',
                 sprintf(
-                  '%s - %s',
+                  '%s - %s - %s',
                   $dto->address_street,
-                  config::cms_job_PDF_title($dto->job_type)
+                  config::cms_job_PDF_title($dto->job_type),
+                  workorder::reference( $dto->id)
                 )
               )
               ->add('text', workorder::expand_template($dto, config::cms_job_template('template-workorder-send')));
