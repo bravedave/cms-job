@@ -634,7 +634,7 @@ if (config::job_status_paid == $dto->status) {
                 <div class="col-auto mb-2 d-none" id="<?= $_uidKeyCell = strings::rand() ?>"></div>
                 <script>
                   (_ => $('#<?= $_modal ?>')
-                    .on('set-property', prop => {
+                    .on('set-property', (e, prop) => {
                       $('input[name="properties_id"]', '#<?= $_form ?>').val(prop.id);
                       $('#<?= $_uidAddress ?>').val(prop.street);
                       $('#<?= $_uidAddress ?>suburb').html(prop.suburb);
