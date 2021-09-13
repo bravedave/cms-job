@@ -1271,6 +1271,7 @@ class controller extends \Controller {
       'trigger' => $this->getParam('v'),
       'archived' => $archived,
       'hidepropertycolumn' => false,
+      'property' => false,
       'showRefreshIcon' => false
     ];
 
@@ -1289,6 +1290,13 @@ class controller extends \Controller {
   public function matrixOfProperty($pid) {
     $archived = 'yes' == session::get('job-matrix-archived');
 
+    $property = false;
+    if ( $pid = (int)$pid) {
+      $dao = new \dao\properties;
+      $property = $dao->getByID($pid);
+
+    }
+
     $dao = new dao\job;
     $this->data = (object)[
       'title' => $this->title = config::label_matrix,
@@ -1297,6 +1305,7 @@ class controller extends \Controller {
       'trigger' => $this->getParam('v'),
       'archived' => $archived,
       'hidepropertycolumn' => true,
+      'property' => $property,
       'showRefreshIcon' => true
     ];
 

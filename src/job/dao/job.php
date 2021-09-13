@@ -444,7 +444,13 @@ class job extends _dao {
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `lines` TEXT');
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `has_invoice` INT');
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `has_quote` INT');
-    $this->Q('ALTER TABLE `matrix` ADD INDEX `matrix_idx`(`id` ASC)');
+    if ('sqlite' == \config::$DB_TYPE) {
+      $this->Q('CREATE INDEX `matrix_idx` ON `matrix`(`id` ASC)');
+    }
+    else {
+      $this->Q('ALTER TABLE `matrix` ADD INDEX `matrix_idx`(`id` ASC)');
+
+    }
 
     $sql = 'SELECT
         `id`,

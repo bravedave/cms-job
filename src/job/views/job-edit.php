@@ -634,6 +634,17 @@ if (config::job_status_paid == $dto->status) {
                 <div class="col-auto mb-2 d-none" id="<?= $_uidKeyCell = strings::rand() ?>"></div>
                 <script>
                   (_ => $('#<?= $_modal ?>')
+                    .on('set-property', prop => {
+                      $('input[name="properties_id"]', '#<?= $_form ?>').val(prop.id);
+                      $('#<?= $_uidAddress ?>suburb').html(prop.suburb);
+                      $('#<?= $_uidAddress ?>postcode').html(prop.postcode);
+                      $('#<?= $_uidAddress ?>suburb_div, #<?= $_uidAddress ?>postcode_div').removeClass('d-none');
+
+                      $('#<?= $_form ?>')
+                        .trigger('get-tenants')
+                        .trigger('get-keyset')
+                        .trigger('get-maintenance');
+                    })
                     .on('shown.bs.modal', () => {
                       $('#<?= $_uidAddress ?>').autofill({
                         autoFocus: true,

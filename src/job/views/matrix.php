@@ -188,6 +188,21 @@ $tblID = strings::rand();
                 // _.get.modal(_.url('property_maintenance/property/' + _data.properties_id));
 
               }))
+              .then(m => {
+
+                <?php if ($this->data->property) { ?>
+                  m.trigger('set-property', <?= json_encode((object)[
+                    'id' => $this->data->property->id,
+                    'address_street' => $this->data->property->address_street,
+                    'address_suburb' => $this->data->property->address_suburb,
+                    'address_postcode' => $this->data->property->address_postcode
+
+                  ]) ?>);
+                <?php } ?>
+
+                return m;
+
+              })
               .then(m => active = false);
 
           })
@@ -314,7 +329,7 @@ $tblID = strings::rand();
             data-paid="%s">',
           $dto->id ? (strtotime($dto->archived) > 0 ? 'text-muted' : '') : 'text-info',
           $dto->id,
-          workorder::reference($dto->id),
+          workorder::reference((int)$dto->id),
           $dto->job_recurrence_parent,
           $dto->properties_id,
           htmlentities($dto->address_street),
