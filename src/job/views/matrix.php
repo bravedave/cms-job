@@ -193,9 +193,9 @@ $tblID = strings::rand();
                 <?php if ($this->data->property) { ?>
                   m.trigger('set-property', <?= json_encode((object)[
                     'id' => $this->data->property->id,
-                    'address_street' => $this->data->property->address_street,
-                    'address_suburb' => $this->data->property->address_suburb,
-                    'address_postcode' => $this->data->property->address_postcode
+                    'street' => $this->data->property->address_street,
+                    'suburb' => $this->data->property->address_suburb,
+                    'postcode' => $this->data->property->address_postcode
 
                   ]) ?>);
                 <?php } ?>

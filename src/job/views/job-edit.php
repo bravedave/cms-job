@@ -636,6 +636,7 @@ if (config::job_status_paid == $dto->status) {
                   (_ => $('#<?= $_modal ?>')
                     .on('set-property', prop => {
                       $('input[name="properties_id"]', '#<?= $_form ?>').val(prop.id);
+                      $('#<?= $_uidAddress ?>').val(prop.street);
                       $('#<?= $_uidAddress ?>suburb').html(prop.suburb);
                       $('#<?= $_uidAddress ?>postcode').html(prop.postcode);
                       $('#<?= $_uidAddress ?>suburb_div, #<?= $_uidAddress ?>postcode_div').removeClass('d-none');
