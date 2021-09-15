@@ -31,10 +31,25 @@ $dto = $this->data->dto;  ?>
         </div>
         <div class="modal-body">
 
+          <!-- type -->
           <div class="form-row mb-2">
             <div class="col-3 col-form-label">type</div>
             <div class="col">
-              <input type="text" name="type" class="form-control" maxlength="42" value="<?= $dto->type ?>">
+              <select name="type" class="form-control" required>
+                <option value=""></option>
+                <?php
+                foreach (config::property_maintenance_types as $type) {
+                  printf(
+                    '<option value="%s" %s>%s</option>',
+                    $type,
+                    $type == $dto->type ? 'selected' : '',
+                    $type
+
+                  );
+                }
+                ?>
+
+              </select>
 
             </div>
 
@@ -87,8 +102,6 @@ $dto = $this->data->dto;  ?>
                   .autofill({
                     autoFocus: true,
                     source: (request, response) => {
-                      console.log(request);
-
                       _.post({
                         url: _.url('<?= $this->route ?>'),
                         data: {

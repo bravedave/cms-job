@@ -16,6 +16,24 @@ class config extends \config {
 
   const property_maintenance_db_version = 0.5;
 
+  const property_maintenance_types = [
+    'Aircon',
+    'Builder',
+    'Carpet',
+    'Electrical',
+    'Garden',
+    'General',
+    'Glass',
+    'Handy man',
+    'In Case of Emergency',
+    'Painter',
+    'Pest Control',
+    'Plumbing',
+    'Pool',
+    'Refrigerators',
+    'Roof'
+  ];
+
   static protected $_PROPERTY_MAINTENANCE_VERSION = 0;
 
   public static function property_maintenance_checkdatabase() {
