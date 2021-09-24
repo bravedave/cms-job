@@ -10,7 +10,7 @@
 
 namespace cms\job;
 
-use strings;
+use strings, currentUser;
 
 $tblID = strings::rand();
 ?>
@@ -192,12 +192,12 @@ $tblID = strings::rand();
 
                 <?php if ($this->data->property) { ?>
                   m.trigger('set-property', <?= json_encode((object)[
-                    'id' => $this->data->property->id,
-                    'street' => $this->data->property->address_street,
-                    'suburb' => $this->data->property->address_suburb,
-                    'postcode' => $this->data->property->address_postcode
+                                              'id' => $this->data->property->id,
+                                              'street' => $this->data->property->address_street,
+                                              'suburb' => $this->data->property->address_suburb,
+                                              'postcode' => $this->data->property->address_postcode
 
-                  ]) ?>);
+                                            ]) ?>);
                 <?php } ?>
 
                 return m;
@@ -557,7 +557,8 @@ $tblID = strings::rand();
 
         _context.append('<hr>');
         _context.append(
-          $('<a href="#">clear</a>').on('click', e => {
+          $('<a href="#">clear</a>')
+          .on('click', e => {
             e.stopPropagation();
             e.preventDefault();
 
@@ -1163,7 +1164,7 @@ $tblID = strings::rand();
 
             if (Number(_data.id) > 0) {
               _context.append(
-                $('<a href="#">email sent</a>')
+                $('<a class="d-none" href="#">email sent</a>')
                 .on('click', e => {
                   e.stopPropagation();
                   _tr.trigger('yes' == _data.email_sent ? 'mark-sent-undo' : 'mark-sent');
@@ -1172,6 +1173,12 @@ $tblID = strings::rand();
                 .on('reconcile', function(e) {
                   if ('yes' == _data.email_sent) {
                     $(this).prepend('<i class="bi bi-check"></i>')
+                    <?php if (currentUser::isRentalDelegate()) { ?>
+                      $(this).removeClass('d-none');
+                    <?php } ?>
+
+                  } else {
+                    $(this).removeClass('d-none');
 
                   }
 
