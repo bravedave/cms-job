@@ -14,7 +14,7 @@ use currentUser, strings;  ?>
 
 <ul class="nav flex-column" id="<?= $_nav = strings::rand() ?>">
   <li class="nav-item h6">
-    <a href="<?= strings::url(sprintf('%s', $this->route)) ?>">
+    <a href="<?= strings::url(sprintf('%s/', $this->route)) ?>">
       <?= config::label ?>
     </a>
 

@@ -47,7 +47,12 @@ class controller extends \Controller {
     $this->render([
       'title' => $this->title = $this->label,
       'primary' => '_news',
-      'secondary' => 'index'
+      'secondary' => 'index',
+      'data' => (object)[
+        'pageUrl' => $this->route . '/'
+
+      ],
+
 
     ]);
   }
@@ -383,7 +388,7 @@ class controller extends \Controller {
                   '%s - %s - %s',
                   $dto->address_street,
                   config::cms_job_PDF_title($dto->job_type),
-                  workorder::reference( $dto->id)
+                  workorder::reference($dto->id)
                 )
               )
               ->add('text', workorder::expand_template($dto, config::cms_job_template('template-workorder-send')));
@@ -1291,10 +1296,9 @@ class controller extends \Controller {
     $archived = 'yes' == session::get('job-matrix-archived');
 
     $property = false;
-    if ( $pid = (int)$pid) {
+    if ($pid = (int)$pid) {
       $dao = new \dao\properties;
       $property = $dao->getByID($pid);
-
     }
 
     $dao = new dao\job;
@@ -1579,7 +1583,8 @@ class controller extends \Controller {
               if (file_exists($path = $dao->getInvoicePath($dto))) {
                 $parts = pathinfo($path);
                 $fileName = sprintf(
-                  '%s-%s.%s',
+                  '%s%s-%s.%s',
+                  config::job_payment_tenant == $dto->job_payment ? 'TENANT-' : '',
                   workorder::reference($dto->id),
                   preg_replace('@[^0-9a-zA-Z]@', '_', $dto->address_street),
                   $parts['extension']
