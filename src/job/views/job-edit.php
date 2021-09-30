@@ -53,12 +53,12 @@ if (config::job_status_paid == $dto->status) {
     }
 
     .upload-invoice .has-advanced-upload::before {
-      content: "upload invoice";
+      content: "upload invoice"!important;
 
     }
 
     .upload-quote .has-advanced-upload::before {
-      content: "upload quote";
+      content: "upload quote"!important;
 
     }
 
