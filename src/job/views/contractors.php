@@ -27,7 +27,7 @@ $categories = $this->data->categories;  ?>
   <table class="table table-sm fade" id="<?= $tblID = strings::rand() ?>">
     <thead class="small">
       <tr>
-        <td>#</td>
+        <td line-number>#</td>
         <td>Trading As</td>
         <td>Contact</td>
         <td>Tel</td>
