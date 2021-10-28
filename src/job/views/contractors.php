@@ -87,9 +87,12 @@ $categories = $this->data->categories;  ?>
   (_ => {
     $('#<?= $tblID ?>')
       .on('update-line-numbers', function(e) {
+        let t = 0;
         $('> tbody > tr:not(.d-none) >td[line-number]', this).each((i, e) => {
           $(e).data('line', i + 1).html(i + 1);
+          t++;
         });
+        $('> thead > tr > td[line-number]', this).data('count', t).html(t);
       });
 
     $('#<?= $tblID ?> > tbody > tr')
