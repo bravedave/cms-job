@@ -44,6 +44,72 @@ class job_contractors extends _dao {
     return null;
   }
 
+  public function getGetContractorsForItem(int $itemid): array {
+    $dao = new job_items;
+    if ($item = $dao->getByID($itemid)) {
+      $sql = sprintf(
+        'SELECT
+          `id`, `services`
+        FROM
+          `job_contractors`
+        WHERE `services` != %s',
+        $this->quote('')
+      );
+
+      // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
+
+      if ($res = $this->Result($sql)) {
+        $candidates = $res->dtoSet(function ($dto) use ($item) {
+          $services = explode(',', $dto->services);
+          if (in_array($item->job_categories_id, $services)) {
+            return $dto;
+          }
+
+          return false;
+        });
+
+        $ids = array_map(function ($candidate) {
+          return $candidate->id;
+        }, $candidates);
+
+        if ($ids) {
+          $sql = sprintf(
+            'SELECT
+              c.id,
+              c.trading_name,
+              c.services,
+              c.primary_contact,
+              p.name,
+              p.mobile,
+              p.telephone,
+              p.telephone_business,
+              p.email,
+              p.salutation
+            FROM
+              `%s` c
+                LEFT JOIN
+              people p ON p.id = c.primary_contact
+            WHERE
+              c.id IN (%s)
+            ORDER BY
+              c.trading_name',
+            $this->db_name(),
+            implode(',', $ids)
+
+          );
+
+          if ($res = $this->Result($sql)) {
+            return $res->dtoSet();
+          }
+        }
+
+        // \sys::logger(sprintf('<%s> %s', implode(',', $ids), __METHOD__));
+      }
+    }
+
+    return [];
+  }
+
   public function getReportSet() {
     $sql = sprintf(
       'SELECT

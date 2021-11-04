@@ -1159,6 +1159,18 @@ class controller extends \Controller {
     ]);
   }
 
+  public function contractorsfor( $item) {
+    $dao = new dao\job_contractors;
+    $this->data = (object)[
+      'title' => $this->title = 'Contractors for ..',
+      'contractors' => $dao->getGetContractorsForItem( $item),
+      'categories' => dao\job_categories::getCategorySet()
+
+    ];
+
+    $this->load('contractors-for');
+  }
+
   public function contractor_edit($id = 0) {
     if ($id = (int)$id) {
       $dao = new dao\job_contractors();

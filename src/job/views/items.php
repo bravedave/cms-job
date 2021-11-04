@@ -189,6 +189,18 @@ use currentUser, strings;  ?>
 
           );
 
+          _context.append(
+            $('<a href="#">show contractors</a>')
+            .on('click', e => {
+              e.stopPropagation();
+
+              _context.close();
+              _tr.trigger('show-contractors');
+
+            })
+
+          );
+
           _context
             .addClose()
             .open(e);
@@ -208,7 +220,7 @@ use currentUser, strings;  ?>
 
           }).then(d => {
             if ('ack' == d.response) {
-              _tr.data('active','yes');
+              _tr.data('active', 'yes');
               $('td[active]', _tr).html('&check;');
 
             } else {
@@ -233,7 +245,7 @@ use currentUser, strings;  ?>
 
           }).then(d => {
             if ('ack' == d.response) {
-              _tr.data('active','no');
+              _tr.data('active', 'no');
               $('td[active]', _tr).html('&times;');
 
             } else {
@@ -242,6 +254,13 @@ use currentUser, strings;  ?>
             }
 
           });
+
+        })
+        .on('show-contractors', function(e) {
+          let _tr = $(this);
+          let _data = _tr.data();
+
+          _.get.modal(_.url('<?= $this->route ?>/contractorsfor/' + _data.id));
 
         });
 
