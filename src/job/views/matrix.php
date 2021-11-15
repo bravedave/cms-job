@@ -497,7 +497,8 @@ $tblID = strings::rand();
         let _context = _.context();
 
         _context.append(
-          $('<a href="#">select all</a>').on('click', e => {
+          $('<a href="#">select all</a>')
+          .on('click', e => {
             e.stopPropagation();
             e.preventDefault();
 
@@ -518,7 +519,7 @@ $tblID = strings::rand();
           })
         );
 
-        _context.append(
+        let dl =
           $('<a href="#" class="d-none"></a>')
           .on('click', e => {
             e.stopPropagation();
@@ -527,33 +528,46 @@ $tblID = strings::rand();
             $('#<?= $tblID ?>').trigger('download-invoices');
             _context.close();
 
-          })
-          .on('recon', function(e) {
-            let _me = $(this);
-            let tot = 0;
+          });
+        _context.append(dl);
 
-            $('#<?= $tblID ?> > tbody > tr:not(.d-none)>td[line-number]>i').each((i, el) => {
-              let _el = $(el);
-              let _tr = _el.closest('tr');
-              let _data = _tr.data();
+        let mpS =
+          $('<a href="#" class="d-none"></a>')
+          .on('click', e => {
+            e.stopPropagation();
+            e.preventDefault();
 
-              if (Number(_data.id) > 0 && 'yes' == _data.invoiced) {
-                tot++;
+            $('#<?= $tblID ?>').trigger('markpaid-selected');
+            _context.close();
 
-              }
+          });
+        _context.append(mpS);
 
-            });
+        let tot = 0;
+        let totTot = 0;
 
-            if (tot > 0) {
-              _me
-                .html('download invoices')
-                .removeClass('d-none');
+        $('#<?= $tblID ?> > tbody > tr:not(.d-none)>td[line-number]>i').each((i, el) => {
+          let _el = $(el);
+          let _tr = _el.closest('tr');
+          let _data = _tr.data();
 
-            }
+          totTot++;
+          if (Number(_data.id) > 0 && 'yes' == _data.invoiced) {
+            tot++;
 
-          })
-          .trigger('recon')
-        );
+          }
+
+        });
+
+        if (tot > 0 && totTot == tot) {
+          dl
+            .html('download invoices')
+            .removeClass('d-none');
+          mpS
+            .html('markpaid selected')
+            .removeClass('d-none');
+
+        }
 
         _context.append('<hr>');
         _context.append(
@@ -590,6 +604,44 @@ $tblID = strings::rand();
         if (ids.length > 0) {
           window.location.href = _.url('<?= $this->route ?>/zipInvoices?ids=' + ids.join(','));
 
+        }
+
+      })
+      .on('markpaid-selected', function(e) {
+        let ids = [];
+        let trs = [];
+
+        $('#<?= $tblID ?> > tbody > tr:not(.d-none)>td[line-number]>i').each((i, el) => {
+          let _el = $(el);
+          let _tr = _el.closest('tr');
+          let _data = _tr.data();
+
+          if (Number(_data.id) > 0 && 'yes' == _data.invoiced) {
+            trs.push(_tr);
+            ids.push(_data.id);
+
+          }
+
+        });
+
+        if (ids.length > 0) {
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'job-mark-paid-selected',
+              ids: ids.join(',')
+            },
+
+          }).then(d => {
+            _.growl(d);
+            if ('ack' == d.response) {
+              $('#<?= $tblID ?>').trigger('update-line-numbers');
+              trs.forEach(_tr => _tr.trigger('refresh'));
+            }
+          });
+
+        } else {
+          _.growl('none selected ...');
         }
 
       })

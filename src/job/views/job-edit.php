@@ -53,12 +53,12 @@ if (config::job_status_paid == $dto->status) {
     }
 
     .upload-invoice .has-advanced-upload::before {
-      content: "upload invoice"!important;
+      content: "upload invoice" !important;
 
     }
 
     .upload-quote .has-advanced-upload::before {
-      content: "upload quote"!important;
+      content: "upload quote" !important;
 
     }
 
@@ -1397,7 +1397,7 @@ if (config::job_status_paid == $dto->status) {
             }).then(d => {
               // console.log(d);
 
-              let label = $('<div class="col-md-3 col-xl-2 col-form-label d-flex"><div class="text-truncate flex-fill">maintenance instructions</div><i class="bi bi-pencil"></i></div>');
+              let label = $('<div class="col-md-3 col-xl-2 py-1 d-flex"><div class="text-truncate flex-fill">maintenance instructions</div><i class="bi bi-pencil"></i></div>');
               label
                 .addClass('pointer')
                 .on('click', function(e) {
@@ -1418,27 +1418,16 @@ if (config::job_status_paid == $dto->status) {
               if ('ack' == d.response) {
                 if (d.data.length > 0) {
                   $.each(d.data, (i, sched) => {
-                    let row = $('<div class="form-row"></div>');
+                    // console.log(sched);
+                    let row = $('<div class="form-row border-bottom border-light"></div>');
 
-                    let type = $('<div class="form-control form-control-sm" readonly></div>')
-                      .html(sched.type);
-                    let limit = $('<div class="form-control form-control-sm text-right" readonly></div>')
-                      .html(sched.limit);
-                    let notes = $('<div class="form-control form-control-sm h-auto" readonly></div>')
-                      .html(sched.notes);
-
-                    let fglimit = $('<div class="input-group input-group-sm"><div class="input-group-prepend"><div class="input-group-text">limit</div></div></div>')
-                      .append(limit);
-
-                    $('<div class="col-6 col-md-2 mb-1"></div>')
-                      .append(type)
+                    row.append(`<div class="col-6 col-md-2 mb-1 p-1">${sched.type}</div>`);
+                    let __col = $(`<div class="col-6 col-md-3 mb-1 p-1 text-truncate">${!!sched.contact_name ? sched.contact_name : ''}</div>`)
                       .appendTo(row);
-                    $('<div class="col-6 col-md-3 mb-1"></div>')
-                      .append(fglimit)
-                      .appendTo(row);
-                    $('<div class="col-md-7 mb-2"></div>')
-                      .append(notes)
-                      .appendTo(row);
+                    if (String(sched.contact_mobile).IsMobilePhone()) {
+                      __col.append(`<div class="text-muted small">${String(sched.contact_mobile).AsMobilePhone()}</div>`);
+                    }
+                    row.append(`<div class="col-md-7 mb-2 p-1">${sched.notes}</div>`);
 
                     col
                       .append(row);

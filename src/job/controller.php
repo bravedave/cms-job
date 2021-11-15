@@ -698,6 +698,25 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
+    } elseif ('job-mark-paid-selected' == $action) {
+      if ($ids = $this->getPost('ids')) {
+        $ids = explode(',', $ids);
+        $dao = new dao\job;
+        foreach ($ids as $id) {
+          \sys::logger(sprintf('<%s #%s> %s', $action, $id, __METHOD__));
+          $a = [
+            'archived' => \db::dbTimeStamp(),
+            'paid' => \db::dbTimeStamp(),
+            'paid_by' => currentuser::id()
+
+          ];
+          $dao->UpdateByID($a, $id);
+        }
+
+        Json::ack($action);
+      } else {
+        Json::nak($action);
+      }
     } elseif ('job-save' == $action) {
 
       if ($description = $this->getPost('description')) {
@@ -1159,11 +1178,11 @@ class controller extends \Controller {
     ]);
   }
 
-  public function contractorsfor( $item) {
+  public function contractorsfor($item) {
     $dao = new dao\job_contractors;
     $this->data = (object)[
       'title' => $this->title = 'Contractors for ..',
-      'contractors' => $dao->getGetContractorsForItem( $item),
+      'contractors' => $dao->getGetContractorsForItem($item),
       'categories' => dao\job_categories::getCategorySet()
 
     ];
