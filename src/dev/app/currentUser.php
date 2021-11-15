@@ -32,6 +32,12 @@ class currentuser extends dvc\currentUser {
 		return true;
 	}
 
+	static public function isRentalAdmin(): bool {
+
+		if (self::isRentalDelegate()) return true;
+		return ((bool)self::isAdmin());
+	}
+
 	static public function isRentalDelegate(): bool {
 		return ((bool)self::user()->rental_delegate);
 	}

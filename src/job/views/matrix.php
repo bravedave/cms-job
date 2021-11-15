@@ -507,8 +507,7 @@ $tblID = strings::rand();
 
           }));
 
-        _context.append(
-          $('<a href="#">archive selected</a>')
+        let aS = $('<a href="#" class="d-none">archive selected</a>')
           .on('click', e => {
             e.stopPropagation();
             e.preventDefault();
@@ -517,7 +516,7 @@ $tblID = strings::rand();
             _me.trigger('archive-selected');
 
           })
-        );
+        _context.append(aS);
 
         let dl =
           $('<a href="#" class="d-none"></a>')
@@ -563,11 +562,17 @@ $tblID = strings::rand();
           dl
             .html('download invoices')
             .removeClass('d-none');
-          mpS
-            .html('markpaid selected')
-            .removeClass('d-none');
+          <?php if (currentUser::isRentalAdmin()) {  ?>
+            mpS
+              .html('markpaid selected')
+              .removeClass('d-none');
+          <?php }  ?>
 
         }
+
+        <?php if (currentUser::isRentalAdmin()) {  ?>
+          if (totTot > 0) aS.removeClass('d-none');
+        <?php }  ?>
 
         _context.append('<hr>');
         _context.append(
