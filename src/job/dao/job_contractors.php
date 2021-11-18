@@ -122,13 +122,22 @@ class job_contractors extends _dao {
         p.telephone,
         p.telephone_business,
         p.email,
-        p.salutation
+        p.salutation,
+        jc.jobs
       FROM
-        `%s` c
-        LEFT JOIN people p ON p.id = c.primary_contact
+        `job_contractors` c
+          LEFT JOIN
+        people p ON p.id = c.primary_contact
+          LEFT JOIN
+        (SELECT
+          contractor_id, COUNT(contractor_id) jobs
+        FROM
+          `job`
+        WHERE contractor_id > 0 AND (paid > %s OR complete = 1)
+        GROUP BY contractor_id) jc ON jc.contractor_id = c.id
       ORDER BY
         c.trading_name',
-      $this->db_name()
+      $this->quote('')
 
     );
 

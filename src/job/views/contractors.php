@@ -32,6 +32,7 @@ $categories = $this->data->categories;  ?>
         <td>Contact</td>
         <td>Tel</td>
         <td>Services</td>
+        <td class="text-center">Jobs</td>
 
       </tr>
 
@@ -73,6 +74,7 @@ $categories = $this->data->categories;  ?>
             }
             ?>
           </td>
+          <td class="text-center"><?= $dto->jobs ?></td>
 
         </tr>
 
