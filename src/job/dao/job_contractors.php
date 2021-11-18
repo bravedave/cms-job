@@ -20,6 +20,25 @@ class job_contractors extends _dao {
   protected $_db_name = 'job_contractors';
   protected $template = __NAMESPACE__ . '\dto\job_contractors';
 
+  public function getAllOthers(int $id): array {  // this is for merge
+    $sql = sprintf(
+      'SELECT
+        id,
+        trading_name
+      FROM `job_contractors` c
+      WHERE c.id <> %d
+      ORDER BY c.trading_name',
+      $id
+
+    );
+
+    // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
+    if ($res = $this->Result($sql)) {
+      return $res->dtoSet();
+    }
+    return [];
+  }
+
   public function getByTradingName(string $name): ?dto\job_contractors {
     $sql = sprintf(
       "SELECT
@@ -108,6 +127,28 @@ class job_contractors extends _dao {
     }
 
     return [];
+  }
+
+  public function merge(int $source, int $target): void {
+    $sql = sprintf(
+      'SELECT id FROM `job` WHERE `contractor_id` = %d',
+      $source
+    );
+
+    if ($res = $this->Result($sql)) {
+      \sys::logger( sprintf('<%s => %s> %s', $source, $target, __METHOD__));
+
+      $jdao = new job;
+      $res->dtoSet(function ($dto) use ($target, $jdao) {
+        \sys::logger( sprintf('<%s => %s> %s', $dto->id, $target, __METHOD__));
+        $jdao->UpdateByID(
+          ['contractor_id' => $target],
+          $dto->id
+        );
+      });
+
+      $this->delete($source);
+    }
   }
 
   public function getReportSet() {
