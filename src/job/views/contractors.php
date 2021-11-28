@@ -32,6 +32,7 @@ $categories = $this->data->categories;  ?>
         <td>Contact</td>
         <td>Tel</td>
         <td>Services</td>
+        <td class="text-center">Jobs</td>
 
       </tr>
 
@@ -73,6 +74,7 @@ $categories = $this->data->categories;  ?>
             }
             ?>
           </td>
+          <td class="text-center"><?= $dto->jobs ?></td>
 
         </tr>
 
@@ -95,152 +97,201 @@ $categories = $this->data->categories;  ?>
         $('> thead > tr > td[line-number]', this).data('count', t).html(t);
       });
 
+    const rowClick = function(e) {
+      e.stopPropagation();
+      e.preventDefault();
+
+      _.hideContexts();
+      $(this).trigger('edit');
+
+    };
+
+    const rowContext = function(e) {
+      if (e.shiftKey)
+        return;
+
+      e.stopPropagation();
+      e.preventDefault();
+
+      _.hideContexts();
+
+      let _tr = $(this);
+      let _context = _.context();
+
+      _context.append(
+        $('<a href="#"><i class="bi bi-pencil"></i><strong>edit</strong></a>')
+        .on('click', e => {
+          e.stopPropagation();
+          e.preventDefault();
+
+          _context.close();
+          $(this).trigger('edit');
+
+        })
+
+      );
+
+      <?php if (currentUser::isadmin()) { ?>
+
+        _context.append(
+          $('<a href="#"><i class="bi bi-arrows-angle-contract"></i>merge</a>')
+          .on('click', e => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            _context.close();
+            _tr.trigger('merge');
+
+          })
+
+        );
+
+        _context.append(
+          $('<a href="#"><i class="bi bi-trash"></i>delete</a>')
+          .on('click', e => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            _context.close();
+            _tr.trigger('delete');
+
+          })
+
+        );
+
+      <?php } ?>
+
+      _context.open(e);
+    };
+
+    const rowDelete = function(e) {
+      let _tr = $(this);
+
+      _.ask.alert({
+        text: 'Are you sure ?',
+        title: 'Confirm Delete',
+        buttons: {
+          yes: function(e) {
+
+            $(this).modal('hide');
+            _tr.trigger('delete-confirmed');
+
+          }
+
+        }
+
+      });
+
+    };
+
+    const rowDeleteConfirmed = function(e) {
+      let _tr = $(this);
+      let _data = _tr.data();
+
+      _.post({
+        url: _.url('<?= $this->route ?>'),
+        data: {
+          action: 'contractor-delete',
+          id: _data.id
+
+        },
+
+      }).then(d => {
+        if ('ack' == d.response) {
+          _tr.remove();
+          $('#<?= $tblID ?>').trigger('update-line-numbers');
+
+        } else {
+          _.growl(d);
+
+        }
+
+      });
+
+    };
+
+    const rowEdit = function(e) {
+      let _me = $(this);
+      let _data = _me.data();
+
+      _.get.modal(_.url('<?= $this->route ?>/contractor_edit/' + _data.id))
+        .then(d => d.on('edit-primary-contact', e => {
+          e.stopPropagation();
+          _me.trigger('edit-primary-contact');
+
+        }))
+        .then(d => d.on('success', (e, d) => {
+          _.nav('<?= $this->route ?>/contractors?idx=' + d.id);
+
+        }))
+        .then(d => d.on('send-sms', () => _.ask.warning({
+          'title': 'not implemented',
+          'text': 'Feature not implented'
+        })));
+
+    };
+
+    const rowEditPrimaryContact = function(e) {
+      let _me = $(this);
+      let _data = _me.data();
+
+      _.get.modal(_.url('people/getPerson'))
+        .then(m => m.on('success', (e, person) => {
+          _.post({
+            url: _.url('<?= $this->route ?>'),
+            data: {
+              action: 'set-primary-contact',
+              id: _data.id,
+              people_id: person.id
+
+            },
+
+          }).then(d => {
+            if ('ack' == d.response) {
+              $('td[data-role="primary_contact"]', _me).html(person.name)
+              if (String(person.mobile).IsMobilePhone()) {
+                $('td[data-role="phone"]', _me).html(String(person.mobile).AsMobilePhone())
+
+              } else if (String(person.mobile).IsPhone()) {
+                $('td[data-role="phone"]', _me).html(String(person.mobile).AsLocalPhone())
+
+              } else {
+                $('td[data-role="phone"]', _me).html('&nbsp;')
+
+              }
+
+            } else {
+              _.growl(d);
+
+            }
+
+          });
+
+        }))
+        .then(m => m.on('hidden.bs.modal', (e) => _me.trigger('edit')));
+
+    };
+
+    const rowMerge = function(e) {
+      let _tr = $(this);
+      let _data = _tr.data();
+
+      _.get.modal(_.url(`<?= $this->route ?>/contractor_merge/${_data.id}`))
+        .then(m => m.on('success', e => _tr.remove()));
+
+    };
+
     $('#<?= $tblID ?> > tbody > tr')
       .each((i, tr) => {
         $(tr)
-          .on('edit', function(e) {
-            let _me = $(this);
-            let _data = _me.data();
-
-            _.get.modal(_.url('<?= $this->route ?>/contractor_edit/' + _data.id))
-              .then(d => d.on('edit-primary-contact', e => {
-                e.stopPropagation();
-                _me.trigger('edit-primary-contact');
-
-              }))
-              .then(d => d.on('success', (e, d) => {
-                _.nav('<?= $this->route ?>/contractors?idx=' + d.id);
-
-              }))
-              .then(d => d.on('send-sms', () => _.ask.warning({
-                'title': 'not implemented',
-                'text': 'Feature not implented'
-              })));
-
-          })
-          .on('edit-primary-contact', function(e) {
-            let _me = $(this);
-            let _data = _me.data();
-
-            _.get.modal(_.url('people/getPerson'))
-              .then(m => m.on('success', (e, person) => {
-                _.post({
-                  url: _.url('<?= $this->route ?>'),
-                  data: {
-                    action: 'set-primary-contact',
-                    id: _data.id,
-                    people_id: person.id
-
-                  },
-
-                }).then(d => {
-                  if ('ack' == d.response) {
-                    $('td[data-role="primary_contact"]', _me).html(person.name)
-                    if (String(person.mobile).IsMobilePhone()) {
-                      $('td[data-role="phone"]', _me).html(String(person.mobile).AsMobilePhone())
-
-                    } else if (String(person.mobile).IsPhone()) {
-                      $('td[data-role="phone"]', _me).html(String(person.mobile).AsLocalPhone())
-
-                    } else {
-                      $('td[data-role="phone"]', _me).html('&nbsp;')
-
-                    }
-
-                  } else {
-                    _.growl(d);
-
-                  }
-
-                });
-
-              }))
-              .then(m => m.on('hidden.bs.modal', (e) => _me.trigger('edit')));
-
-          })
           .addClass('pointer')
-          .on('click', function(e) {
-            e.stopPropagation();
-            e.preventDefault();
-
-            _.hideContexts();
-            $(this).trigger('edit');
-
-          })
-          .on('contextmenu', function(e) {
-            if (e.shiftKey)
-              return;
-
-            e.stopPropagation();
-            e.preventDefault();
-
-            _.hideContexts();
-
-            let _tr = $(this);
-            let _context = _.context();
-
-            <?php if (currentUser::isadmin()) { ?>
-
-              _context.append(
-                $('<a href="#"><i class="bi bi-trash"></i>delete</a>')
-                .on('click', e => {
-                  e.stopPropagation();
-
-                  _context.close();
-                  _tr.trigger('delete');
-
-                })
-
-              );
-
-            <?php } ?>
-
-            _context.open(e);
-          })
-          .on('delete', function(e) {
-            let _tr = $(this);
-
-            _.ask.alert({
-              text: 'Are you sure ?',
-              title: 'Confirm Delete',
-              buttons: {
-                yes: function(e) {
-
-                  $(this).modal('hide');
-                  _tr.trigger('delete-confirmed');
-
-                }
-
-              }
-
-            });
-
-          })
-          .on('delete-confirmed', function(e) {
-            let _tr = $(this);
-            let _data = _tr.data();
-
-            _.post({
-              url: _.url('<?= $this->route ?>'),
-              data: {
-                action: 'contractor-delete',
-                id: _data.id
-
-              },
-
-            }).then(d => {
-              if ('ack' == d.response) {
-                _tr.remove();
-                $('#<?= $tblID ?>').trigger('update-line-numbers');
-
-              } else {
-                _.growl(d);
-
-              }
-
-            });
-
-          });
+          .on('click', rowClick)
+          .on('edit', rowEdit)
+          .on('edit-primary-contact', rowEditPrimaryContact)
+          .on('contextmenu', rowContext)
+          .on('delete', rowDelete)
+          .on('delete-confirmed', rowDeleteConfirmed)
+          .on('merge', rowMerge);
 
       });
 

@@ -13,17 +13,8 @@ namespace cms\job;
 use currentUser, strings;  ?>
 
 <ul class="nav flex-column" id="<?= $_nav = strings::rand() ?>">
-  <li class="nav-item h6">
-    <a href="<?= strings::url(sprintf('%s/', $this->route)) ?>">
-      <?= config::label ?>
-    </a>
-
-  </li>
-
-  </li>
-
   <li class="nav-item">
-    <a class="nav-link" href="<?= strings::url(sprintf('%s/matrix', $this->route)) ?>">
+    <a class="h6" href="<?= strings::url(sprintf('%s/matrix', $this->route)) ?>">
       <?= config::label_matrix ?>
 
     </a>
@@ -380,4 +371,11 @@ use currentUser, strings;  ?>
     </li>
   <?php  }  ?>
 
+  <li class="nav-item">
+    <a class="nav-link" href="<?= strings::url($this->route . '/about') ?>">
+      <i class="bi bi-info-circle"></i> <?= config::label_about ?>
+
+    </a>
+
+  </li>
 </ul>

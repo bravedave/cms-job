@@ -44,17 +44,7 @@ class controller extends \Controller {
       return;
     }
 
-    $this->render([
-      'title' => $this->title = $this->label,
-      'primary' => '_news',
-      'secondary' => 'index',
-      'data' => (object)[
-        'pageUrl' => $this->route . '/'
-
-      ],
-
-
-    ]);
+    $this->matrix();
   }
 
   protected function before() {
@@ -190,6 +180,18 @@ class controller extends \Controller {
         Json::ack($action);
       } else {
         Json::nak($action);
+      }
+    } elseif ('contractor-merge' == $action) {
+      if ($source = (int)$this->getPost('source')) {
+        if ($target = (int)$this->getPost('target')) {
+          $dao = new dao\job_contractors;
+          $dao->merge($source, $target);
+          Json::ack($action);
+        } else {
+          Json::nak(sprintf('missing target - %s', $action));
+        }
+      } else {
+        Json::nak(sprintf('missing source- %s', $action));
       }
     } elseif ('create-workorder' == $action) {
       if ($id = (int)$this->getPost('id')) {
@@ -1090,6 +1092,19 @@ class controller extends \Controller {
     parent::render($params);
   }
 
+  public function about() {
+    $this->render([
+      'title' => $this->title = $this->label,
+      'primary' => '_news',
+      'secondary' => 'index',
+      'data' => (object)[
+        'pageUrl' => $this->route . '/about'
+
+      ],
+
+    ]);
+  }
+
   public function bump($id) {
     if ($id = (int)$id) {
       $dao = new dao\job;
@@ -1192,7 +1207,7 @@ class controller extends \Controller {
 
   public function contractor_edit($id = 0) {
     if ($id = (int)$id) {
-      $dao = new dao\job_contractors();
+      $dao = new dao\job_contractors;
       if ($dto = $dao->getByID($id)) {
         $this->data = (object)[
           'dto' => $dto,
@@ -1224,6 +1239,25 @@ class controller extends \Controller {
       ];
 
       $this->load('contractor-edit');
+    }
+  }
+
+  public function contractor_merge($id = 0) {
+    if ($id = (int)$id) {
+      $dao = new dao\job_contractors;
+      if ($dto = $dao->getByID($id)) {
+        $this->data = (object)[
+          'title' => $this->title = config::label_contractor_merge,
+          'dto' => $dto,
+          'allOthers' => $dao->getAllOthers($id)
+        ];
+
+        $this->load('contractor-merge.php');
+      } else {
+        $this->load('not-found');
+      }
+    } else {
+      $this->load('not-found');
     }
   }
 
