@@ -12,6 +12,8 @@ class config extends dvc\config {
 
   const use_inline_logon = true;
 
+  static $CONSOLE_INTEGRATION = false;
+
   public static function cmsStore() {
     return self::dataPath();
   }
