@@ -28,7 +28,7 @@ use strings, theme;  ?>
         <div class="modal-body">
           <div class="form-row mb-1 align-items-end">
             <div class="col border-bottom small">Type/ Address</div>
-            <div class="col border-bottom small">Limit</div>
+            <!-- div class="col border-bottom small">Limit</div -->
             <div class="col-4 border-bottom small">Contact</div>
             <div class="col-4 border-bottom small">Notes</div>
           </div>
@@ -59,10 +59,10 @@ use strings, theme;  ?>
               $dto->properties_id > 0 ? $dto->address_street : ''
             );
 
-            printf(
-              '<div class="col text-truncate">%s</div>',
-              $dto->limit
-            );
+            // printf(
+            //   '<div class="col text-truncate">%s</div>',
+            //   $dto->limit
+            // );
 
             $contact = [];
             if ($dto->contact_id > 0) {

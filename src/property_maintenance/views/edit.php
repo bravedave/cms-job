@@ -55,15 +55,17 @@ $dto = $this->data->dto;  ?>
 
           </div>
 
-          <div class="form-row mb-2">
+          <!-- limit -->
+          <!-- div class="form-row mb-2">
             <div class="col-3 col-form-label">limit</div>
             <div class="col">
               <input type="text" name="limit" class="form-control" maxlength="42" value="<?= $dto->limit ?>">
 
             </div>
 
-          </div>
+          </div -->
 
+          <!-- property -->
           <div class="form-row mb-2">
             <div class="col-3 col-form-label">property</div>
             <div class="col">
