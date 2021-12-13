@@ -446,10 +446,8 @@ class job extends _dao {
     $this->Q('ALTER TABLE `matrix` ADD COLUMN `has_quote` INT');
     if ('sqlite' == \config::$DB_TYPE) {
       $this->Q('CREATE INDEX `matrix_idx` ON `matrix`(`id` ASC)');
-    }
-    else {
+    } else {
       $this->Q('ALTER TABLE `matrix` ADD INDEX `matrix_idx`(`id` ASC)');
-
     }
 
     $sql = 'SELECT
@@ -883,6 +881,12 @@ class job extends _dao {
     $this->Q($sql);
 
     return $id;
+  }
+
+  public function recur_disable(dto\job $job): void {
+    $this->UpdateByID([
+      'job_recurrence_disable' => 1
+    ], $job->id);
   }
 
   public function store(dto\job $job): string {

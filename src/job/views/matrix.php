@@ -857,6 +857,34 @@ $tblID = strings::rand();
             }
 
           })
+          .on('disabled-recurrence', function(e) {
+            let _tr = $(this);
+            let _data = _tr.data();
+
+            if (Number(_data.job_recurrence_parent) > 0) {
+              _.post({
+                url: _.url('<?= $this->route ?>'),
+                data: {
+                  action: 'disable-recurrence',
+                  job_recurrence_parent: _data.job_recurrence_parent,
+                },
+
+              }).then(d => {
+                if ('ack' == d.response) {
+                  console.log('issue reload')
+                  $(document)
+                    .trigger('job-matrix-reload');
+
+                } else {
+                  _.growl(d);
+
+                }
+
+              });
+
+            }
+
+          })
           .on('edit', function(e) {
             let _tr = $(this);
             let _data = _tr.data();
@@ -1178,6 +1206,19 @@ $tblID = strings::rand();
                   e.preventDefault();
 
                   _tr.trigger('confirm-recurrence-and-edit');
+                  _context.close();
+
+                })
+
+              );
+
+              _context.append(
+                $('<a href="#">discontinue recurrence</a>')
+                .on('click', e => {
+                  e.stopPropagation();
+                  e.preventDefault();
+
+                  _tr.trigger('disabled-recurrence');
                   _context.close();
 
                 })

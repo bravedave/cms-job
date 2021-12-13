@@ -139,6 +139,18 @@ class controller extends \Controller {
       } else {
         Json::nak($action);
       }
+    } elseif ('disable-recurrence' == $action) {
+      if ($parent = (int)$this->getPost('job_recurrence_parent')) {
+        $dao = new dao\job;
+        if ($dtoParent = $dao->getByID($parent)) {
+          $dao->recur_disable($dtoParent);
+          Json::ack($action);
+        } else {
+          Json::nak(sprintf('%s - cannot find parent', $action));
+        }
+      } else {
+        Json::nak($action);
+      }
     } elseif ('comment-post' == $action) {
       $a = [
         'comment' => $this->getPost('comment'),
