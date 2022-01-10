@@ -14,7 +14,7 @@ namespace cms\job;
 use currentUser;
 
 class config extends \config {
-	const cms_job_db_version = 5.4;
+	const cms_job_db_version = 5.5;
 
 	const label = 'JOB';
 	const label_about = 'about';
@@ -107,42 +107,14 @@ class config extends \config {
 
 	];
 
-	static $CONSOLE_FALLBACK = true;
-
-	static protected $_CMS_JOB_VERSION = 0;
+	static $CONSOLE_FALLBACK = false;
 
 	static protected $_CMS_JOB_INVOICE_TO = '';
 
-	static protected function cms_job_version($set = null) {
-		$ret = self::$_CMS_JOB_VERSION;
-
-		if ((float)$set) {
-			$config = self::cms_job_config();
-
-			$j = file_exists($config) ?
-				json_decode(file_get_contents($config)) :
-				(object)[];
-
-			self::$_CMS_JOB_VERSION = $j->cms_job_version = $set;
-
-			if (file_exists($config)) unlink($config);
-			file_put_contents($config, json_encode($j, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-			chmod($config, 0777);
-		}
-
-		return $ret;
-	}
-
 	static function cms_job_checkdatabase() {
-		if (self::cms_job_version() < self::cms_job_db_version) {
-			$dao = new dao\dbinfo;
-			$dao->dump($verbose = false);
-
-			config::cms_job_version(self::cms_job_db_version);
-		}
-
-		// sys::logger( 'bro!');
-
+		$dao = new dao\dbinfo(null, method_exists(__CLASS__, 'cmsStore') ? self::cmsStore() : self::dataPath());
+		// // $dao->debug = true;
+		$dao->checkVersion('cms_job', self::cms_job_db_version);
 	}
 
 	static function cms_job_config() {
@@ -176,10 +148,6 @@ class config extends \config {
 	static function cms_job_init() {
 		if (file_exists($config = self::cms_job_config())) {
 			$j = json_decode(file_get_contents($config));
-
-			if (isset($j->cms_job_version)) {
-				self::$_CMS_JOB_VERSION = (float)$j->cms_job_version;
-			};
 
 			if (isset($j->cms_job_invoice_to)) {
 				self::$_CMS_JOB_INVOICE_TO = $j->cms_job_invoice_to;

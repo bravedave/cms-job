@@ -759,6 +759,7 @@ class controller extends \Controller {
           'job_payment' => (int)$this->getPost('job_payment'),
           'description' => (string)$this->getPost('description'),
           'on_site_contact' => (string)$this->getPost('on_site_contact'),
+          'user_id' => (string)$this->getPost('user_id'),
 
         ];
 

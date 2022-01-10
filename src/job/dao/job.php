@@ -231,6 +231,7 @@ class job extends _dao {
         c.`primary_contact` `contractor_primary_contact`,
         people.`name` `contractor_primary_contact_name`,
         CASE
+        WHEN COALESCE( job.`user_id`, 0) > 0 THEN us.`name`
         WHEN p.`property_manager` > 0 THEN u.`name`
         ELSE %s
         END pm
@@ -240,6 +241,8 @@ class job extends _dao {
         `properties` p on p.id = job.`properties_id`
           LEFT JOIN
         `users` u ON u.id = p.`property_manager`
+          LEFT JOIN
+        `users` us ON us.id = job.`user_id`
           LEFT JOIN
         `job_contractors` c on c.id = job.`contractor_id`
           LEFT JOIN
@@ -661,6 +664,17 @@ class job extends _dao {
       }
     }
 
+    if ($job->user_id) {
+      $dao = new users;
+      if ($user = $dao->getByID($job->user_id)) {
+        $job->property_manager = $user->name;
+        // $job->property_manager_id = $user->id;
+        // $job->property_manager_email = $user->email;
+        // $job->property_manager_mobile = $user->mobile;
+        // $job->property_manager_telephone = $user->telephone ?? '';
+      }
+    }
+
     if ($job->properties_id) {
       $dao = new properties;
       if ($prop = $dao->getByID($job->properties_id)) {
@@ -681,56 +695,58 @@ class job extends _dao {
           }
         }
 
-        if ($prop->property_manager) {
-          $dao = new users;
-          if ($user = $dao->getByID($prop->property_manager)) {
-            $job->property_manager = $user->name;
-            $job->property_manager_id = $user->id;
-            $job->property_manager_email = $user->email;
-            $job->property_manager_mobile = $user->mobile;
-            $job->property_manager_telephone = $user->telephone ?? '';
+        if (!$job->user_id) {
+          if ($prop->property_manager) {
+            $dao = new users;
+            if ($user = $dao->getByID($prop->property_manager)) {
+              $job->property_manager = $user->name;
+              $job->property_manager_id = $user->id;
+              $job->property_manager_email = $user->email;
+              $job->property_manager_mobile = $user->mobile;
+              $job->property_manager_telephone = $user->telephone ?? '';
+            } else {
+              \sys::logger(sprintf('<property manager not found %s> %s', $prop->property_manager, __METHOD__));
+            }
           } else {
-            \sys::logger(sprintf('<property manager not found %s> %s', $prop->property_manager, __METHOD__));
-          }
-        } else {
-          if (config::$CONSOLE_FALLBACK) {
-            /**
-             * Look the user up by the console_code,
-             * this part will die a natural death
-             */
-            $dao = new console_properties;
-            if ($cprop = $dao->getByPropertiesID($prop->id)) {
-              if ($cprop->PropertyManager) {
-                $sql = sprintf(
-                  'SELECT
+            if (config::$CONSOLE_FALLBACK) {
+              /**
+               * Look the user up by the console_code,
+               * this part will die a natural death
+               */
+              $dao = new console_properties;
+              if ($cprop = $dao->getByPropertiesID($prop->id)) {
+                if ($cprop->PropertyManager) {
+                  $sql = sprintf(
+                    'SELECT
                     `id`, `name`, `email`, `mobile`, `telephone`
                   FROM
                     `users`
                   WHERE
                     `console_code` = %s',
-                  $this->quote($cprop->PropertyManager)
+                    $this->quote($cprop->PropertyManager)
 
-                );
+                  );
 
-                if ($res = $this->Result($sql)) {
-                  if ($user = $res->dto()) {
-                    $job->property_manager = $user->name;
-                    $job->property_manager_id = $user->id;
-                    $job->property_manager_email = $user->email;
-                    $job->property_manager_mobile = $user->mobile;
-                    $job->property_manager_telephone = $user->telephone ?? '';
-                  } else {
-                    \sys::logger(sprintf('<property manager (console) not found %s> %s', $cprop->PropertyManager, __METHOD__));
+                  if ($res = $this->Result($sql)) {
+                    if ($user = $res->dto()) {
+                      $job->property_manager = $user->name;
+                      $job->property_manager_id = $user->id;
+                      $job->property_manager_email = $user->email;
+                      $job->property_manager_mobile = $user->mobile;
+                      $job->property_manager_telephone = $user->telephone ?? '';
+                    } else {
+                      \sys::logger(sprintf('<property manager (console) not found %s> %s', $cprop->PropertyManager, __METHOD__));
+                    }
                   }
+                } else {
+                  \sys::logger(sprintf('<property manager (console) not specifed> %s', __METHOD__));
                 }
               } else {
-                \sys::logger(sprintf('<property manager (console) not specifed> %s', __METHOD__));
+                \sys::logger(sprintf('<property (console) not found> %s', __METHOD__));
               }
             } else {
-              \sys::logger(sprintf('<property (console) not found> %s', __METHOD__));
+              \sys::logger(sprintf('<property manager not specifed> %s', __METHOD__));
             }
-          } else {
-            \sys::logger(sprintf('<property manager not specifed> %s', __METHOD__));
           }
         }
       }

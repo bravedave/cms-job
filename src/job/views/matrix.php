@@ -288,7 +288,7 @@ $tblID = strings::rand();
         <td class="text-center" title="has invoice/quote"><i class="bi bi-info-circle"></i></td>
         <td class="text-center" status data-role="sort-header" data-key="status">Status</td>
         <td class="text-center" due data-role="sort-header" data-key="due">Due</td>
-        <td class="text-center" PM>PM</td>
+        <td class="text-center" PM>User</td>
 
       </tr>
 
@@ -1975,7 +1975,6 @@ $tblID = strings::rand();
                 if ('' != d.data.archived) {
                   let da = _.dayjs(d.data.archived);
                   archived = da.isValid() && da.unix() > 0;
-
                 }
 
                 _tr.data({
@@ -1992,7 +1991,6 @@ $tblID = strings::rand();
                   complete: 1 == Number(d.data.complete) ? 'yes' : 'no',
                   paid: Number(d.data.paid_by) > 0 ? 'yes' : 'no',
                   archived: archived ? 'yes' : 'no',
-
                 });
 
                 archived ? _tr.addClass('text-muted') : _tr.removeClass('text-muted');
@@ -2335,7 +2333,7 @@ $tblID = strings::rand();
               _context.close();
 
               filterPM = '';
-              _me.html('PM');
+              _me.html('User');
               $('#<?= $srch ?>')
                 .trigger('search');
 

@@ -216,10 +216,10 @@ if (config::job_status_paid == $dto->status) {
           <div class="form-row">
             <!-- --[type]-- -->
             <div class="col-xl-6">
-              <div class="form-row mb-2">
+              <div class="form-row">
                 <div class="col-3 col-xl-4 col-form-label">type</div>
 
-                <div class="col-lg pt-2">
+                <div class="col-lg pt-2 mb-2">
                   <div class="form-check form-check-inline">
                     <input type="radio" class="form-check-input" name="job_type" <?= $readonly ? 'disabled' : 'required' ?> value="<?= config::job_type_order ?>" id="<?= $_uid = strings::rand() ?>" <?= config::job_type_order == $dto->job_type ? 'checked' : ''; ?>>
 
@@ -253,8 +253,8 @@ if (config::job_status_paid == $dto->status) {
 
                 <div class="col-3 col-form-label">recurrence</div>
                 <div class="col-lg pt-2">
-                  <div class="form-row mb-2">
-                    <div class="col">
+                  <div class="form-row">
+                    <div class="col mb-2">
                       <?php
 
                       $_template = '<div class="form-check form-check-inline">
@@ -301,8 +301,8 @@ if (config::job_status_paid == $dto->status) {
                   </div>
 
                   <!-- --[end]-- -->
-                  <div class="form-row mb-2">
-                    <div class="col">
+                  <div class="form-row">
+                    <div class="col mb-2">
                       <div class="input-group">
                         <div class="input-group-prepend">
                           <div class="input-group-text">end</div>
@@ -674,6 +674,37 @@ if (config::job_status_paid == $dto->status) {
 
                     }))(_brayworth_);
                 </script>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- --[user_name]-- -->
+          <div class="form-row">
+            <div class="col-md-3 col-xl-2 col-form-label">staff contact</div>
+
+            <div class="col mb-2">
+              <div class="row">
+
+                <div class="col">
+                  <select name="user_id" class="custom-select" <?= $readonly ? 'disabled' : '' ?>>
+                    <option value="0" class="text-muted">Property Manager</option>
+                    <?php
+                    $udao = new dao\users;
+                    foreach ($udao->getActive() as $user) {
+                      printf(
+                        '<option value="%s" %s>%s</option>',
+                        $user->id,
+                        $user->id == $dto->user_id ? 'selected' : '',
+                        $user->name
+                      );
+                    } ?>
+
+                  </select>
+
+                </div>
 
               </div>
 

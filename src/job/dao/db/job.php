@@ -46,5 +46,6 @@ $dbc->defineField('updated', 'datetime');
 $dbc->defineField('updated_by', 'bigint');
 $dbc->defineField('created', 'datetime');
 $dbc->defineField('created_by', 'bigint');
+$dbc->defineField('user_id', 'bigint');
 
 $dbc->check();
