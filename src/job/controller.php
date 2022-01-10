@@ -664,18 +664,25 @@ class controller extends \Controller {
       if ($id = (int)$this->getPost('id')) {
         $dao = new dao\job;
         if ($dto = $dao->getByID($id)) {
+          /**
+           * https://cmss.darcy.com.au/forum/view/9088
+           *
+           * if you have clicked SENT TO OWNER FOR PAYMENT and
+           * then you untick it, when you untick can you also
+           * please un-archive the record
+           *
+           */
           $a = 'job-mark-invoice-senttoowner-undo' == $action ?
             [
+              'archived' => '',
               'invoice_senttoowner' => '',
               'invoice_senttoowner_by' => 0
-
             ]
             :
             [
               'archived' => \db::dbTimeStamp(),
               'invoice_senttoowner' => \db::dbTimeStamp(),
               'invoice_senttoowner_by' => currentuser::id()
-
             ];
 
           $dao->UpdateByID($a, $dto->id);
