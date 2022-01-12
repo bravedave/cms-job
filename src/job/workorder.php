@@ -275,7 +275,10 @@ abstract class workorder {
 
     );
 
-    $pm = [$dto->property_manager];
+    $pm = [
+      '<strong>For any information relating to this job, please contact:</strong>',
+      $dto->property_manager
+    ];
 
     if ($dto->property_manager_mobile) {
 
@@ -305,7 +308,7 @@ abstract class workorder {
       );
     }
 
-    $pm[] = '<strong>Property Manager</strong>';
+    // $pm[] = '<strong>Property Manager</strong>';
 
     $content[] = sprintf(
       '<table class="table mt-2"><tbody><tr><td class="noborder">%s</td></tr></tbody></table>',

@@ -2,7 +2,7 @@
   "name": "bravedave/cms-job",
   "description": "JOB's module for CMS",
   "minimum-stability": "dev",
-  "prefer-stable": false,
+  "prefer-stable": true,
   "license": "MIT",
   "authors": [
     {
