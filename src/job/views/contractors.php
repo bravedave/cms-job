@@ -32,7 +32,7 @@ $categories = $this->data->categories;  ?>
         <td data-role="sort-header" data-key="contact">Contact</td>
         <td>Tel</td>
         <td>Services</td>
-        <td data-role="sort-header" data-key="jobs" class="text-center">Jobs</td>
+        <td data-role="sort-header" data-key="jobs" data-sorttype="numeric" class="text-center">Jobs</td>
 
       </tr>
 
