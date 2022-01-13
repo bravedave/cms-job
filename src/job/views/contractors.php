@@ -28,57 +28,72 @@ $categories = $this->data->categories;  ?>
     <thead class="small">
       <tr>
         <td line-number>#</td>
-        <td>Trading As</td>
-        <td>Contact</td>
+        <td data-role="sort-header" data-key="trading">Trading As</td>
+        <td data-role="sort-header" data-key="contact">Contact</td>
         <td>Tel</td>
         <td>Services</td>
-        <td class="text-center">Jobs</td>
+        <td data-role="sort-header" data-key="jobs" class="text-center">Jobs</td>
 
       </tr>
 
     </thead>
 
     <tbody>
-      <?php while ($dto = $this->data->res->dto()) { ?>
-        <tr data-id="<?= $dto->id ?>">
-          <td line-number class="small"></td>
-          <td data-role="trading_name"><?= $dto->trading_name ?></td>
+      <?php while ($dto = $this->data->res->dto()) {
+        $contactName = trim($dto->trading_name) == trim($dto->name) ?
+          $dto->salutation : $dto->name;
 
-          <td data-role="primary_contact"><?= trim($dto->trading_name) == trim($dto->name) ? $dto->salutation : $dto->name ?></td>
-          <td class="text-nowrap" data-role="phone">
-            <?php
-            if ($dto->mobile && strings::isPhone($dto->mobile)) {
-              print strings::asMobilePhone($dto->mobile);
-            } elseif ($dto->telephone && strings::isPhone($dto->telephone)) {
-              print strings::asLocalPhone($dto->telephone);
-            } elseif ($dto->telephone_business && strings::isPhone($dto->telephone_business)) {
-              print strings::asLocalPhone($dto->telephone_business);
-            } else {
-              print '&nbsp;';
-            } ?>
-          </td>
+        printf(
+          '<tr
+            data-id="%s"
+            data-trading="%s"
+            data-contact="%s"
+            data-jobs="%s">',
+          $dto->id,
+          htmlspecialchars($dto->trading_name),
+          htmlspecialchars($contactName),
+          $dto->jobs
 
-          <td>
-            <?php
-            if ($dto->services) {
-              $services = explode(',', $dto->services);
-              foreach ($services as $service) {
-                if (isset($categories[$service])) {
-                  printf('<div class="text-nowrap">%s</div>', print_r($categories[$service], true));
-                } else {
-                  printf('<div>%s</div>', $service);
-                }
+        );
+      ?>
+        <td line-number class="small"></td>
+        <td data-role="trading_name"><?= $dto->trading_name ?></td>
+        <td data-role="primary_contact"><?= $contactName ?></td>
+        <td class="text-nowrap" data-role="phone">
+          <?php
+          if ($dto->mobile && strings::isPhone($dto->mobile)) {
+            print strings::asMobilePhone($dto->mobile);
+          } elseif ($dto->telephone && strings::isPhone($dto->telephone)) {
+            print strings::asLocalPhone($dto->telephone);
+          } elseif ($dto->telephone_business && strings::isPhone($dto->telephone_business)) {
+            print strings::asLocalPhone($dto->telephone_business);
+          } else {
+            print '&nbsp;';
+          } ?>
+        </td>
+
+        <td>
+          <?php
+          if ($dto->services) {
+            $services = explode(',', $dto->services);
+            foreach ($services as $service) {
+              if (isset($categories[$service])) {
+                printf('<div class="text-nowrap">%s</div>', print_r($categories[$service], true));
+              } else {
+                printf('<div>%s</div>', $service);
               }
-            } else {
-              print '&nbsp;';
             }
-            ?>
-          </td>
-          <td class="text-center"><?= $dto->jobs ?></td>
+          } else {
+            print '&nbsp;';
+          }
+          ?>
+        </td>
+        <td class="text-center"><?= $dto->jobs ?></td>
 
-        </tr>
 
-      <?php } ?>
+      <?php
+        print '</tr>';
+      } ?>
 
     </tbody>
 
