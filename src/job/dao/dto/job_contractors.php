@@ -23,5 +23,7 @@ class job_contractors extends _dto {
   public $primary_contact_name = '';
   public $primary_contact_phone = '';
   public $primary_contact_email = '';
+  public $insurance_expiry_date = '';
+  public $document_tags = '';
 
 }

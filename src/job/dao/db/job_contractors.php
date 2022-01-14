@@ -10,14 +10,16 @@
 
 namespace cms\job\dao\db;
 
-$dbc = \sys::dbCheck( 'job_contractors' );
+$dbc = \sys::dbCheck('job_contractors');
 
-$dbc->defineField( 'trading_name', 'varchar', 100);
-$dbc->defineField( 'company_name', 'varchar', 100);
-$dbc->defineField( 'abn', 'varchar');
-$dbc->defineField( 'services', 'varchar');
-$dbc->defineField( 'primary_contact', 'bigint');
-$dbc->defineField( 'primary_contact_role', 'varchar');
-$dbc->defineField( 'console_contact_id', 'varchar');
+$dbc->defineField('trading_name', 'varchar', 100);
+$dbc->defineField('company_name', 'varchar', 100);
+$dbc->defineField('abn', 'varchar');
+$dbc->defineField('services', 'varchar');
+$dbc->defineField('primary_contact', 'bigint');
+$dbc->defineField('primary_contact_role', 'varchar');
+$dbc->defineField('console_contact_id', 'varchar');
+$dbc->defineField('insurance_expiry_date', 'date');
+$dbc->defineField('document_tags', 'text');
 
 $dbc->check();

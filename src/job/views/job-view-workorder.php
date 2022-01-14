@@ -27,10 +27,11 @@ $_modal = strings::rand();
 ?>
 <style>
   @media (min-width: 768px) {
-    #<?= $_modal ?>iframe {
-      min-height: calc(100vh - 230px) !important;
-    }
-
+    <?php
+    printf(
+      '#%s iframe { min-height: calc(100vh - 230px) !important; }',
+      $_modal
+    );  ?>
   }
 </style>
 <form id="<?= $_form = strings::rand() ?>" autocomplete="off">

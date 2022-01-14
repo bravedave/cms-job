@@ -33,13 +33,14 @@ $categories = $this->data->categories;  ?>
         <td>Tel</td>
         <td>Services</td>
         <td data-role="sort-header" data-key="jobs" data-sorttype="numeric" class="text-center">Jobs</td>
+        <td class="text-center"><i class="bi bi-shield-check"></i></td>
 
       </tr>
 
     </thead>
 
     <tbody>
-      <?php while ($dto = $this->data->res->dto()) {
+      <?php foreach ($this->data->dtoSet as $dto) {
         $contactName = trim($dto->trading_name) == trim($dto->name) ?
           $dto->salutation : $dto->name;
 
@@ -89,6 +90,7 @@ $categories = $this->data->categories;  ?>
           ?>
         </td>
         <td class="text-center"><?= $dto->jobs ?></td>
+        <td class="text-center"><?= $dto->insurance ? '<i class="bi bi-shield-check"></i>' : '<i class="bi bi-shield-fill-x text-danger"></i>' ?></td>
 
 
       <?php
@@ -225,11 +227,27 @@ $categories = $this->data->categories;  ?>
 
     };
 
+    const rowDocumentView = function(e, document) {
+      let _tr = $(this);
+      let _data = _tr.data();
+
+      // console.log(document);
+
+      _.get.modal(_.url(`<?= $this->route ?>/contractor_document_view/${_data.id}?d=${encodeURIComponent(document)}`))
+        .then(m => m.on('hidden.bs.modal', e => _tr.trigger('edit')));
+
+    };
+
     const rowEdit = function(e) {
       let _me = $(this);
       let _data = _me.data();
 
       _.get.modal(_.url('<?= $this->route ?>/contractor_edit/' + _data.id))
+        .then(d => d.on('document-view', (e, doc) => {
+          e.stopPropagation();
+          _me.trigger('document-view', doc);
+
+        }))
         .then(d => d.on('edit-primary-contact', e => {
           e.stopPropagation();
           _me.trigger('edit-primary-contact');
@@ -306,6 +324,7 @@ $categories = $this->data->categories;  ?>
           .on('contextmenu', rowContext)
           .on('delete', rowDelete)
           .on('delete-confirmed', rowDeleteConfirmed)
+          .on('document-view', rowDocumentView)
           .on('merge', rowMerge);
 
       });

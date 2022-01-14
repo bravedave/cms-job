@@ -11,7 +11,9 @@
 namespace cms\job\dao;
 
 use cms;
+use cms\job\config;
 use dao\_dao;
+use dao\dto\_dto;
 use green\{people\dao\people as dao_people};
 use strings;
 // use sys;
@@ -136,11 +138,11 @@ class job_contractors extends _dao {
     );
 
     if ($res = $this->Result($sql)) {
-      \sys::logger( sprintf('<%s => %s> %s', $source, $target, __METHOD__));
+      \sys::logger(sprintf('<%s => %s> %s', $source, $target, __METHOD__));
 
       $jdao = new job;
       $res->dtoSet(function ($dto) use ($target, $jdao) {
-        \sys::logger( sprintf('<%s => %s> %s', $dto->id, $target, __METHOD__));
+        \sys::logger(sprintf('<%s => %s> %s', $dto->id, $target, __METHOD__));
         $jdao->UpdateByID(
           ['contractor_id' => $target],
           $dto->id
@@ -151,13 +153,14 @@ class job_contractors extends _dao {
     }
   }
 
-  public function getReportSet() {
+  public function getReportSet(): array {
     $sql = sprintf(
       'SELECT
         c.id,
         c.trading_name,
         c.services,
         c.primary_contact,
+        c.document_tags,
         p.name,
         p.mobile,
         p.telephone,
@@ -184,7 +187,27 @@ class job_contractors extends _dao {
 
     // \sys::logSQL( sprintf('<%s> %s', $sql, __METHOD__));
 
-    return $this->Result($sql);
+    if ($res = $this->Result($sql)) {
+      return $res->dtoSet(function ($dto) {
+        $dto->insurance = false;
+        if ($dto->document_tags) {
+          if ($tags = (array)json_decode($dto->document_tags)) {
+            if ($tags[config::job_contractor_tag_insurance_certificate] ?? false) {
+              if ($store = realpath($this->store($dto, $create = false))) {
+                if ($file = realpath(implode(DIRECTORY_SEPARATOR, [
+                  $store,
+                  $tags[config::job_contractor_tag_insurance_certificate]
+                ]))) {
+                  $dto->insurance = file_exists($file);
+                }
+              }
+            }
+          }
+        }
+        return $dto;
+      });
+    }
+    return [];
   }
 
   public function getRichData(dto\job_contractors $contractor): dto\job_contractors {
@@ -337,5 +360,22 @@ class job_contractors extends _dao {
     }
 
     return [];
+  }
+
+  public function store(_dto $dto, bool $create = false) {
+    $path = implode(DIRECTORY_SEPARATOR, [
+      config::cms_job_contractor_store(),
+      $dto->id
+
+    ]);
+
+    if (!is_dir($path) && $create) {
+      mkdir($path, 0777);
+      chmod($path, 0777);
+    }
+
+    // \sys::logger( sprintf('<%s> %s', $path, __METHOD__));
+
+    return $path;
   }
 }

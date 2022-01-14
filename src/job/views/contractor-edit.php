@@ -32,41 +32,44 @@ $categories = $this->data->categories;  ?>
         </div>
 
         <div class="modal-body">
-          <div class="form-row mb-2">
+          <!-- Trading Name -->
+          <div class="form-row">
             <label class="col-md-3 text-truncate col-form-label" for="<?= $_uid = strings::rand() ?>">
               T/As
             </label>
 
-            <div class="col">
+            <div class="col mb-2">
               <input type="text" class="form-control" name="trading_name" placeholder="trading name" value="<?= $dto->trading_name ?>" id="<?= $_uid ?>">
 
             </div>
 
           </div>
 
-          <div class="form-row mb-2">
+          <!-- Company Name -->
+          <div class="form-row">
             <label class="col-md-3 text-truncate col-form-label" for="<?= $_uid = strings::rand() ?>">
               Company
             </label>
 
-            <div class="col">
+            <div class="col mb-2">
               <input type="text" class="form-control" name="company_name" placeholder="company name" value="<?= $dto->company_name ?>" id="<?= $_uid ?>">
 
             </div>
 
           </div>
 
-          <div class="form-row mb-2">
+          <!-- ABN -->
+          <div class="form-row">
             <label class="col-md-3 text-truncate col-form-label" for="<?= $_uid = strings::rand() ?>">
               ABN
             </label>
 
-            <div class="col">
+            <div class="col mb-2">
               <div class="input-group">
                 <input type="text" class="form-control" name="abn" placeholder="abn" value="<?= $dto->abn ?>" id="<?= $_uid ?>">
 
                 <div class="input-group-append">
-                  <button type="button" class="btn btn-light" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-search"></i></button>
+                  <button type="button" class="btn input-group-text" id="<?= $_uid = strings::rand() ?>"><i class="bi bi-search"></i></button>
 
                 </div>
 
@@ -87,13 +90,24 @@ $categories = $this->data->categories;  ?>
 
           </div>
 
+          <!-- Insurance Date -->
+          <div class="form-row">
+            <div class="col-md-3 col-form-label">Insurance Expiry</div>
+
+            <div class="col-md-5 mb-2">
+              <input type="date" class="form-control" name="insurance_expiry_date" value="<?= strtotime($dto->insurance_expiry_date) ? $dto->insurance_expiry_date : '' ?>">
+
+            </div>
+
+          </div>
+
           <!-- Services -->
-          <div class="form-row mb-2">
+          <div class="form-row">
             <div class="col-md-3 text-truncate">
               Services
             </div>
 
-            <div class="col">
+            <div class="col mb-2">
               <input type="hidden" name="services" value="<?= $dto->services ?>">
               <?php
               if ($dto->services) {
@@ -343,10 +357,22 @@ $categories = $this->data->categories;  ?>
 
           </div>
 
+          <!-- document container -->
+          <div id="<?= $_uidDocumentsContainer = strings::rand() ?>" class="fade"></div>
+
         </div>
 
         <div class="modal-footer">
           <a href="https://abr.business.gov.au/Search/Advanced" target="_blank" class="btn btn-outline-secondary"><i class="bi bi-search"></i> ABR</a>
+
+          <div class="flex-fill" upload>
+            <div class="progress mb-2 d-none">
+              <div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+
+            </div>
+
+          </div>
+
           <button type="button" class="btn btn-outline-secondary ml-auto" data-dismiss="modal">close</button>
           <button type="submit" class="btn btn-primary">Save</button>
 
@@ -359,130 +385,305 @@ $categories = $this->data->categories;  ?>
   </div>
 
   <script>
-    (_ => $('#<?= $_modal ?>').on('shown.bs.modal', () => {
-      $('#<?= $_form ?> input[data-role="service"]').each((i, chk) => {
-        $(chk).on('change', function(e) {
-          let _me = $(this);
-          _me.parent().remove();
+    (_ => {
+      const tags = <?= json_encode(config::job_contractor_tags) ?>;
 
-          $('#<?= $_form ?>').trigger('check-services');
+      const documentView = function(e) {
+        let _me = $(this);
+        let _data = _me.data();
 
-        });
+        $('#<?= $_modal ?>')
+          .trigger('document-view', _data.document.name)
+          .modal('hide');
 
-      });
+      };
 
-      $('#<?= $_btnAddService ?>')
-        .on('click', function(e) {
-          e.stopPropagation();
-          e.preventDefault();
+      const documentContext = function(e) {
+        if (e.shiftKey)
+          return;
 
-          let _me = $(this);
-          let _data = _me.data();
+        e.stopPropagation();
+        e.preventDefault();
 
-          let ctrl = $('<select class="form-control mt-2"></select>');
-          $('option', ctrl).each((i, o) => $(o).remove());
-          ctrl.append('<option>select service</option>');
-          let services = String($('#<?= $_form ?> input[name="services"]').val()).split(',');
-          $.each(_.catSort(_data.categories), (i, c) => {
-            if (services.indexOf(i) < 0) {
-              ctrl.append('<option value="' + c[0] + '">' + c[1] + '</option>')
+        _.hideContexts();
 
-            }
+        let _me = $(this);
+        let _data = _me.data();
+        let _context = _.context();
 
+        if (tags.length > 0) {
+          tags.forEach(tag => {
+            _context.append($('<a href="#"></a>')
+              .html(tag)
+              .on('click', e => {
+                e.stopPropagation();
+                e.preventDefault();
+
+                _context.close();
+
+                _.post({
+                  url: _.url('<?= $this->route ?>'),
+                  data: {
+                    action: 'contractor-tags-set',
+                    id: <?= (int)$dto->id ?>,
+                    file: _data.document.name,
+                    tag: tag
+
+                  },
+
+                }).then(d => {
+                  _.growl(d);
+                  if ('ack' == d.response) {
+                    $('#<?= $_form ?>').trigger('load-documents');
+
+                  }
+                });
+              })
+              .on('recon', function(e) {
+                if (tag == _data.document.tag) {
+                  $(this).prepend('<i class="bi bi-check"></i>');
+                }
+              })
+              .trigger('recon'));
           });
 
-          ctrl.on('change', function(e) {
+          _context.append('<hr>');
+        }
 
-            let id = Math.random().toString(36).slice(2);
+        _context.append($('<a href="#"><i class="bi bi-trash"></i>delete</a>')
+          .on('click', e => {
+            e.stopPropagation();
+            e.preventDefault();
 
-            // console.log(this.value, this.options[this.selectedIndex].text);
+            _context.close();
 
-            let chk = $('<input type="checkbox" class="form-check-input" checked data-role="service" value="' + this.value + '" id="' + id + '">');
-            chk.on('change', function(e) {
-              let _me = $(this);
-              _me.parent().remove();
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'contractor-document-delete',
+                id: <?= (int)$dto->id ?>,
+                document: _data.document.name
 
-              $('#<?= $_form ?>').trigger('check-services');
+              },
+
+            }).then(d => {
+              _.growl(d);
+              if ('ack' == d.response) {
+                $('#<?= $_form ?>').trigger('load-documents');
+
+              }
 
             });
 
-            $('<div class="form-check"></div>')
-              .append(chk)
-              .append('<label class="form-check-label" for="' + id + '">' + this.options[this.selectedIndex].text + '</labellabel>')
-              .insertBefore(this);
+          }));
+
+        _context.open(e);
+      };
+
+      $('#<?= $_modal ?>').on('shown.bs.modal', () => {
+        $('#<?= $_form ?> input[data-role="service"]').each((i, chk) => {
+          $(chk).on('change', function(e) {
+            let _me = $(this);
+            _me.parent().remove();
 
             $('#<?= $_form ?>').trigger('check-services');
-            $(this).remove();
-            _me.removeClass('d-none');
 
           });
 
-          $(this).addClass('d-none');
-          ctrl.insertBefore(this);
-
         });
 
-      $('#<?= $_form ?>')
-        .on('abn-search', function(e) {
-          let _form = $(this);
-          let _data = _form.serializeFormJSON();
+        $('#<?= $_btnAddService ?>')
+          .on('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
 
-          let abn = String(_data.abn).replace(/[^0-9]/, '');
+            let _me = $(this);
+            let _data = _me.data();
 
-          if ('' != abn) {
-            window.open('https://abr.business.gov.au/ABN/View?id=' + abn)
+            let ctrl = $('<select class="form-control mt-2"></select>');
+            $('option', ctrl).each((i, o) => $(o).remove());
+            ctrl.append('<option>select service</option>');
+            let services = String($('#<?= $_form ?> input[name="services"]').val()).split(',');
+            $.each(_.catSort(_data.categories), (i, c) => {
+              if (services.indexOf(i) < 0) {
+                ctrl.append('<option value="' + c[0] + '">' + c[1] + '</option>')
 
-          }
+              }
 
-        })
-        .on('check-services', function(e) {
-          let services = [];
-          $('input[data-role="service"]', this)
-            .each((i, chk) => services.push($(chk).val()));
+            });
 
-          $('input[name="services"]', this).val(services.join(','));
+            ctrl.on('change', function(e) {
 
-        })
-        .on('submit', function(e) {
-          let _form = $(this);
-          let _data = _form.serializeFormJSON();
+              let id = Math.random().toString(36).slice(2);
 
-          _.post({
-            url: _.url('<?= $this->route ?>'),
-            data: _data,
+              // console.log(this.value, this.options[this.selectedIndex].text);
 
-          }).then(d => {
-            $('#<?= $_modal ?>').modal('hide');
-            _.growl(d);
-            if ('ack' == d.response) {
-              $('#<?= $_modal ?>').trigger('success', d);
+              let chk = $('<input type="checkbox" class="form-check-input" checked data-role="service" value="' + this.value + '" id="' + id + '">');
+              chk.on('change', function(e) {
+                let _me = $(this);
+                _me.parent().remove();
+
+                $('#<?= $_form ?>').trigger('check-services');
+
+              });
+
+              $('<div class="form-check"></div>')
+                .append(chk)
+                .append('<label class="form-check-label" for="' + id + '">' + this.options[this.selectedIndex].text + '</labellabel>')
+                .insertBefore(this);
+
+              $('#<?= $_form ?>').trigger('check-services');
+              $(this).remove();
+              _me.removeClass('d-none');
+
+            });
+
+            $(this).addClass('d-none');
+            ctrl.insertBefore(this);
+
+          });
+
+        $('#<?= $_form ?>')
+          .on('abn-search', function(e) {
+            let _form = $(this);
+            let _data = _form.serializeFormJSON();
+
+            let abn = String(_data.abn).replace(/[^0-9]/, '');
+
+            if ('' != abn) {
+              window.open('https://abr.business.gov.au/ABN/View?id=' + abn)
 
             }
 
+          })
+          .on('check-services', function(e) {
+            let services = [];
+            $('input[data-role="service"]', this)
+              .each((i, chk) => services.push($(chk).val()));
+
+            $('input[name="services"]', this).val(services.join(','));
+
+          })
+          .on('load-documents', function(e) {
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: {
+                action: 'contractor-documents-get',
+                id: <?= (int)$dto->id ?>
+              },
+
+            }).then(d => {
+              let bucket = $('#<?= $_uidDocumentsContainer ?>');
+              bucket
+                .html('')
+                .removeClass('show');
+
+              if ('ack' == d.response) {
+                if (d.data.length > 0) {
+                  $('<div class="form-row text-muted small border-bottom"></div>')
+                    .append('<div class="col-3">tag</div>')
+                    .append('<div class="col">document</div>')
+                    .append('<div class="col-2 text-center">date</div>')
+                    .appendTo(bucket);
+
+                  $.each(d.data, (i, el) => {
+                    let dt = _.dayjs(el.date);
+                    $('<div class="form-row pointer"></div>')
+                      .append(`<div class="col-3 mb-1">${el.tag}</div>`)
+                      .append(`<div class="col mb-1">${el.name}</div>`)
+                      .append(`<div class="col-2 mb-1 text-center">${dt.format('L')}</div>`)
+                      .data('document', el)
+                      .on('click', function(e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+
+                        _.hideContexts();
+                        $(this).trigger('view');
+
+                      })
+                      .on('contextmenu', documentContext)
+                      .on('view', documentView)
+                      .appendTo(bucket);
+                  });
+
+                  bucket.addClass('show');
+                  // console.table(d.data);
+
+                }
+
+              } else {
+                _.growl(d);
+
+              }
+
+            });
+
+          })
+          .on('submit', function(e) {
+            let _form = $(this);
+            let _data = _form.serializeFormJSON();
+
+            _.post({
+              url: _.url('<?= $this->route ?>'),
+              data: _data,
+
+            }).then(d => {
+              $('#<?= $_modal ?>').modal('hide');
+              _.growl(d);
+              if ('ack' == d.response) {
+                $('#<?= $_modal ?>').trigger('success', d);
+
+              }
+
+            });
+
+            // console.table( _data);
+
+            return false;
+
           });
 
-          // console.table( _data);
+        <?php if ($_btnEditPrimaryContact) {  ?>
+          $('input[type="checkbox"], input[type="text"]', '#<?= $_form ?>')
+            .on('change', e => $('#<?= $_btnEditPrimaryContact ?>').addClass('d-none'));
 
-          return false;
+          $('#<?= $_btnEditPrimaryContact ?>').on('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
 
-        });
+            $('#<?= $_modal ?>').trigger('edit-primary-contact');
+            $('#<?= $_modal ?>').modal('hide');
 
-      <?php if ($_btnEditPrimaryContact) {  ?>
-        $('input[type="checkbox"], input[type="text"]', '#<?= $_form ?>')
-          .on('change', e => $('#<?= $_btnEditPrimaryContact ?>').addClass('d-none'));
+          });
 
-        $('#<?= $_btnEditPrimaryContact ?>').on('click', function(e) {
-          e.stopPropagation();
-          e.preventDefault();
+        <?php }  ?>
 
-          $('#<?= $_modal ?>').trigger('edit-primary-contact');
-          $('#<?= $_modal ?>').modal('hide');
+        <?php if ($dto->id) {  ?>
 
-        });
+            (c => {
+              _.fileDragDropHandler.call(c, {
+                url: _.url('<?= $this->route ?>'),
+                postData: {
+                  action: 'contractor-document-upload',
+                  id: <?= (int)$dto->id ?>
 
-      <?php }  ?>
+                },
+                onUpload: d => {
+                  _.growl(d);
+                  $('#<?= $_form ?>').trigger('load-documents');
 
-    }))(_brayworth_);
+                }
+
+              });
+
+            })(_.fileDragDropContainer().appendTo('#<?= $_form ?> div[upload]'));
+
+          $('#<?= $_form ?>').trigger('load-documents');
+        <?php }  ?>
+
+      });
+
+    })(_brayworth_);
   </script>
 
 </form>

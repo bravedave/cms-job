@@ -14,7 +14,7 @@ namespace cms\job;
 use currentUser;
 
 class config extends \config {
-	const cms_job_db_version = 5.5;
+	const cms_job_db_version = 5.7;
 
 	const label = 'JOB';
 	const label_about = 'about';
@@ -22,6 +22,7 @@ class config extends \config {
 	const label_contractor_edit = 'Edit Contractor';
 	const label_contractor = 'Contractor';
 	const label_contractor_merge = 'Contractor Merge';
+	const label_contractor_view_document = 'Contractor Document';
 	const label_contractors = 'Contractors';
 	const label_categories = 'Categories';
 	const label_category = 'Category';
@@ -49,6 +50,13 @@ class config extends \config {
 		0 => 'JOB Order',
 		1 => 'Recurring JOB Order',
 		2 => 'JOB Quote Request'
+
+	];
+
+	const job_contractor_tag_insurance_certificate = 'Current Insurance';
+
+	const job_contractor_tags = [
+		self::job_contractor_tag_insurance_certificate
 
 	];
 
@@ -123,6 +131,23 @@ class config extends \config {
 			'cms_job.json'
 
 		]);
+	}
+
+	static function cms_job_contractor_store(): string {
+		$path = implode(DIRECTORY_SEPARATOR, [
+			self::cms_job_store(),
+			'contractors'
+
+		]);
+
+		if (!is_dir($path)) {
+			if (!is_dir($path)) {
+				mkdir($path, 0777);
+				chmod($path, 0777);
+			}
+		}
+
+		return $path;
 	}
 
 	static function cms_job_invoiceto($set = null) {

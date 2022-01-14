@@ -164,6 +164,106 @@ class controller extends \Controller {
       $dao = new dao\job_log;
       $dao->Insert($a);
       Json::ack($action);
+    } elseif ('contractor-delete' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job_contractors;
+        $dao->delete($id);
+        Json::ack($action);
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('contractor-document-delete' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        if ($document = $this->getPost('document')) {
+          $dao = new dao\job_contractors;
+          if ($dto = $dao->getByID($id)) {
+            if ($store = realpath($dao->store($dto, $create = false))) {
+              if ($file = realpath(implode(DIRECTORY_SEPARATOR, [
+                $store, $document
+              ]))) {
+
+                unlink($file);
+                clearstatcache(true);
+                Json::ack($action);
+              } else {
+                \sys::logger(sprintf('<not found %s> %s', $document, __METHOD__));
+                Json::nak(sprintf('%s : not found', $action));
+              }
+            } else {
+              \sys::logger(sprintf('<no store %s> %s', $id, __METHOD__));
+              Json::nak(sprintf('%s : no store', $action));
+            }
+          } else {
+            Json::nak($action);
+          }
+        } else {
+          Json::nak($action);
+        }
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('contractor-document-upload' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job_contractors;
+        if ($dto = $dao->getByID($id)) {
+          $store = $dao->store($dto, $create = true);
+          if ($_FILES) {
+            while ($file = array_shift($_FILES)) {
+              $uploader = new fileUploader([
+                'path' => $store,
+                'accept' => [
+                  'application/pdf',
+                  'image/jpeg',
+                  'image/jpg',
+                  'image/png'
+
+                ]
+              ]);
+
+              if ($uploader->save($file)) {
+                Json::ack($action)
+                  ->add('id', $id);
+              } else {
+                Json::nak(sprintf('problem with file upload - %s', $action));
+              }
+            }
+          }
+        } else {
+          Json::nak($action);
+        }
+      } else {
+        Json::nak($action);
+      }
+    } elseif ('contractor-documents-get' == $action) {
+      if ($id = (int)$this->getPost('id')) {
+        $dao = new dao\job_contractors;
+        if ($dto = $dao->getByID($id)) {
+          $a = [];
+          if ($store = realpath($dao->store($dto, $create = false))) {
+            $it = new FilesystemIterator($store);
+            $tags = json_decode($dto->document_tags);
+            foreach ($it as $obj) {
+              $a[] = $o = (object)[
+                'name' => $obj->getFilename(),
+                'date' => date('Y-m-d', $obj->getMTime()),
+                'tag' => ''
+              ];
+              foreach ($tags as $tag => $doc) {
+                if ($doc == $o->name) {
+                  $o->tag = $tag;
+                  break;
+                }
+              }
+            }
+          }
+          Json::ack($action)
+            ->add('data', $a);
+        } else {
+          Json::nak($action);
+        }
+      } else {
+        Json::nak($action);
+      }
     } elseif ('contractor-save' == $action) {
       $a = [
         'trading_name' => $this->getPost('trading_name'),
@@ -172,6 +272,7 @@ class controller extends \Controller {
         'services' => $this->getPost('services'),
         'primary_contact' => $this->getPost('primary_contact'),
         'primary_contact_role' => $this->getPost('primary_contact_role'),
+        'insurance_expiry_date' => $this->getPost('insurance_expiry_date'),
 
       ];
 
@@ -185,11 +286,37 @@ class controller extends \Controller {
       }
       Json::ack($action)
         ->add('id', $id);
-    } elseif ('contractor-delete' == $action) {
-      if ($id = (int)$this->getPost('id')) {
-        $dao = new dao\job_contractors;
-        $dao->delete($id);
-        Json::ack($action);
+    } elseif ('contractor-tags-get-available' == $action) {
+      Json::ack($action)
+        ->add('tags', config::job_contractor_tags);
+    } elseif ('contractor-tags-set' == $action) {
+      if ($file = $this->getPost('file')) {
+        if ($id = (int)$this->getPost('id')) {
+
+          $dao = new dao\job_contractors();
+          if ($dto = $dao->getByID($id)) {
+            $tags = (array)\json_decode($dto->document_tags);
+            foreach ($tags as $k => $v) {
+              if ($file == $v) unset($tags[$k]);
+            }
+
+            if ($tag = $this->getPost('tag')) {
+              $tags[$tag] = $file;
+            }
+
+            $dao->UpdateByID(
+              ['document_tags' => json_encode($tags)],
+              $dto->id
+
+            );
+
+            Json::ack($action);
+          } else {
+            Json::nak(sprintf('%s : contractor not found', $action));
+          }
+        } else {
+          Json::nak(sprintf('%s : invalid id', $action));
+        }
       } else {
         Json::nak($action);
       }
@@ -1194,7 +1321,7 @@ class controller extends \Controller {
   public function contractors() {
     $dao = new dao\job_contractors;
     $this->data = (object)[
-      'res' => $dao->getReportSet(),
+      'dtoSet' => $dao->getReportSet(),
       'categories' => dao\job_categories::getCategorySet(),
       'idx' => $this->getParam('idx'),
 
@@ -1223,6 +1350,58 @@ class controller extends \Controller {
     ];
 
     $this->load('contractors-for');
+  }
+
+  public function contractor_document($id = 0) {
+    if ($id = (int)$id) {
+      if ($document = $this->getParam('d')) {
+        $dao = new dao\job_contractors;
+        if ($dto = $dao->getByID($id)) {
+          if ($store = realpath($dao->store($dto, $create = false))) {
+            if ($file = realpath(implode(DIRECTORY_SEPARATOR, [
+              $store, $document
+            ]))) {
+
+              sys::serve($file);
+            } else {
+              print 'not found';
+            }
+          } else {
+            print 'no store';
+          }
+        } else {
+          print 'contractor not found';
+        }
+      } else {
+        print 'invalid document';
+      }
+    } else {
+      print 'invalid';
+    }
+  }
+
+  public function contractor_document_view($id = 0) {
+    if ($id = (int)$id) {
+      if ($document = $this->getParam('d')) {
+        $dao = new dao\job_contractors;
+        if ($dto = $dao->getByID($id)) {
+          $this->data = (object)[
+            'dto' => $dto,
+            'document' => $document
+
+          ];
+
+          $this->title = config::label_contractor_view_document;
+          $this->load('contractor-view-document');
+        } else {
+          $this->load('not-found');
+        }
+      } else {
+        $this->load('not-found');
+      }
+    } else {
+      $this->load('not-found');
+    }
   }
 
   public function contractor_edit($id = 0) {
