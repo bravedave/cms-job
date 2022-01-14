@@ -343,7 +343,7 @@ $tblID = strings::rand();
           $pm,
           strtotime($dto->email_sent) > 0 ? 'yes' : 'no',
           $dto->job_type,
-          $dto->status,
+          $dto->id > 0 ? $dto->status : '',
           strtotime($dto->archived) > 0 ? 'yes' : 'no',
           1 == (int)$dto->has_invoice ? 'yes' : 'no',
           1 == (int)$dto->has_quote ? 'yes' : 'no',
