@@ -160,6 +160,7 @@ class job_contractors extends _dao {
         c.trading_name,
         c.services,
         c.primary_contact,
+        c.insurance_expiry_date,
         c.document_tags,
         p.name,
         p.mobile,
@@ -190,15 +191,17 @@ class job_contractors extends _dao {
     if ($res = $this->Result($sql)) {
       return $res->dtoSet(function ($dto) {
         $dto->insurance = false;
-        if ($dto->document_tags) {
-          if ($tags = (array)json_decode($dto->document_tags)) {
-            if ($tags[config::job_contractor_tag_insurance_certificate] ?? false) {
-              if ($store = realpath($this->store($dto, $create = false))) {
-                if ($file = realpath(implode(DIRECTORY_SEPARATOR, [
-                  $store,
-                  $tags[config::job_contractor_tag_insurance_certificate]
-                ]))) {
-                  $dto->insurance = file_exists($file);
+        if (strtotime($dto->insurance_expiry_date) > 0 && $dto->insurance_expiry_date >= date('Y-m-d')) {
+          if ($dto->document_tags) {
+            if ($tags = (array)json_decode($dto->document_tags)) {
+              if ($tags[config::job_contractor_tag_insurance_certificate] ?? false) {
+                if ($store = realpath($this->store($dto, $create = false))) {
+                  if ($file = realpath(implode(DIRECTORY_SEPARATOR, [
+                    $store,
+                    $tags[config::job_contractor_tag_insurance_certificate]
+                  ]))) {
+                    $dto->insurance = file_exists($file);
+                  }
                 }
               }
             }
