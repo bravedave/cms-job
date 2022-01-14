@@ -26,6 +26,25 @@ $_modal = strings::rand();
 
 ?>
 <style>
+  @media (max-width: 767px) {
+    .modal-fullscreen-sm.modal-dialog {
+      max-width: 100%;
+      margin: 0;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 100vh;
+      display: flex;
+    }
+
+    .modal-fullscreen-sm>.modal-content {
+      height: 100%;
+      border: 0;
+      border-radius: 0;
+    }
+  }
+
   @media (min-width: 768px) {
     <?php
     printf(
@@ -36,7 +55,7 @@ $_modal = strings::rand();
 </style>
 <form id="<?= $_form = strings::rand() ?>" autocomplete="off">
   <div class="modal fade" tabindex="-1" role="dialog" id="<?= $_modal ?>" aria-labelledby="<?= $_modal ?>Label" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-fullscreen-sm modal-xl modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header <?= theme::modalHeader() ?>">
           <h5 class="modal-title" id="<?= $_modal ?>Label"><?= $this->title ?></h5>
@@ -45,12 +64,12 @@ $_modal = strings::rand();
           </button>
         </div>
         <div class="modal-body p-2">
-          <iframe class="w-100" id="<?= $_modal ?>iframe" src="<?= strings::url(sprintf('%s/workorderpdf/%d%s', $this->route, $dto->id, $t)) ?>"></iframe>
+          <iframe class="w-100 h-100" id="<?= $_modal ?>iframe" src="<?= strings::url(sprintf('%s/workorderpdf/%d%s', $this->route, $dto->id, $t)) ?>"></iframe>
         </div>
         <div class="modal-footer px-2">
           <?php if ((int)$dto->paid_by < 1) {  ?>
-            <button type="button" class="btn btn-outline-secondary" id="<?= $_RefreshWorkOrder = strings::rand() ?>">refresh order</button>
-            <button type="button" class="btn btn-outline-secondary" id="<?= $_EmailOrder = strings::rand() ?>"><i class="bi bi-cursor"></i> email order</button>
+            <button type="button" class="btn btn-outline-secondary" id="<?= $_RefreshWorkOrder = strings::rand() ?>"><i class="bi bi-recycle"></i><span class="d-none d-md-inline">refresh order</span></button>
+            <button type="button" class="btn btn-outline-secondary" id="<?= $_EmailOrder = strings::rand() ?>"><i class="bi bi-cursor"></i> email<span class="d-none d-md-inline"> order</span></button>
             <script>
               (_ => {
                 $('#<?= $_RefreshWorkOrder ?>')
@@ -79,7 +98,7 @@ $_modal = strings::rand();
 
           <button type="button" class="btn btn-outline-secondary" id="<?= $_gotoJob = strings::rand() ?>"><?= config::label_job_view ?></button>
           <?php if ($this->data->hasInvoice) { ?>
-            <button type="button" class="btn btn-outline-secondary" id="<?= $_uid = strings::rand() ?>">View Invoice</button>
+            <button type="button" class="btn btn-outline-secondary" id="<?= $_uid = strings::rand() ?>"><span class="d-none d-md-inline">View </span>Invoice</button>
             <script>
               $('#<?= $_uid ?>').on('click', e => {
                 $('#<?= $_modal ?>')
@@ -89,7 +108,7 @@ $_modal = strings::rand();
             </script>
           <?php } ?>
           <?php if ($this->data->hasQuote) { ?>
-            <button type="button" class="btn btn-outline-secondary" id="<?= $_uid = strings::rand() ?>">View Quote</button>
+            <button type="button" class="btn btn-outline-secondary" id="<?= $_uid = strings::rand() ?>"><span class="d-none d-md-inline">View </span>Quote</button>
             <script>
               $('#<?= $_uid ?>').on('click', e => {
                 $('#<?= $_modal ?>')
