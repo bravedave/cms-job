@@ -49,10 +49,12 @@ $categories = $this->data->categories;  ?>
             data-id="%s"
             data-trading="%s"
             data-contact="%s"
+            data-people_id="%d"
             data-jobs="%s">',
           $dto->id,
           htmlspecialchars($dto->trading_name),
           htmlspecialchars($contactName),
+          $dto->primary_contact,
           $dto->jobs
 
         );
@@ -133,6 +135,7 @@ $categories = $this->data->categories;  ?>
       _.hideContexts();
 
       let _tr = $(this);
+      let _data = _tr.data();
       let _context = _.context();
 
       _context.append(
@@ -147,6 +150,16 @@ $categories = $this->data->categories;  ?>
         })
 
       );
+
+      if (Number(_data.people_id) > 0) {
+        _context.append(
+          $('<a target="_blank"></a>')
+          .html(_data.contact)
+          .prepend('<i class="bi bi-box-arrow-up-right"></i>')
+          .attr('href', _.url('person/view/' + _data.people_id))
+          .attr('click', e => _context.close()));
+
+      }
 
       <?php if (currentUser::isadmin()) { ?>
 
