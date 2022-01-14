@@ -433,7 +433,11 @@ $tblID = strings::rand();
           ?></td>
 
         <td class="text-center text-truncate" status>
-          <?= config::cms_job_status_verbatim($dto->status) ?>
+          <?php if ($dto->id > 0) {
+            print config::cms_job_status_verbatim($dto->status);
+          } else {
+            print '&nbsp;';
+          } ?>
         </td>
 
         <td class="text-center" due><?= strings::asLocalDate($dto->due) ?></td>
